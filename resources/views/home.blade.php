@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
    
     <title>ElGauchoVa</title>
 </head>
@@ -13,8 +13,18 @@
 <input type="checkbox" id="sidebar-toggle">
 
 <div class="top-right-icons">
-    <a href="#" class="icon-btn" title="Ubicación">📍</a>
-    <a href="#" class="icon-btn" title="Perfil">👤​</a>
+    <div class="icon-group">
+        <span class="location-icon">📍</span>
+        <div class="profile-container">
+            <input type="checkbox" id="toggleProfile">
+            <label for="toggleProfile" class="profile-icon">
+                👤
+            </label>
+            <div class="profile-menu">
+                <a href="{{ route('login') }}">Iniciar Sesión / Registrarse</a>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="sidebar">
@@ -23,6 +33,7 @@
     <a href="#">Ferreteria</a>
     <a href="#">Rotiseria</a>
 
+    </div>
 </div>
 
 <div class="contenido-pagina">

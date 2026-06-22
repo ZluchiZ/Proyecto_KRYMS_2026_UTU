@@ -58,6 +58,81 @@ padding: 80px 40px;
     z-index: 11;
 }
 
+.top-right-icons {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 11;
+}
+
+/* 🔥 fondo compartido */
+.icon-group {
+    display: flex;
+    align-items: center;
+    background: black;
+    border-radius: 25px;
+    padding: 8px 12px;
+}
+
+/* 📍 */
+.location-icon {
+    color: white;
+    font-size: 18px;
+    padding: 0 10px;
+}
+
+/* separador visual opcional */
+.location-icon {
+    border-right: 1px solid rgba(255,255,255,0.2);
+    margin-right: 10px;
+}
+
+/* contenedor perfil */
+.profile-container {
+    position: relative;
+}
+
+/* ocultar checkbox */
+.profile-container input {
+    display: none;
+}
+
+/* 👤 */
+.profile-icon {
+    font-size: 18px;
+    cursor: pointer;
+    color: white;
+    padding: 0 10px;
+}
+
+/* menú */
+.profile-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 40px;
+    background: white;
+    border-radius: 8px;
+    min-width: 150px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* mostrar al click */
+.profile-container input:checked ~ .profile-menu {
+    display: block;
+}
+
+.profile-menu a {
+    display: block;
+    padding: 10px;
+    text-decoration: none;
+    color: black;
+}
+
+.profile-menu a:hover {
+    background: #f0f0f0;
+}
+
 .icon-btn {
     width: 40px;
     height: 40px;
