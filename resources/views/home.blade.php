@@ -11,11 +11,11 @@
 
 <main class="container">
 
-    <!-- Botón menú -->
+    <!-- Sección: botón de menú hamburguesa para abrir/cerrar el sidebar -->
     <label for="sidebar-toggle" class="menu-btn">☰ Menú</label>
     <input type="checkbox" id="sidebar-toggle">
 
-    <!-- ICONOS DERECHA -->
+    <!-- Sección: barra superior con íconos de ubicación y perfil -->
     <div class="top-right-icons">
         <div class="icon-group">
             <span class="location-icon">📍</span>
@@ -32,7 +32,7 @@
         </div>
     </div>
 
-    <!-- SIDEBAR -->
+    <!-- Sección: menú lateral con enlaces a categorías -->
     <div class="sidebar">
         <a href="#">Farmacia</a>
         <a href="#">Supermercado</a>
@@ -40,17 +40,19 @@
         <a href="#">Rotisería</a>
     </div>
 
-    <!-- CONTENIDO PRINCIPAL -->
+    <!-- Sección: contenido principal de la página con bienvenida y búsqueda -->
     <div class="contenido-pagina">
 
         <h1>¡Bienvenidos a ElGauchoVa!</h1>
 
+        <!-- Formulario de búsqueda para consultar productos o categorías -->
         <form method="GET">
             <label for="campo-busqueda">Buscar:</label>
             <input type="search" id="campo-busqueda" name="q" placeholder="¿Qué estás buscando?">
             <button type="submit">Buscar</button>
         </form>
 
+        <!-- Sección: tarjetas con imágenes y descripción de platos -->
         <div class="comidas-container">
             <div class="comida-card">
                 <img src="{{ asset('img/comida1.jpg') }}" alt="Comida 1">
@@ -75,14 +77,15 @@
 
 </main>
 
+<!-- Sección: pie de página con información de la empresa -->
 <footer>
- <div class="nosotros">
+    <div class="nosotros">
         <p><strong>Sobre nosotros</strong></p>
         <p>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit...
         </p>
     </div>
-    </footer>
+</footer>
 
 </body>
 </html>
