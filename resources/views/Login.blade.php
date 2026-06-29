@@ -14,8 +14,8 @@
 
 <form method="POST" action="/login">
     @csrf
-    <input type="text" name="cedula" placeholder="Cédula">
-    <input type="password" name="password" placeholder="Contraseña">
+    <input type="email" name="email" placeholder="Correo Electrónico" value="{{ old('email') }}" required>
+    <input type="password" name="password" placeholder="Contraseña" required>
     <button type="submit">Entrar</button>
 </form>
 

@@ -22,13 +22,10 @@ Route::get('/register', function () {
     return view('register');
 })->name('register');
 
-Route::post('/login', function (Request $request) {
-    return redirect()->route('home');
-})->name('login.submit');
-
 Route::post('/Cliente', [ClienteController::class, 'store'])->name('cliente.store');
 
-use Illuminate\Support\Facades\Mail;
-use App\Mail\CorreoPrueba;
+use App\Http\Controllers\LoginController;
+
+Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 
 Route::get('/verificar/{token}', [ClienteController::class, 'verificar']);
