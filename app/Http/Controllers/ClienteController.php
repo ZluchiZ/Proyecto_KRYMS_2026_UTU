@@ -13,7 +13,7 @@ class ClienteController extends Controller
             'cedula' => 'required|string|max:8',
             'nombre' => 'required|string|max:255',
             'apellido' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:usuario,mail',
+            'email' => 'required|email|max:255|unique:usuario,email',
             'Numero' => 'required|string|max:9',
             'password' => 'required|string|min:8',
             'password2' => 'required|string|same:password',
@@ -22,15 +22,9 @@ class ClienteController extends Controller
 
         try {
             DB::table('usuario')->insert([
-                'ci' => $validated['cedula'],
-                'mail' => $validated['email'],
-                'nombre' => $validated['nombre'],
-                'apellido' => $validated['apellido'],
-                'telefono' => $validated['Numero'],
-                'fecha_nacimiento' => $validated['nacimiento'],
+                'nombre_usuario' => $validated['nombre'],
+                'email' => $validated['email'],
                 'contrasena' => bcrypt($validated['password']),
-                'repetir_contrasena' => bcrypt($validated['password']),
-                'opciones' => $request->input('opciones'),
             ]);
 
             return redirect()

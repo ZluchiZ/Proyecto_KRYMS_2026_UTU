@@ -16,7 +16,7 @@ class LoginController extends Controller
         ]);
 
         $cliente = DB::table('usuario')
-            ->where('mail', $request->email)
+            ->where('email', $request->email)
             ->first();
 
         if (!$cliente) {
@@ -28,7 +28,7 @@ class LoginController extends Controller
         }
 
         session([
-            'email' => $cliente->mail,
+            'email' => $cliente->email,
         ]);
 
         return redirect()->route('home');
