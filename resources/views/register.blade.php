@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
-    <title>Registrarse</title>
+    <title>Registro</title>
 </head>
 <body>
 
 <div class="container">
 
 <div class="formularioregistro">
-    <h2>Registrarse</h2> 
+    <h2>Registro Cliente</h2> 
   <form id="registroFormulario" method="POST" action="{{ route('cliente.store') }}">
     @csrf
     @if ($errors->any())
@@ -38,11 +38,6 @@
     <input type="date" id="fechaNacimiento" name="nacimiento" placeholder="Fecha de Nacimiento" value="{{ old('nacimiento') }}" required>
     <input type="password" id="password" name="password" placeholder="Contraseña" required minlength="8">
     <input type="password" id="password2" name="password2" placeholder="Repetir Contraseña" required minlength="8">
-    <select name="opciones" id="opciones">
-    <option value="opcion1">Cliente</option>
-    <option value="opcion2">Local</option>
-    <option value="opcion3">Repartidor</option>
-</select>
     <button type="submit">Entrar</button>
   </form>
    <p id="mensajeError" style="color: red; display: none;">Por favor, ingresa un correo válido.</p>
