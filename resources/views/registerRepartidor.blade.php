@@ -17,5 +17,10 @@
         <input type="password" id="password2" name="password2" placeholder="Repetir Contraseña" required minlength="8">
         <button type="submit">Entrar</button>
     </form>
+
+    <title>Document</title>
+</head>
+<body>
+    
 </body>
 </html>
