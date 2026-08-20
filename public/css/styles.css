@@ -1,0 +1,239 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f7f7f7;
+    color: #222;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    padding-top: 5rem;
+    box-sizing: border-box;
+}
+
+.contenido-pagina {
+    padding: 0 0 2rem;
+    transition: margin-left 0.3s ease;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.contenido-pagina form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-top: 1rem;
+}
+
+.contenido-pagina input[type="search"],
+.contenido-pagina button {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.8rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.contenido-pagina button {
+    background-color: #333;
+    color: #fff;
+    cursor: pointer;
+}
+
+.menu-btn {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    padding: 0.7rem 1rem;
+    background-color: #333;
+    color: #fff;
+    border-radius: 999px;
+    cursor: pointer;
+    z-index: 11;
+    font-size: 0.95rem;
+}
+
+#sidebar-toggle {
+    display: none;
+}
+
+.sidebar {
+    height: 100vh;
+    width: min(80vw, 250px);
+    position: fixed;
+    top: 0;
+    left: -100%;
+    background-color: #222;
+    padding-top: 4.5rem;
+    transition: left 0.3s ease;
+    z-index: 10;
+    overflow-y: auto;
+}
+
+.sidebar a {
+    color: #fff;
+    display: block;
+    padding: 15px 20px;
+    text-decoration: none;
+    font-size: 1rem;
+}
+
+.sidebar a:hover {
+    color: #fff;
+    background-color: #444;
+}
+
+#sidebar-toggle:checked ~ .sidebar {
+    left: 0;
+}
+
+.top-right-icons {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 11;
+}
+
+.icon-group {
+    display: flex;
+    align-items: center;
+    background: black;
+    border-radius: 999px;
+    padding: 0.45rem 0.7rem;
+    gap: 0.3rem;
+}
+
+.location-icon {
+    color: white;
+    font-size: 1rem;
+    padding: 0 0.5rem;
+    border-right: 1px solid rgba(255,255,255,0.2);
+    margin-right: 0.3rem;
+}
+
+.profile-container {
+    position: relative;
+}
+
+.profile-container input {
+    display: none;
+}
+
+.profile-icon {
+    font-size: 1rem;
+    cursor: pointer;
+    color: white;
+    padding: 0 0.5rem;
+}
+
+.profile-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.35rem);
+    background: white;
+    border-radius: 8px;
+    min-width: 180px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.profile-container input:checked ~ .profile-menu {
+    display: block;
+}
+
+.profile-menu a {
+    display: block;
+    padding: 10px;
+    text-decoration: none;
+    color: black;
+}
+
+.profile-menu a:hover {
+    background: #f0f0f0;
+}
+
+.comidas-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.comida-card {
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+.comida-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+}
+
+.comida-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    display: block;
+}
+
+.comida-card h3 {
+    margin: 15px;
+    font-size: 18px;
+    color: #333;
+}
+
+.comida-card p {
+    margin: 0 15px 15px 15px;
+    font-size: 14px;
+    color: #666;
+    line-height: 1.4;
+}
+
+.nosotros {
+    background: #fff;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+    margin-top: 1.5rem;
+}
+
+p {
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+@media (min-width: 768px) {
+    .container {
+        flex-direction: row;
+        gap: 20px;
+        padding-top: 6rem;
+    }
+
+    .contenido-pagina {
+        flex: 1;
+        padding: 0 0 2rem;
+    }
+
+    .comidas-container {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1024px) {
+    .container {
+        max-width: 1200px;
+        margin: auto;
+        padding-top: 6.5rem;
+    }
+
+    .comidas-container {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
