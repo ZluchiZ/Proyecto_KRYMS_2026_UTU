@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\LoginController;
+use App\Http\Controllers\LocalController;
+use App\Http\Controllers\RepartidorController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
@@ -8,7 +11,6 @@ use Illuminate\Http\Request;
 Route::get('/test-cliente', function () {
     return DB::table('usuario')->get();
 });
-
 
 Route::get('/login', function () {
     return view('Login');
@@ -32,7 +34,7 @@ Route::get('/registerRepartidor', function () {
 
 Route::post('/Cliente', [ClienteController::class, 'store'])->name('cliente.store');
 
-use App\Http\Controllers\LoginController;
+
 
 Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 

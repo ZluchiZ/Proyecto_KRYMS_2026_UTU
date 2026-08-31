@@ -47,7 +47,7 @@
 
         <!-- Formulario de búsqueda para consultar productos o categorías -->
         <form method="GET">
-            <label for="campo-busqueda">Buscar:</label>
+            <label for="campo-busqueda"></label>
             <input type="search" id="campo-busqueda" name="q" placeholder="¿Qué estás buscando?">
             <button type="submit">Buscar</button>
         </form>
