@@ -39,5 +39,22 @@
 
   <script src="{{ asset('js/ValidacionRegistro.js') }}"></script>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src="{{ asset('js/ValidacionRegistro.js') }}"></script>
+
 </body>
 </html>

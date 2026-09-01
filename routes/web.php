@@ -27,7 +27,6 @@ Route::get('/register', function () {
 Route::get('/registerLocal', function () {
     return view('registerLocal');
 })->name('registerLocal');
-
 Route::get('/registerRepartidor', function () {
     return view('registerRepartidor');
 })->name('registerRepartidor');
