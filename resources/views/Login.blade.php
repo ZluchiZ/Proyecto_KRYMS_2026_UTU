@@ -12,6 +12,22 @@
 
 <div class="container">
 
+@if (session('error'))
+    <div class="alert alert-danger" style="color: red; margin-bottom: 15px;">
+        {{ session('error') }}
+    </div>
+@endif
+
+@if ($errors->any())
+    <div class="alert alert-danger" style="color: red; margin-bottom: 15px;">
+        <ul style="margin: 0; padding-left: 20px;">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
 <form method="POST" action="/login">
     @csrf
     <input type="email" name="email" placeholder="Correo Electrónico" value="{{ old('email') }}" required>

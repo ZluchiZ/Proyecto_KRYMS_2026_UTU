@@ -48,6 +48,19 @@
   </div>
 </div> 
 
+
+<div class="FormarParteLocal">
+    <h2>¿Eres un local?</h2>
+    <p>Si eres un local y deseas registrarte, haz clic en el siguiente botón:</p>
+    <a href="{{ route('registerLocal') }}" class="btn-registrar-local">Registrarse como Local</a>
+</div>
+
+<div class="FormarParteRepartidor">
+    <h2>¿Eres un repartidor?</h2>
+    <p>Si eres un repartidor y deseas registrarte, haz clic en el siguiente botón:</p>
+    <a href="{{ route('registerRepartidor') }}" class="btn-registrar-repartidor">Registrarse como Repartidor</a>
+</div>
+
 <script src="{{ asset('js/ValidacionRegistro.js') }}"></script>
 
 
