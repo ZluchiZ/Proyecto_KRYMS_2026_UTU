@@ -15,21 +15,37 @@ class LoginController extends Controller
             'password' => 'required'
         ]);
 
-        $cliente = DB::table('usuarios')
-            ->where('correo', $request->email)
-            ->first();
+        $cuentas = [
+            ['tabla' => 'usuarios', 'tipo' => 'cliente'],
+            ['tabla' => 'local', 'tipo' => 'local'],
+            ['tabla' => 'repartidor', 'tipo' => 'repartidor'],
+        ];
 
-        if (!$cliente) {
-            return back()->with('error', 'Correo o contraseña incorrectos.');
+        foreach ($cuentas as $cuenta) {
+            $usuario = DB::table($cuenta['tabla'])
+                ->where('correo', $request->email)
+                ->first();
+
+            if ($usuario && Hash::check($request->password, $usuario->contrasena)) {
+                session([
+                    'email' => $usuario->correo,
+                    'tipo_usuario' => $cuenta['tipo'],
+                    'usuario_id' => $usuario->id,
+                ]);
+
+                return redirect()->route('home');
+            }
         }
 
-        if (!Hash::check($request->password, $cliente->contrasena)) {
-            return back()->with('error', 'Correo o contraseña incorrectos.');
-        }
+        return back()
+            ->withInput($request->only('email'))
+            ->with('error', 'Correo o contraseña incorrectos.');
+    }
 
-        session([
-            'email' => $cliente->correo,
-        ]);
+    public function logout(Request $request)
+    {
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return redirect()->route('home');
     }

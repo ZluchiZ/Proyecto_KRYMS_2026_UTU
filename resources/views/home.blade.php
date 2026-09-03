@@ -25,7 +25,15 @@
                 <label for="toggleProfile" class="profile-icon">👤</label>
 
                 <div class="profile-menu">
-                    <a href="{{ route('login') }}">Iniciar Sesión / Registrarse</a>
+                    @if ($nombreUsuario)
+                        <span>{{ $nombreUsuario }}</span>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit">Cerrar sesión</button>
+                        </form>
+                    @else
+                        <a href="{{ route('login') }}">Iniciar Sesión / Registrarse</a>
+                    @endif
                 </div>
             </div>
 
