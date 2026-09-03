@@ -27,14 +27,13 @@ Route::get('/register', function () {
 Route::get('/registerLocal', function () {
     return view('registerLocal');
 })->name('registerLocal');
-
 Route::get('/registerRepartidor', function () {
     return view('registerRepartidor');
 })->name('registerRepartidor');
 
 Route::post('/Cliente', [ClienteController::class, 'store'])->name('cliente.store');
-
-
+Route::post('/local', [LocalController::class, 'store'])->name('local.store');
+Route::post('/repartidor', [RepartidorController::class, 'store'])->name('repartidor.store');
 
 Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 

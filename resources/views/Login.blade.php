@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,6 +11,22 @@
 <h2>Iniciar sesión</h2>
 
 <div class="container">
+
+@if (session('error'))
+    <div class="alert alert-danger" style="color: red; margin-bottom: 15px;">
+        {{ session('error') }}
+    </div>
+@endif
+
+@if ($errors->any())
+    <div class="alert alert-danger" style="color: red; margin-bottom: 15px;">
+        <ul style="margin: 0; padding-left: 20px;">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
 
 <form method="POST" action="/login">
     @csrf

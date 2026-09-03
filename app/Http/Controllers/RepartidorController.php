@@ -8,36 +8,39 @@ use Illuminate\Support\Facades\DB;
 class RepartidorController extends Controller
 {
     public function store(Request $request)
-{
-    $validated = $request->validate([
-        'cirepartidor' => 'required|string|max:8',
-        'nombrerepartidor' => 'required|string|max:255',
-        'apellidorepartidor' => 'required|string|max:255',
-        'emailrepartidor' => 'required|email|max:255|unique:usuarios,correo',
-        'numrepartidor' => 'required|string|max:9',
-        'passwordrepartidor' => 'required|string|min:8',
-        'passwordrepartidor2' => 'required|string|same:password',
-        'nacimientorepartidor' => 'required|date',
-    ]);
-
-    try {
-        DB::table('usuarios')->insert([
-            'nombre' => $validated['nombrerepartidor'].' '.$validated['apellidorepartidor'],
-            'correo' => $validated['emailrepartidor'],
-            'contrasena' => bcrypt($validated['passwordrepartidor']),
-            'created_at' => now(),
-            'updated_at' => now(),
+    {
+        $validated = $request->validate([
+            'cedula' => 'required|string|max:8',
+            'correo' => 'required|email|max:255|unique:repartidor,correo',
+            'nombre' => 'required|string|max:255',
+            'apellido' => 'required|string|max:255',
+            'telefono' => 'required|string|max:9',
+            'fecha_nacimiento' => 'required|date',
+            'contrasena' => 'required|string|min:8|confirmed',
         ]);
 
-        return redirect()
-            ->route('login')
-            ->with('success', 'Registro exitoso. Ya puedes iniciar sesión.');
-    } catch (\Throwable $e) {
-        return back()
-            ->withInput()
-            ->with('error', 'No se pudo guardar el cliente: '.$e->getMessage());
+        try {
+            DB::table('repartidor')->insert([
+                'cedula' => $validated['cedula'],
+                'correo' => $validated['correo'],
+                'nombre' => $validated['nombre'],
+                'apellido' => $validated['apellido'],
+                'telefono' => $validated['telefono'],
+                'fecha_nacimiento' => $validated['fecha_nacimiento'],
+                'contrasena' => bcrypt($validated['contrasena']),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            return redirect()
+                ->route('login')
+                ->with('success', 'Registro exitoso. Ya puedes iniciar sesión.');
+        } catch (\Throwable $e) {
+            return back()
+                ->withInput()
+                ->with('error', 'No se pudo guardar el repartidor: '.$e->getMessage());
+        }
     }
-}
 
     public function verificar($token)
     {
