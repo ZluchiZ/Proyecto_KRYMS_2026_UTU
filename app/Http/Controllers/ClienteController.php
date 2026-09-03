@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class ClienteController extends Controller
 {
@@ -13,11 +14,20 @@ class ClienteController extends Controller
         'cedula' => 'required|string|max:8',
         'nombre' => 'required|string|max:255',
         'apellido' => 'required|string|max:255',
-        'email' => 'required|email|max:255|unique:usuarios,correo',
+        'email' => [
+            'required',
+            'email',
+            'max:255',
+            Rule::unique('usuarios', 'correo'),
+            Rule::unique('local', 'correo'),
+            Rule::unique('repartidor', 'correo'),
+        ],
         'Numero' => 'required|string|max:9',
         'password' => 'required|string|min:8',
         'password2' => 'required|string|same:password',
         'nacimiento' => 'required|date',
+    ], [
+        'email.unique' => 'Este correo ya está registrado.',
     ]);
 
     try {

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class LocalController extends Controller
 {
@@ -16,8 +17,17 @@ class LocalController extends Controller
             'direccion' => 'required|string|max:255',
             'logo' => 'required|string|max:255',
             'numero_cuenta' => 'required|string|max:20',
-            'correo' => 'required|email|max:255|unique:local,correo',
+            'correo' => [
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('usuarios', 'correo'),
+                Rule::unique('local', 'correo'),
+                Rule::unique('repartidor', 'correo'),
+            ],
             'contrasena' => 'required|string|min:8|confirmed',
+        ], [
+            'correo.unique' => 'Este correo ya está registrado.',
         ]);
 
         try {

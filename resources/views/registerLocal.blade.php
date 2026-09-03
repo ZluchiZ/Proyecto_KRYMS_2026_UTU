@@ -10,6 +10,20 @@
     
 <form method="POST" action="{{ route('local.store') }}">
     @csrf
+  @if ($errors->any())
+    <div class="form-errors" style="color:red; margin-bottom: 1rem;">
+      <ul>
+        @foreach ($errors->all() as $error)
+          <li>{{ $error }}</li>
+        @endforeach
+      </ul>
+    </div>
+  @endif
+  @if (session('error'))
+    <div class="session-error" style="color:red; margin-bottom: 1rem;">
+      {{ session('error') }}
+    </div>
+  @endif
     <input type="text" id="rut" name="rut" inputmode="numeric" pattern="[0-9]{12}" maxlength="12" placeholder="RUT (Opcional)" value="{{ old('rut') }}">
     <input type="text" id="cedula" name="cedula" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" placeholder="Cédula de Identidad" value="{{ old('cedula') }}" required>
     <input type="text" id="nombre" name="nombre" placeholder="Nombre del local" value="{{ old('nombre') }}" required>

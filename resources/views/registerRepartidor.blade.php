@@ -9,6 +9,20 @@
 <body>
     <form method="POST" action="{{ route('repartidor.store') }}">
         @csrf
+        @if ($errors->any())
+            <div class="form-errors" style="color:red; margin-bottom: 1rem;">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+        @if (session('error'))
+            <div class="session-error" style="color:red; margin-bottom: 1rem;">
+                {{ session('error') }}
+            </div>
+        @endif
         <input type="text" id="cedula" name="cedula" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" placeholder="Cédula de Identidad" value="{{ old('cedula') }}" required>
         <input type="email" id="correo" name="correo" placeholder="Correo Electrónico" value="{{ old('correo') }}" required>
         <input type="text" id="nombre" name="nombre" placeholder="Nombre" value="{{ old('nombre') }}" required>
