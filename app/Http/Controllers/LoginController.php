@@ -16,8 +16,8 @@ class LoginController extends Controller
         ]);
 
         $cuentas = [
-            ['tabla' => 'usuarios', 'tipo' => 'cliente'],
-            ['tabla' => 'local', 'tipo' => 'local'],
+            ['tabla' => 'cliente', 'tipo' => 'cliente'],
+            ['tabla' => 'comercio', 'tipo' => 'comercio'],
             ['tabla' => 'repartidor', 'tipo' => 'repartidor'],
         ];
 

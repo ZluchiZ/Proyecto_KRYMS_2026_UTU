@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('local', function (Blueprint $table) {
+        Schema::create('comercio', function (Blueprint $table) {
             $table->id();
             $table->string('rut')->nullable();
             $table->string('cedula');
@@ -30,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('local');
+        Schema::dropIfExists('comercio');
     }
 };

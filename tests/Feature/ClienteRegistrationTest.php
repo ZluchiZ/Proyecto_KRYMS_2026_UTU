@@ -23,16 +23,23 @@ class ClienteRegistrationTest extends TestCase
         DB::purge('sqlite');
 
         Schema::connection('sqlite')->create('cliente', function (Blueprint $table) {
-            $table->string('ci')->primary();
-            $table->string('mail')->unique();
+            $table->id();
+            $table->string('cedula');
             $table->string('nombre');
             $table->string('apellido');
-            $table->string('telefono')->nullable();
+            $table->string('telefono');
             $table->date('fecha_nacimiento');
+            $table->string('correo')->unique();
             $table->string('contrasena');
-            $table->string('repetir_contrasena');
-            $table->text('opciones')->nullable();
+            $table->timestamps();
         });
+
+        foreach (['comercio', 'repartidor'] as $tableName) {
+            Schema::connection('sqlite')->create($tableName, function (Blueprint $table) {
+                $table->id();
+                $table->string('correo')->unique();
+            });
+        }
 
         $response = $this->post(route('cliente.store'), [
             'cedula' => '12345678',
@@ -49,7 +56,7 @@ class ClienteRegistrationTest extends TestCase
         $response->assertRedirect(route('login'));
 
         $this->assertTrue(
-            DB::connection('sqlite')->table('cliente')->where('mail', 'ana@example.com')->exists()
+            DB::connection('sqlite')->table('cliente')->where('correo', 'ana@example.com')->exists()
         );
     }
 }

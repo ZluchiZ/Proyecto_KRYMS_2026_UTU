@@ -11,7 +11,7 @@ class LoginController extends Controller
             'email' => 'required|email',
             'password' => 'required'
         ]);
-        $cliente = DB::table('usuarios')
+        $cliente = DB::table('cliente')
             ->where('correo', $request->email)
             ->first();
         if (!$cliente) {

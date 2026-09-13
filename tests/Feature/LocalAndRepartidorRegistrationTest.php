@@ -24,7 +24,12 @@ class LocalAndRepartidorRegistrationTest extends TestCase
 
         DB::purge('sqlite');
 
-        Schema::connection('sqlite')->create('local', function (Blueprint $table) {
+        Schema::connection('sqlite')->create('cliente', function (Blueprint $table) {
+            $table->id();
+            $table->string('correo')->unique();
+        });
+
+        Schema::connection('sqlite')->create('comercio', function (Blueprint $table) {
             $table->id();
             $table->string('rut')->nullable();
             $table->string('cedula');
@@ -65,7 +70,7 @@ class LocalAndRepartidorRegistrationTest extends TestCase
         ]);
 
         $response->assertRedirect(route('login'));
-        $this->assertDatabaseHas('local', ['correo' => 'local@example.com']);
+        $this->assertDatabaseHas('comercio', ['correo' => 'local@example.com']);
     }
 
     public function test_repartidor_registration_creates_a_repartidor_record(): void

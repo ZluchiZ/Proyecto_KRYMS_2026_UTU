@@ -14,7 +14,9 @@ use Laravel\Sanctum\HasApiTokens;
 class Usuario extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
-    
+
+    protected $table = 'cliente';
+
     protected $fillable = ['nombre', 'correo', 'contrasena'];
     
     // si tu columna de password no se llama "password"

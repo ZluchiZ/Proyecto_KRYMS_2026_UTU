@@ -9,10 +9,10 @@ return new class extends Migration
     {
         DB::unprepared(<<<'SQL'
             CREATE TRIGGER check_email_usuarios_before_insert
-            BEFORE INSERT ON usuarios
+            BEFORE INSERT ON cliente
             FOR EACH ROW
             BEGIN
-                IF EXISTS (SELECT 1 FROM local WHERE correo = NEW.correo)
+                IF EXISTS (SELECT 1 FROM comercio WHERE correo = NEW.correo)
                    OR EXISTS (SELECT 1 FROM repartidor WHERE correo = NEW.correo) THEN
                     SIGNAL SQLSTATE '45000'
                     SET MESSAGE_TEXT = 'El correo ya esta registrado como Local o Repartidor.';
@@ -22,10 +22,10 @@ return new class extends Migration
 
         DB::unprepared(<<<'SQL'
             CREATE TRIGGER check_email_usuarios_before_update
-            BEFORE UPDATE ON usuarios
+            BEFORE UPDATE ON cliente
             FOR EACH ROW
             BEGIN
-                IF EXISTS (SELECT 1 FROM local WHERE correo = NEW.correo)
+                IF EXISTS (SELECT 1 FROM comercio WHERE correo = NEW.correo)
                    OR EXISTS (SELECT 1 FROM repartidor WHERE correo = NEW.correo) THEN
                     SIGNAL SQLSTATE '45000'
                     SET MESSAGE_TEXT = 'El correo ya esta registrado como Local o Repartidor.';
@@ -35,10 +35,10 @@ return new class extends Migration
 
         DB::unprepared(<<<'SQL'
             CREATE TRIGGER check_email_local_before_insert
-            BEFORE INSERT ON local
+            BEFORE INSERT ON comercio
             FOR EACH ROW
             BEGIN
-                IF EXISTS (SELECT 1 FROM usuarios WHERE correo = NEW.correo)
+                IF EXISTS (SELECT 1 FROM cliente WHERE correo = NEW.correo)
                    OR EXISTS (SELECT 1 FROM repartidor WHERE correo = NEW.correo) THEN
                     SIGNAL SQLSTATE '45000'
                     SET MESSAGE_TEXT = 'El correo ya esta registrado como Cliente o Repartidor.';
@@ -48,10 +48,10 @@ return new class extends Migration
 
         DB::unprepared(<<<'SQL'
             CREATE TRIGGER check_email_local_before_update
-            BEFORE UPDATE ON local
+            BEFORE UPDATE ON comercio
             FOR EACH ROW
             BEGIN
-                IF EXISTS (SELECT 1 FROM usuarios WHERE correo = NEW.correo)
+                IF EXISTS (SELECT 1 FROM cliente WHERE correo = NEW.correo)
                    OR EXISTS (SELECT 1 FROM repartidor WHERE correo = NEW.correo) THEN
                     SIGNAL SQLSTATE '45000'
                     SET MESSAGE_TEXT = 'El correo ya esta registrado como Cliente o Repartidor.';
@@ -64,8 +64,8 @@ return new class extends Migration
             BEFORE INSERT ON repartidor
             FOR EACH ROW
             BEGIN
-                IF EXISTS (SELECT 1 FROM usuarios WHERE correo = NEW.correo)
-                   OR EXISTS (SELECT 1 FROM local WHERE correo = NEW.correo) THEN
+                     IF EXISTS (SELECT 1 FROM cliente WHERE correo = NEW.correo)
+                         OR EXISTS (SELECT 1 FROM comercio WHERE correo = NEW.correo) THEN
                     SIGNAL SQLSTATE '45000'
                     SET MESSAGE_TEXT = 'El correo ya esta registrado como Cliente o Local.';
                 END IF;
@@ -77,8 +77,8 @@ return new class extends Migration
             BEFORE UPDATE ON repartidor
             FOR EACH ROW
             BEGIN
-                IF EXISTS (SELECT 1 FROM usuarios WHERE correo = NEW.correo)
-                   OR EXISTS (SELECT 1 FROM local WHERE correo = NEW.correo) THEN
+                     IF EXISTS (SELECT 1 FROM cliente WHERE correo = NEW.correo)
+                         OR EXISTS (SELECT 1 FROM comercio WHERE correo = NEW.correo) THEN
                     SIGNAL SQLSTATE '45000'
                     SET MESSAGE_TEXT = 'El correo ya esta registrado como Cliente o Local.';
                 END IF;

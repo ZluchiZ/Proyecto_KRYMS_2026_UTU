@@ -21,8 +21,8 @@ Route::get('/', function () {
 
     if (session('tipo_usuario') && session('usuario_id')) {
         $tablas = [
-            'cliente' => 'usuarios',
-            'local' => 'local',
+            'cliente' => 'cliente',
+            'comercio' => 'comercio',
             'repartidor' => 'repartidor',
         ];
         $tabla = $tablas[session('tipo_usuario')] ?? null;

@@ -18,8 +18,8 @@ class ClienteController extends Controller
             'required',
             'email',
             'max:255',
-            Rule::unique('usuarios', 'correo'),
-            Rule::unique('local', 'correo'),
+            Rule::unique('cliente', 'correo'),
+            Rule::unique('comercio', 'correo'),
             Rule::unique('repartidor', 'correo'),
         ],
         'Numero' => 'required|string|max:9',
@@ -31,8 +31,12 @@ class ClienteController extends Controller
     ]);
 
     try {
-        DB::table('usuarios')->insert([
-            'nombre' => $validated['nombre'].' '.$validated['apellido'],
+        DB::table('cliente')->insert([
+            'cedula' => $validated['cedula'],
+            'nombre' => $validated['nombre'],
+            'apellido' => $validated['apellido'],
+            'telefono' => $validated['Numero'],
+            'fecha_nacimiento' => $validated['nacimiento'],
             'correo' => $validated['email'],
             'contrasena' => bcrypt($validated['password']),
             'created_at' => now(),

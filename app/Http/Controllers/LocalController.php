@@ -21,8 +21,8 @@ class LocalController extends Controller
                 'required',
                 'email',
                 'max:255',
-                Rule::unique('usuarios', 'correo'),
-                Rule::unique('local', 'correo'),
+                Rule::unique('cliente', 'correo'),
+                Rule::unique('comercio', 'correo'),
                 Rule::unique('repartidor', 'correo'),
             ],
             'contrasena' => 'required|string|min:8|confirmed',
@@ -31,7 +31,7 @@ class LocalController extends Controller
         ]);
 
         try {
-            DB::table('local')->insert([
+            DB::table('comercio')->insert([
                 'rut' => $validated['rut'] ?? null,
                 'cedula' => $validated['cedula'],
                 'nombre' => $validated['nombre'],
