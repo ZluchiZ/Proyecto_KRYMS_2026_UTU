@@ -8,6 +8,64 @@ use Illuminate\Validation\Rule;
 
 class LocalController extends Controller
 {
+    public function storeProducto(Request $request)
+    {
+        abort_unless(session('tipo_usuario') === 'comercio' && session('usuario_id'), 403);
+
+        $validated = $request->validate([
+            'nombre' => 'required|string|max:255',
+            'precio' => 'required|numeric|min:0',
+            'categoria' => 'required|string|max:100',
+            'descripcion' => 'required|string|max:1000',
+            'imagen_url' => 'required|url|max:2048',
+            'disponible' => 'nullable|boolean',
+        ]);
+
+        $comercio = DB::table('comercio')
+            ->where('id', session('usuario_id'))
+            ->first(['rut', 'cedula', 'correo', 'nombre', 'direccion', 'logo', 'contrasena']);
+
+        abort_unless($comercio, 403);
+
+        $identificadorComercio = $comercio->rut ?: $comercio->cedula;
+
+        DB::transaction(function () use ($comercio, $identificadorComercio, $validated, $request) {
+            if (! DB::table('Usuario')->where('Email', $comercio->correo)->exists()) {
+                DB::table('Usuario')->insert([
+                    'Email' => $comercio->correo,
+                    'Nombre_de_Usuario' => $comercio->nombre,
+                    'Contraseña' => $comercio->contrasena,
+                    'Tipo_Usuario' => 'comercio',
+                ]);
+            }
+
+            if (! DB::table('Comercio')->where('RUT', $identificadorComercio)->exists()) {
+                DB::table('Comercio')->insert([
+                    'RUT' => $identificadorComercio,
+                    'Email_Usuario' => $comercio->correo,
+                    'Nombre_Comercio' => $comercio->nombre,
+                    'Dirección' => $comercio->direccion,
+                    'Logo' => $comercio->logo,
+                    'CI_Dueño' => $comercio->cedula,
+                ]);
+            }
+
+            DB::table('Producto')->insert([
+                'RUT_Comercio' => $identificadorComercio,
+                'Nombre_Producto' => $validated['nombre'],
+                'Precio' => $validated['precio'],
+                'Categoria' => $validated['categoria'],
+                'Descripcion' => $validated['descripcion'],
+                'Foto_Producto' => $validated['imagen_url'],
+                'Disponible' => $request->boolean('disponible'),
+            ]);
+        });
+
+        return redirect()
+            ->route('dashboard.local')
+            ->with('success', 'Producto añadido correctamente.');
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([

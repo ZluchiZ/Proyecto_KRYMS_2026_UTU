@@ -41,7 +41,22 @@ Route::get('/', function () {
 })->name('home');
 
 Route::get('/dashboard-local', function () {
-    return view('Local.DashboardLocal');
+    abort_unless(session('tipo_usuario') === 'comercio' && session('usuario_id'), 403);
+
+    $comercio = DB::table('comercio')
+        ->where('id', session('usuario_id'))
+        ->first(['rut', 'cedula']);
+
+    abort_unless($comercio, 403);
+
+    $identificadorComercio = $comercio->rut ?: $comercio->cedula;
+
+    $productos = DB::table('Producto')
+        ->where('RUT_Comercio', $identificadorComercio)
+        ->orderByDesc('ID_Producto')
+        ->get();
+
+    return view('Local.DashboardLocal', compact('productos'));
 })->name('dashboard.local');
 
 Route::get('/dashboard-repartidor', function () {
@@ -62,6 +77,7 @@ Route::get('/registerRepartidor', function () {
 Route::post('/Cliente', [ClienteController::class, 'store'])->name('cliente.store');
 Route::post('/local', [LocalController::class, 'store'])->name('local.store');
 Route::post('/repartidor', [RepartidorController::class, 'store'])->name('repartidor.store');
+Route::post('/productos', [LocalController::class, 'storeProducto'])->name('productos.store');
 
 Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
