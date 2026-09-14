@@ -33,7 +33,11 @@ class LoginController extends Controller
                     'usuario_id' => $usuario->id,
                 ]);
 
-                return redirect()->route('home');
+                return match ($cuenta['tipo']) {
+                    'repartidor' => redirect()->route('dashboard.repartidor'),
+                    'comercio' => redirect()->route('dashboard.local'),
+                    default => redirect()->route('home'),
+                };
             }
         }
 

@@ -40,6 +40,14 @@ Route::get('/', function () {
     return view('home', compact('nombreUsuario'));
 })->name('home');
 
+Route::get('/dashboard-local', function () {
+    return view('Local.DashboardLocal');
+})->name('dashboard.local');
+
+Route::get('/dashboard-repartidor', function () {
+    return view('Repartidor.DashboardRepartidor');
+})->name('dashboard.repartidor');
+
 Route::get('/register', function () {
     return view('register');
 })->name('register');
