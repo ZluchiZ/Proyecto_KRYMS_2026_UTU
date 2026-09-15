@@ -3,55 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ asset('css/dashboard-local.css') }}">
     <title>Productos del local</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 2rem; background: #f4f4f4; color: #222; }
-        main { max-width: 1100px; margin: 0 auto; }
-        .dashboard-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 2rem; }
-        button { border: 0; border-radius: 6px; padding: .8rem 1rem; font: inherit; cursor: pointer; background: #222; color: #fff; }
-        .products { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
-        .product { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 3px 12px #0001; }
-        .product img { width: 100%; height: 150px; object-fit: cover; background: #ddd; }
-        .product-content { padding: 1rem; }
-        .product h2 { margin: 0 0 .4rem; font-size: 1.15rem; }
-        .price { font-weight: bold; }
-        .stock { color: #555; }
-        .status { color: #18733c; font-size: .9rem; }
-        .status.unavailable { color: #a33; }
-        .empty { background: #fff; padding: 2rem; text-align: center; border-radius: 8px; }
-        dialog { width: min(92vw, 520px); border: 0; border-radius: 8px; padding: 0; box-shadow: 0 12px 40px #0005; }
-        dialog::backdrop { background: #0008; }
-        .modal-content { padding: 1.5rem; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; }
-        .modal-header h2 { margin: 0 0 1rem; }
-        .close { background: transparent; color: #222; padding: .25rem .5rem; font-size: 1.4rem; }
-        form { display: grid; gap: .8rem; }
-        label { font-weight: bold; }
-        input, textarea { width: 100%; box-sizing: border-box; padding: .7rem; border: 1px solid #ccc; border-radius: 5px; font: inherit; }
-        textarea { min-height: 90px; resize: vertical; }
-        .quantity-control { display: grid; grid-template-columns: 42px 1fr 42px; gap: .5rem; align-items: center; }
-        .quantity-control input { text-align: center; }
-        .quantity-button { padding: .55rem; font-size: 1.2rem; line-height: 1; }
-        .checkbox { display: flex; align-items: center; gap: .5rem; font-weight: normal; }
-        .checkbox input { width: auto; }
-        .error { color: #a00; margin-bottom: 1rem; }
-        .profile { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; padding: 1rem; background: #fff; border-radius: 8px; box-shadow: 0 3px 12px #0001; }
-        .profile-info { display: grid; gap: .2rem; }
-        .profile-info small { color: #666; }
-        .profile form { margin: 0; }
-        .orders { margin-bottom: 2rem; }
-        .orders h2 { margin-bottom: 1rem; }
-        .order-list { display: grid; gap: .8rem; }
-        .order { display: grid; gap: .35rem; padding: 1rem; background: #fff; border-radius: 8px; box-shadow: 0 3px 12px #0001; }
-        .order p { margin: 0; }
-        .order-title { display: flex; justify-content: space-between; gap: 1rem; font-weight: bold; }
-        .order-status { color: #18733c; text-transform: capitalize; }
-        .order-status.rejected { color: #a33; }
-        .order-actions { display: flex; gap: .6rem; margin-top: .5rem; }
-        .order-actions button { padding: .55rem .8rem; }
-        .order-actions .reject { background: #a33; }
-        @media (max-width: 540px) { body { padding: 1rem; } .dashboard-header { align-items: flex-start; flex-direction: column; } }
-    </style>
 </head>
 <body>
     <main>

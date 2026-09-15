@@ -4,15 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
-    <style>
-        body {
-            background-image: url('{{ asset('img/register-background.svg') }}');
-            background-position: center;
-            background-repeat: no-repeat;
-            background-size: cover;
-            background-attachment: fixed;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ asset('css/register.css') }}">
     <title>Registro</title>
 </head>
 <body>
@@ -24,7 +16,7 @@
   <form id="registroFormulario" method="POST" action="{{ route('cliente.store') }}">
     @csrf
     @if ($errors->any())
-        <div class="form-errors" style="color:red; margin-bottom: 1rem;">
+        <div class="form-errors">
             <ul>
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
@@ -34,7 +26,7 @@
     @endif
 
     @if (session('error'))
-        <div class="session-error" style="color:red; margin-bottom: 1rem;">
+        <div class="session-error">
             {{ session('error') }}
         </div>
     @endif
@@ -49,11 +41,11 @@
     <input type="password" id="password2" name="password2" placeholder="Repetir Contraseña" required minlength="8">
     <button type="submit">Entrar</button>
   </form>
-   <p id="mensajeError" style="color: red; display: none;">Por favor, ingresa un correo válido.</p>
-   <p id="errorCampo" style="color:red; margin-top:4px; margin-bottom:10px;"></p>
-   <p id="errorApellido" style="color:red; margin-top:4px; margin-bottom:10px;"></p>
-   <p id="errorContrasena" style="color:red;"></p>
-   <p id="errorFecha" style="color:red;"></p>
+    <p id="mensajeError">Por favor, ingresa un correo válido.</p>
+    <p id="errorCampo"></p>
+    <p id="errorApellido"></p>
+    <p id="errorContrasena"></p>
+    <p id="errorFecha"></p>
   </div>
 </div> 
 

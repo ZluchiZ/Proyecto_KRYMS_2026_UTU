@@ -4,22 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/home.css') }}">
     <title>ElGauchoVa</title>
-    <style>
-        .purchase-trigger { width: calc(100% - 30px); margin: 0 15px 15px; }
-        .purchase-modal { width: min(92vw, 520px); border: 0; border-radius: 8px; padding: 0; box-shadow: 0 12px 40px #0005; }
-        .purchase-modal::backdrop { background: #0008; }
-        .purchase-content { padding: 1.5rem; }
-        .purchase-header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
-        .purchase-header h2 { margin: 0 0 1rem; }
-        .purchase-close { width: auto !important; margin: 0 !important; padding: .25rem .5rem !important; background: transparent !important; color: #222 !important; font-size: 1.4rem !important; }
-        .purchase-details { margin-bottom: 1rem; padding: .8rem; background: #f4f4f4; border-radius: 6px; }
-        .purchase-details p { margin: .2rem 0; }
-        .purchase-form { display: grid; gap: .75rem; }
-        .purchase-form label { font-weight: bold; }
-        .purchase-form input, .purchase-form textarea, .purchase-form select { width: 100%; box-sizing: border-box; padding: .7rem; border: 1px solid #ccc; border-radius: 5px; font: inherit; }
-        .purchase-form textarea { min-height: 80px; resize: vertical; }
-    </style>
 </head>
 
 <body>
@@ -27,7 +13,7 @@
 <main class="container">
 
 @if (session('success'))
-    <p class="alert" style="color: #18733c;">{{ session('success') }}</p>
+    <p class="alert success-message">{{ session('success') }}</p>
 @endif
 
     <!-- Sección: botón de menú hamburguesa para abrir/cerrar el sidebar -->

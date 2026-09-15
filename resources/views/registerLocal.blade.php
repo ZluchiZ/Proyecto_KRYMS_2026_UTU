@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/register-local.css') }}">
     <title>Registro Local</title>
 </head>
 <body>
@@ -11,7 +12,7 @@
 <form method="POST" action="{{ route('local.store') }}">
     @csrf
   @if ($errors->any())
-    <div class="form-errors" style="color:red; margin-bottom: 1rem;">
+    <div class="form-errors">
       <ul>
         @foreach ($errors->all() as $error)
           <li>{{ $error }}</li>
@@ -20,7 +21,7 @@
     </div>
   @endif
   @if (session('error'))
-    <div class="session-error" style="color:red; margin-bottom: 1rem;">
+    <div class="session-error">
       {{ session('error') }}
     </div>
   @endif

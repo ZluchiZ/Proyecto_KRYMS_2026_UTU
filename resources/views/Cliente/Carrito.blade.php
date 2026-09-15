@@ -3,33 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ asset('css/carrito.css') }}">
     <title>Mi carrito</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 2rem; background: #f4f4f4; color: #222; }
-        main { max-width: 900px; margin: 0 auto; }
-        a { color: #222; }
-        .header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
-        .items { display: grid; gap: 1rem; }
-        .item, .checkout { background: #fff; border-radius: 8px; padding: 1rem; box-shadow: 0 3px 12px #0001; }
-        .item { display: grid; grid-template-columns: 100px 1fr auto; gap: 1rem; align-items: center; }
-        .item img { width: 100px; height: 80px; object-fit: cover; border-radius: 5px; background: #ddd; }
-        .item h2, .item p { margin: .2rem 0; }
-        .remove { border: 0; background: #a33; color: #fff; padding: .6rem .8rem; border-radius: 5px; cursor: pointer; }
-        .checkout { margin-top: 1.5rem; }
-        .checkout h2 { margin-top: 0; }
-        form { display: grid; gap: .8rem; }
-        label { font-weight: bold; }
-        input, textarea, select, .confirm { width: 100%; box-sizing: border-box; padding: .7rem; border: 1px solid #ccc; border-radius: 5px; font: inherit; }
-        textarea { min-height: 80px; resize: vertical; }
-        .confirm { border: 0; background: #222; color: #fff; cursor: pointer; }
-        .success { color: #18733c; }
-        .error { color: #a00; }
-        .empty { background: #fff; padding: 2rem; text-align: center; border-radius: 8px; }
-        .toast { position: fixed; right: 1rem; bottom: 1rem; z-index: 10; max-width: min(90vw, 360px); padding: 1rem 1.2rem; background: #18733c; color: #fff; border-radius: 8px; box-shadow: 0 6px 20px #0004; animation: toast-in .25s ease-out, toast-out .4s ease-in 4.6s forwards; }
-        @keyframes toast-in { from { opacity: 0; transform: translateY(1rem); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes toast-out { to { opacity: 0; transform: translateY(1rem); visibility: hidden; } }
-        @media (max-width: 600px) { body { padding: 1rem; } .header { align-items: flex-start; flex-direction: column; } .item { grid-template-columns: 70px 1fr; } .item img { width: 70px; height: 70px; } .item form { grid-column: 1 / -1; } }
-    </style>
 </head>
 <body>
     <main>
