@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Schema;
 
 class PedidoController extends Controller
 {
+<<<<<<< HEAD
     private function cartClientColumn(): string
     {
         return Schema::hasColumn('Carrito', 'ID_Cliente') ? 'ID_Cliente' : 'CI_Cliente';
@@ -24,6 +25,8 @@ class PedidoController extends Controller
             ->value('id');
     }
 
+=======
+>>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
     private function requireClient(): void
     {
         abort_unless(session('tipo_usuario') === 'cliente' && session('usuario_id'), 403);
@@ -45,17 +48,26 @@ class PedidoController extends Controller
 
         abort_unless($producto, 404, 'El producto ya no está disponible.');
 
+<<<<<<< HEAD
         $columnaCliente = $this->cartClientColumn();
         $valorCliente = $this->cartClientValue();
         $carrito = DB::table('Carrito')
             ->where($columnaCliente, $valorCliente)
+=======
+        $carrito = DB::table('Carrito')
+            ->where('CI_Cliente', session('usuario_id'))
+>>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
             ->where('ID_Producto', $producto->ID_Producto)
             ->first();
         $cantidad = ($carrito->Cantidad ?? 0) + $validated['cantidad'];
 
         DB::table('Carrito')->updateOrInsert(
             [
+<<<<<<< HEAD
                 $columnaCliente => $valorCliente,
+=======
+                'CI_Cliente' => session('usuario_id'),
+>>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
                 'ID_Producto' => $producto->ID_Producto,
             ],
             [
@@ -72,12 +84,19 @@ class PedidoController extends Controller
     {
         $this->requireClient();
 
+<<<<<<< HEAD
         $columnaCliente = $this->cartClientColumn();
         $valorCliente = $this->cartClientValue();
         $items = DB::table('Carrito')
             ->join('Producto', 'Carrito.ID_Producto', '=', 'Producto.ID_Producto')
             ->leftJoin('Comercio', 'Producto.RUT_Comercio', '=', 'Comercio.RUT')
             ->where("Carrito.{$columnaCliente}", $valorCliente)
+=======
+        $items = DB::table('Carrito')
+            ->join('Producto', 'Carrito.ID_Producto', '=', 'Producto.ID_Producto')
+            ->leftJoin('Comercio', 'Producto.RUT_Comercio', '=', 'Comercio.RUT')
+            ->where('Carrito.CI_Cliente', session('usuario_id'))
+>>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
             ->select('Carrito.*', 'Producto.Nombre_Producto', 'Producto.Precio', 'Producto.Foto_Producto', 'Comercio.Nombre_Comercio')
             ->orderBy('Carrito.ID_Carrito')
             ->get();
@@ -93,11 +112,17 @@ class PedidoController extends Controller
     {
         $this->requireClient();
 
+<<<<<<< HEAD
         $columnaCliente = $this->cartClientColumn();
         $valorCliente = $this->cartClientValue();
         DB::table('Carrito')
             ->where('ID_Carrito', $item)
             ->where($columnaCliente, $valorCliente)
+=======
+        DB::table('Carrito')
+            ->where('ID_Carrito', $item)
+            ->where('CI_Cliente', session('usuario_id'))
+>>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
             ->delete();
 
         return redirect()->route('carrito')->with('success', 'Producto eliminado del carrito.');
@@ -115,10 +140,15 @@ class PedidoController extends Controller
         ]);
 
         $pedidos = DB::transaction(function () use ($validated) {
+<<<<<<< HEAD
             $columnaCliente = $this->cartClientColumn();
             $valorCliente = $this->cartClientValue();
             $items = DB::table('Carrito')
                 ->where($columnaCliente, $valorCliente)
+=======
+            $items = DB::table('Carrito')
+                ->where('CI_Cliente', session('usuario_id'))
+>>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
                 ->lockForUpdate()
                 ->get();
 
@@ -136,7 +166,11 @@ class PedidoController extends Controller
                 $ids[] = $this->insertOrder($producto, $item->Cantidad, $validated);
             }
 
+<<<<<<< HEAD
             DB::table('Carrito')->where($columnaCliente, $valorCliente)->delete();
+=======
+            DB::table('Carrito')->where('CI_Cliente', session('usuario_id'))->delete();
+>>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
 
             return $ids;
         });
@@ -152,6 +186,7 @@ class PedidoController extends Controller
             'estado' => 'required|in:aceptado,rechazado',
         ]);
 
+<<<<<<< HEAD
         $rutComercio = DB::table('Comercio')
             ->where('Email_Usuario', session('email'))
             ->value('RUT');
@@ -172,6 +207,16 @@ class PedidoController extends Controller
         return redirect()
             ->route('dashboard.local')
             ->with('success', 'Pedido '.($validated['estado'] === 'aceptado' ? 'aceptado' : 'rechazado').' correctamente.');
+=======
+        $actualizado = DB::table('Subpedido')
+            ->where('N_Subpedido', $pedido)
+            ->where('RUT_Comercio', session('usuario_id'))
+            ->update(['Estado' => $validated['estado']]);
+
+        abort_unless($actualizado, 404);
+
+        return redirect()->route('dashboard.local');
+>>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
     }
 
     private function insertOrder(object $producto, int $cantidad, array $validated): int

@@ -30,7 +30,10 @@ class ClienteController extends Controller
         'password2' => 'required|string|same:password',
         'nacimiento' => 'required|date',
     ], [
+<<<<<<< HEAD
         'cedula.unique' => 'Esta cédula ya está registrada.',
+=======
+>>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
         'email.unique' => 'Este correo ya está registrado.',
     ]);
 

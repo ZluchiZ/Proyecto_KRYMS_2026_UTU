@@ -36,6 +36,7 @@
             </div>
         @endif
 
+<<<<<<< HEAD
         @if (session('success'))
             <div class="success">{{ session('success') }}</div>
         @endif
@@ -51,6 +52,15 @@
                 @else
                     <div class="order-list">
                     @foreach ($seccion['items'] as $pedido)
+=======
+        <section class="orders">
+            <h2>Pedidos recibidos</h2>
+            @if ($pedidos->isEmpty())
+                <div class="empty">Todavía no hay pedidos para tus productos.</div>
+            @else
+                <div class="order-list">
+                    @foreach ($pedidos as $pedido)
+>>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
                         <article class="order">
                             <div class="order-title">
                                 <span>Pedido #{{ $pedido->ID_Pedido ?? $pedido->N_Pedido }}</span>
@@ -65,15 +75,25 @@
                             @if ($pedido->Telefono_Cliente)
                                 <p><strong>Teléfono:</strong> {{ $pedido->Telefono_Cliente }}</p>
                             @endif
+<<<<<<< HEAD
                             @if ($seccion['acciones'])
                                 <div class="order-actions">
                                     <form method="POST" action="{{ route('pedidos.status', $pedido->N_Subpedido) }}" onsubmit="return confirm('¿Rechazar y eliminar este pedido?');">
+=======
+                            @if (($pedido->Estado ?? 'pendiente') === 'pendiente')
+                                <div class="order-actions">
+                                    <form method="POST" action="{{ route('pedidos.status', $pedido->ID_Pedido ?? $pedido->N_Pedido) }}" onsubmit="return confirm('¿Rechazar y eliminar este pedido?');">
+>>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
                                         @csrf
                                         @method('PATCH')
                                         <input type="hidden" name="estado" value="aceptado">
                                         <button type="submit">Aceptar pedido</button>
                                     </form>
+<<<<<<< HEAD
                                     <form method="POST" action="{{ route('pedidos.status', $pedido->N_Subpedido) }}">
+=======
+                                    <form method="POST" action="{{ route('pedidos.status', $pedido->ID_Pedido ?? $pedido->N_Pedido) }}">
+>>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
                                         @csrf
                                         @method('PATCH')
                                         <input type="hidden" name="estado" value="rechazado">
@@ -83,10 +103,16 @@
                             @endif
                         </article>
                     @endforeach
+<<<<<<< HEAD
                     </div>
                 @endif
             </section>
         @endforeach
+=======
+                </div>
+            @endif
+        </section>
+>>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
 
         @if ($productos->isEmpty())
             <div class="empty">Todavía no hay productos cargados.</div>

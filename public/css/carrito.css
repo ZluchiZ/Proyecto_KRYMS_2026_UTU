@@ -1,7 +1,13 @@
 body {
+<<<<<<< HEAD
     font-family: "Trebuchet MS", "Segoe UI", sans-serif;
     margin: 0;
     padding: 1rem;
+=======
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 2rem;
+>>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
     background: #f4f4f4;
     color: #222;
 }
@@ -38,14 +44,23 @@ a {
 
 .item {
     display: grid;
+<<<<<<< HEAD
     grid-template-columns: 72px 1fr;
+=======
+    grid-template-columns: 100px 1fr auto;
+>>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
     gap: 1rem;
     align-items: center;
 }
 
 .item img {
+<<<<<<< HEAD
     width: 72px;
     height: 72px;
+=======
+    width: 100px;
+    height: 80px;
+>>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
     object-fit: cover;
     border-radius: 5px;
     background: #ddd;
@@ -65,10 +80,13 @@ a {
     cursor: pointer;
 }
 
+<<<<<<< HEAD
 .item form {
     grid-column: 1 / -1;
 }
 
+=======
+>>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
 .checkout {
     margin-top: 1.5rem;
 }
@@ -148,9 +166,18 @@ a {
     to { opacity: 0; transform: translateY(1rem); visibility: hidden; }
 }
 
+<<<<<<< HEAD
 @media (min-width: 40rem) {
     body { padding: 2rem; }
     .item { grid-template-columns: 100px 1fr auto; }
     .item img { width: 100px; height: 80px; }
     .item form { grid-column: auto; }
+=======
+@media (max-width: 600px) {
+    body { padding: 1rem; }
+    .header { align-items: flex-start; flex-direction: column; }
+    .item { grid-template-columns: 70px 1fr; }
+    .item img { width: 70px; height: 70px; }
+    .item form { grid-column: 1 / -1; }
+>>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
 }

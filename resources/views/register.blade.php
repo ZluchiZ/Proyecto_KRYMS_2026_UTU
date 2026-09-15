@@ -41,11 +41,19 @@
     <input type="password" id="password2" name="password2" placeholder="Repetir Contraseña" required minlength="8">
     <button type="submit">Registrar</button>
   </form>
+<<<<<<< HEAD
     <p id="mensajeError" role="alert">Por favor, ingresa un correo válido.</p>
     <p id="errorCampo" role="alert"></p>
     <p id="errorApellido" role="alert"></p>
     <p id="errorContrasena" role="alert"></p>
     <p id="errorFecha" role="alert"></p>
+=======
+    <p id="mensajeError">Por favor, ingresa un correo válido.</p>
+    <p id="errorCampo"></p>
+    <p id="errorApellido"></p>
+    <p id="errorContrasena"></p>
+    <p id="errorFecha"></p>
+>>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
   </div>
 </div> 
 
