@@ -28,8 +28,9 @@ class LocalController extends Controller
         abort_unless($comercio, 403);
 
         $identificadorComercio = $comercio->rut ?: $comercio->cedula;
+        $correoComercio = session('email');
 
-        DB::transaction(function () use ($comercio, $identificadorComercio, $validated, $request) {
+        DB::transaction(function () use ($comercio, $identificadorComercio, $correoComercio, $validated, $request) {
             if (! DB::table('Usuario')->where('Email', $comercio->correo)->exists()) {
                 DB::table('Usuario')->insert([
                     'Email' => $comercio->correo,
@@ -52,6 +53,7 @@ class LocalController extends Controller
 
             DB::table('Producto')->insert([
                 'RUT_Comercio' => $identificadorComercio,
+                'Correo_Comercio' => $correoComercio,
                 'Nombre_Producto' => $validated['nombre'],
                 'Precio' => $validated['precio'],
                 'Categoria' => $validated['categoria'],
@@ -64,6 +66,22 @@ class LocalController extends Controller
         return redirect()
             ->route('dashboard.local')
             ->with('success', 'Producto añadido correctamente.');
+    }
+
+    public function destroyProducto(int $producto): \Illuminate\Http\RedirectResponse
+    {
+        abort_unless(session('tipo_usuario') === 'comercio' && session('usuario_id') && session('email'), 403);
+
+        $eliminado = DB::table('Producto')
+            ->where('ID_Producto', $producto)
+            ->where('Correo_Comercio', session('email'))
+            ->delete();
+
+        abort_unless($eliminado, 404);
+
+        return redirect()
+            ->route('dashboard.local')
+            ->with('success', 'Producto eliminado correctamente.');
     }
 
     public function store(Request $request)

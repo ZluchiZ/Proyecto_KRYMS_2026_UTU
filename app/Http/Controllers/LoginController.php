@@ -27,6 +27,7 @@ class LoginController extends Controller
                 ->first();
 
             if ($usuario && Hash::check($request->password, $usuario->contrasena)) {
+                $request->session()->regenerate();
                 session([
                     'email' => $usuario->correo,
                     'tipo_usuario' => $cuenta['tipo'],

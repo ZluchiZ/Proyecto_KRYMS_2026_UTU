@@ -31,11 +31,27 @@
         .checkbox { display: flex; align-items: center; gap: .5rem; font-weight: normal; }
         .checkbox input { width: auto; }
         .error { color: #a00; margin-bottom: 1rem; }
+        .profile { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; padding: 1rem; background: #fff; border-radius: 8px; box-shadow: 0 3px 12px #0001; }
+        .profile-info { display: grid; gap: .2rem; }
+        .profile-info small { color: #666; }
+        .profile form { margin: 0; }
         @media (max-width: 540px) { body { padding: 1rem; } .dashboard-header { align-items: flex-start; flex-direction: column; } }
     </style>
 </head>
 <body>
     <main>
+        <section class="profile">
+            <div class="profile-info">
+                <strong>{{ $nombreUsuario }}</strong>
+                <span>{{ $tipoUsuario }}</span>
+                <small>{{ $correoUsuario }}</small>
+            </div>
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit">Cerrar sesión</button>
+            </form>
+        </section>
+
         <header class="dashboard-header">
             <div>
                 <h1>Productos del local</h1>
@@ -71,6 +87,11 @@
                             <p class="status {{ $producto->Disponible ? '' : 'unavailable' }}">
                                 {{ $producto->Disponible ? 'Disponible para pedidos' : 'No disponible para pedidos' }}
                             </p>
+                            <form method="POST" action="{{ route('productos.destroy', $producto->ID_Producto) }}" onsubmit="return confirm('¿Eliminar este producto?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit">Eliminar producto</button>
+                            </form>
                         </div>
                     </article>
                 @endforeach

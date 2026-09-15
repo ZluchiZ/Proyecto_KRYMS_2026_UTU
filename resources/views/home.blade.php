@@ -26,7 +26,9 @@
 
                 <div class="profile-menu">
                     @if ($nombreUsuario)
-                        <span>{{ $nombreUsuario }}</span>
+                        <strong>{{ $nombreUsuario }}</strong>
+                        <span>{{ $tipoUsuario }}</span>
+                        <small>{{ $correoUsuario }}</small>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button type="submit">Cerrar sesión</button>
@@ -60,25 +62,19 @@
             <button type="submit">Buscar</button>
         </form>
 
-        <!-- Sección: tarjetas con imágenes y descripción de platos -->
+        <!-- Sección: productos disponibles de los locales -->
         <div class="comidas-container">
-            <div class="comida-card">
-                <img src="{{ asset('img/comida1.jpg') }}" alt="Comida 1">
-                <h3>Nombre del plato</h3>
-                <p>Descripción del plato.</p>
-            </div>
-
-            <div class="comida-card">
-                <img src="{{ asset('img/comida2.jpg') }}" alt="Comida 2">
-                <h3>Nombre del plato</h3>
-                <p>Descripción del plato.</p>
-            </div>
-
-            <div class="comida-card">
-                <img src="{{ asset('img/comida3.jpg') }}" alt="Comida 3">
-                <h3>Nombre del plato</h3>
-                <p>Descripción del plato.</p>
-            </div>
+            @forelse ($productos as $producto)
+                <article class="comida-card">
+                    <img src="{{ $producto->Foto_Producto }}" alt="{{ $producto->Nombre_Producto }}">
+                    <h3>{{ $producto->Nombre_Producto }}</h3>
+                    <p>{{ $producto->Categoria }}</p>
+                    <p>{{ $producto->Descripcion }}</p>
+                    <strong>$U {{ number_format($producto->Precio, 2, ',', '.') }}</strong>
+                </article>
+            @empty
+                <p>No hay productos disponibles en este momento.</p>
+            @endforelse
         </div>
 
     </div>
