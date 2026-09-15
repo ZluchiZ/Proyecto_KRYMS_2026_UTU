@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class RepartidorController extends Controller
 {
@@ -11,26 +12,41 @@ class RepartidorController extends Controller
     {
         $validated = $request->validate([
             'cedula' => 'required|string|max:8',
-            'correo' => 'required|email|max:255|unique:repartidor,correo',
+            'correo' => [
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('Usuario', 'Email'),
+            ],
             'nombre' => 'required|string|max:255',
             'apellido' => 'required|string|max:255',
             'telefono' => 'required|string|max:9',
             'fecha_nacimiento' => 'required|date',
             'contrasena' => 'required|string|min:8|confirmed',
+        ], [
+            'correo.unique' => 'Este correo ya está registrado.',
         ]);
 
         try {
-            DB::table('repartidor')->insert([
-                'cedula' => $validated['cedula'],
-                'correo' => $validated['correo'],
-                'nombre' => $validated['nombre'],
-                'apellido' => $validated['apellido'],
-                'telefono' => $validated['telefono'],
-                'fecha_nacimiento' => $validated['fecha_nacimiento'],
-                'contrasena' => bcrypt($validated['contrasena']),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            $password = bcrypt($validated['contrasena']);
+
+            DB::transaction(function () use ($validated, $password) {
+                DB::table('Usuario')->insert([
+                    'Email' => $validated['correo'],
+                    'Nombre_de_Usuario' => $validated['nombre'],
+                    'Contraseña' => $password,
+                    'Tipo_Usuario' => 'repartidor',
+                ]);
+
+                DB::table('Repartidor')->insert([
+                    'CI' => $validated['cedula'],
+                    'Email_Usuario' => $validated['correo'],
+                    'Contraseña' => $password,
+                    'Nombre' => $validated['nombre'],
+                    'Apellido' => $validated['apellido'],
+                    'Teléfono' => $validated['telefono'],
+                ]);
+            });
 
             return redirect()
                 ->route('login')

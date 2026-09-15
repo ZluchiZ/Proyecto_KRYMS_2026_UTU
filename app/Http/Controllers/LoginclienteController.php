@@ -11,17 +11,17 @@ class LoginController extends Controller
             'email' => 'required|email',
             'password' => 'required'
         ]);
-        $cliente = DB::table('usuarios')
-            ->where('correo', $request->email)
+        $cliente = DB::table('Cliente')
+            ->where('Email_Usuario', $request->email)
             ->first();
         if (!$cliente) {
             return back()->with('error', 'Correo o contraseña incorrectos.');
         }
-        if (!Hash::check($request->password, $cliente->contrasena)) {
+        if (!Hash::check($request->password, $cliente->{'Contraseña'})) {
             return back()->with('error', 'Correo o contraseña incorrectos.');
         }
         session([
-            'email' => $cliente->correo,
+            'email' => $cliente->Email_Usuario,
         ]);
         return redirect()->route('home');
     }

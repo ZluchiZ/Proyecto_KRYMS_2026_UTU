@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/login.css') }}">
     <title>Inicio de sesión</title>
 </head>
 <body>
@@ -13,14 +14,14 @@
 <div class="container">
 
 @if (session('error'))
-    <div class="alert alert-danger" style="color: red; margin-bottom: 15px;">
+    <div class="alert alert-danger">
         {{ session('error') }}
     </div>
 @endif
 
 @if ($errors->any())
-    <div class="alert alert-danger" style="color: red; margin-bottom: 15px;">
-        <ul style="margin: 0; padding-left: 20px;">
+    <div class="alert alert-danger">
+        <ul class="error-list">
             @foreach ($errors->all() as $error)
                 <li>{{ $error }}</li>
             @endforeach

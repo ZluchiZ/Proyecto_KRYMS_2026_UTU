@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/register.css') }}">
     <title>Registro</title>
 </head>
 <body>
@@ -15,7 +16,7 @@
   <form id="registroFormulario" method="POST" action="{{ route('cliente.store') }}">
     @csrf
     @if ($errors->any())
-        <div class="form-errors" style="color:red; margin-bottom: 1rem;">
+        <div class="form-errors">
             <ul>
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
@@ -25,7 +26,7 @@
     @endif
 
     @if (session('error'))
-        <div class="session-error" style="color:red; margin-bottom: 1rem;">
+        <div class="session-error">
             {{ session('error') }}
         </div>
     @endif
@@ -38,13 +39,13 @@
     <input type="date" id="fechaNacimiento" name="nacimiento" placeholder="Fecha de Nacimiento" value="{{ old('nacimiento') }}" required>
     <input type="password" id="password" name="password" placeholder="Contraseña" required minlength="8">
     <input type="password" id="password2" name="password2" placeholder="Repetir Contraseña" required minlength="8">
-    <button type="submit">Entrar</button>
+    <button type="submit">Registrar</button>
   </form>
-   <p id="mensajeError" style="color: red; display: none;">Por favor, ingresa un correo válido.</p>
-   <p id="errorCampo" style="color:red; margin-top:4px; margin-bottom:10px;"></p>
-   <p id="errorApellido" style="color:red; margin-top:4px; margin-bottom:10px;"></p>
-   <p id="errorContrasena" style="color:red;"></p>
-   <p id="errorFecha" style="color:red;"></p>
+    <p id="mensajeError" role="alert">Por favor, ingresa un correo válido.</p>
+    <p id="errorCampo" role="alert"></p>
+    <p id="errorApellido" role="alert"></p>
+    <p id="errorContrasena" role="alert"></p>
+    <p id="errorFecha" role="alert"></p>
   </div>
 </div> 
 

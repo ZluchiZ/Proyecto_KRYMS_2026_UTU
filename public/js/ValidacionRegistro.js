@@ -145,6 +145,5 @@ document.addEventListener("DOMContentLoaded", function () {
             errorContrasena.textContent = "";
         }
 
-        alert("Registro correcto");
     });
 });

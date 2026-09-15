@@ -4,30 +4,57 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class ClienteController extends Controller
 {
     public function store(Request $request)
 {
     $validated = $request->validate([
-        'cedula' => 'required|string|max:8',
+        'cedula' => [
+            'required',
+            'string',
+            'max:8',
+            Rule::unique('Cliente', 'CI'),
+        ],
         'nombre' => 'required|string|max:255',
         'apellido' => 'required|string|max:255',
-        'email' => 'required|email|max:255|unique:usuarios,correo',
+        'email' => [
+            'required',
+            'email',
+            'max:255',
+            Rule::unique('Usuario', 'Email'),
+        ],
         'Numero' => 'required|string|max:9',
         'password' => 'required|string|min:8',
         'password2' => 'required|string|same:password',
         'nacimiento' => 'required|date',
+    ], [
+        'cedula.unique' => 'Esta cédula ya está registrada.',
+        'email.unique' => 'Este correo ya está registrado.',
     ]);
 
     try {
-        DB::table('usuarios')->insert([
-            'nombre' => $validated['nombre'].' '.$validated['apellido'],
-            'correo' => $validated['email'],
-            'contrasena' => bcrypt($validated['password']),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        $password = bcrypt($validated['password']);
+
+        DB::transaction(function () use ($validated, $password) {
+            DB::table('Usuario')->insert([
+                'Email' => $validated['email'],
+                'Nombre_de_Usuario' => $validated['nombre'],
+                'Contraseña' => $password,
+                'Tipo_Usuario' => 'cliente',
+            ]);
+
+            DB::table('Cliente')->insert([
+                'CI' => $validated['cedula'],
+                'Email_Usuario' => $validated['email'],
+                'Contraseña' => $password,
+                'Fecha_nacimiento' => $validated['nacimiento'],
+                'Nombre' => $validated['nombre'],
+                'Apellido' => $validated['apellido'],
+                'Teléfono' => $validated['Numero'],
+            ]);
+        });
 
         return redirect()
             ->route('login')

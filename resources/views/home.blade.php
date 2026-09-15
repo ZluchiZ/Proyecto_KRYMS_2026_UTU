@@ -4,12 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/home.css') }}">
     <title>ElGauchoVa</title>
 </head>
 
 <body>
 
 <main class="container">
+
+@if (session('success'))
+    <p class="alert success-message">{{ session('success') }}</p>
+@endif
 
     <!-- Sección: botón de menú hamburguesa para abrir/cerrar el sidebar -->
     <label for="sidebar-toggle" class="menu-btn">☰ Menú</label>
@@ -20,12 +25,26 @@
         <div class="icon-group">
             <span class="location-icon">📍</span>
 
+            @if ($esClienteRegistrado)
+                <a class="cart-link" href="{{ route('carrito') }}" aria-label="Ver carrito">🛒 {{ $cantidadCarrito }}</a>
+            @endif
+
             <div class="profile-container">
                 <input type="checkbox" id="toggleProfile">
                 <label for="toggleProfile" class="profile-icon">👤</label>
 
                 <div class="profile-menu">
-                    <a href="{{ route('login') }}">Iniciar Sesión / Registrarse</a>
+                    @if ($nombreUsuario)
+                        <strong>{{ $nombreUsuario }}</strong>
+                        <span>{{ $tipoUsuario }}</span>
+                        <small>{{ $correoUsuario }}</small>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit">Cerrar sesión</button>
+                        </form>
+                    @else
+                        <a href="{{ route('login') }}">Iniciar Sesión / Registrarse</a>
+                    @endif
                 </div>
             </div>
 
@@ -52,30 +71,66 @@
             <button type="submit">Buscar</button>
         </form>
 
-        <!-- Sección: tarjetas con imágenes y descripción de platos -->
+        <!-- Sección: productos disponibles de los locales -->
         <div class="comidas-container">
-            <div class="comida-card">
-                <img src="{{ asset('img/comida1.jpg') }}" alt="Comida 1">
-                <h3>Nombre del plato</h3>
-                <p>Descripción del plato.</p>
-            </div>
-
-            <div class="comida-card">
-                <img src="{{ asset('img/comida2.jpg') }}" alt="Comida 2">
-                <h3>Nombre del plato</h3>
-                <p>Descripción del plato.</p>
-            </div>
-
-            <div class="comida-card">
-                <img src="{{ asset('img/comida3.jpg') }}" alt="Comida 3">
-                <h3>Nombre del plato</h3>
-                <p>Descripción del plato.</p>
-            </div>
+            @forelse ($productos as $producto)
+                <article class="comida-card">
+                    <img src="{{ $producto->Foto_Producto }}" alt="{{ $producto->Nombre_Producto }}">
+                    <h3>{{ $producto->Nombre_Producto }}</h3>
+                    <p>{{ $producto->Categoria }}</p>
+                    <strong>$U {{ number_format($producto->Precio, 2, ',', '.') }}</strong>
+                    <p>Local: {{ $producto->Nombre_Comercio ?? 'Local no disponible' }}</p>
+                    @if ($esClienteRegistrado)
+                        <button
+                            type="button"
+                            class="purchase-trigger"
+                            data-product-id="{{ $producto->ID_Producto }}"
+                            data-product-name="{{ $producto->Nombre_Producto }}"
+                            data-product-price="$U {{ number_format($producto->Precio, 2, ',', '.') }}"
+                            data-product-local="{{ $producto->Nombre_Comercio ?? 'Local no disponible' }}"
+                            data-product-stock="1"
+                        >
+                            Comprar
+                        </button>
+                    @else
+                        <a class="purchase-trigger" href="{{ route('login') }}">Inicia sesión para comprar</a>
+                    @endif
+                </article>
+            @empty
+                <p>No hay productos disponibles en este momento.</p>
+            @endforelse
         </div>
 
     </div>
 
 </main>
+
+@if ($esClienteRegistrado)
+    <dialog id="purchase-modal" class="purchase-modal">
+        <div class="purchase-content">
+            <div class="purchase-header">
+                <h2>Comprar producto</h2>
+                <button type="button" class="purchase-close" id="close-purchase-modal" aria-label="Cerrar">&times;</button>
+            </div>
+
+            <div class="purchase-details">
+                <strong id="purchase-product-name"></strong>
+                <p id="purchase-product-local"></p>
+                <p id="purchase-product-price"></p>
+            </div>
+
+            <form method="POST" action="{{ route('carrito.add') }}" class="purchase-form">
+                @csrf
+                <input type="hidden" name="producto_id" id="purchase-product-id">
+
+                <label for="purchase-quantity">Cantidad</label>
+                <input type="number" name="cantidad" id="purchase-quantity" min="1" required>
+
+                <button type="submit">Agregar al carrito</button>
+            </form>
+        </div>
+    </dialog>
+@endif
 
 <!-- Sección: pie de página con información de la empresa -->
 <footer>
@@ -86,6 +141,31 @@
         </p>
     </div>
 </footer>
+
+@if ($esClienteRegistrado)
+    <script>
+        const purchaseModal = document.getElementById('purchase-modal');
+        const productIdInput = document.getElementById('purchase-product-id');
+        const quantityInput = document.getElementById('purchase-quantity');
+
+        document.querySelectorAll('.purchase-trigger[data-product-id]').forEach((trigger) => {
+            trigger.addEventListener('click', () => {
+                productIdInput.value = trigger.dataset.productId;
+                document.getElementById('purchase-product-name').textContent = trigger.dataset.productName;
+                document.getElementById('purchase-product-local').textContent = `Local: ${trigger.dataset.productLocal}`;
+                document.getElementById('purchase-product-price').textContent = trigger.dataset.productPrice;
+                quantityInput.removeAttribute('max');
+                quantityInput.value = 1;
+                purchaseModal.showModal();
+            });
+        });
+
+        document.getElementById('close-purchase-modal').addEventListener('click', () => purchaseModal.close());
+        purchaseModal.addEventListener('click', (event) => {
+            if (event.target === purchaseModal) purchaseModal.close();
+        });
+    </script>
+@endif
 
 </body>
 </html>

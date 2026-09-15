@@ -4,15 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/register-local.css') }}">
     <title>Registro Local</title>
 </head>
 <body>
     
 <form method="POST" action="{{ route('local.store') }}">
     @csrf
+  @if ($errors->any())
+    <div class="form-errors">
+      <ul>
+        @foreach ($errors->all() as $error)
+          <li>{{ $error }}</li>
+        @endforeach
+      </ul>
+    </div>
+  @endif
+  @if (session('error'))
+    <div class="session-error">
+      {{ session('error') }}
+    </div>
+  @endif
     <input type="text" id="rut" name="rut" inputmode="numeric" pattern="[0-9]{12}" maxlength="12" placeholder="RUT (Opcional)" value="{{ old('rut') }}">
     <input type="text" id="cedula" name="cedula" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" placeholder="Cédula de Identidad" value="{{ old('cedula') }}" required>
     <input type="text" id="nombre" name="nombre" placeholder="Nombre del local" value="{{ old('nombre') }}" required>
+    <input type="text" id="nombre_dueno" name="nombre_dueno" placeholder="Nombre del dueño" value="{{ old('nombre_dueno') }}" required>
+    <input type="text" id="cedula_dueno" name="cedula_dueno" inputmode="numeric" maxlength="20" placeholder="Cédula del dueño" value="{{ old('cedula_dueno') }}" required>
+    <input type="text" id="horario" name="horario" placeholder="08:00 hrs - 18:00 hrs" pattern="([01][0-9]|2[0-3]):[0-5][0-9] hrs - ([01][0-9]|2[0-3]):[0-5][0-9] hrs" value="{{ old('horario') }}" required>
     <input type="text" id="direccion" name="direccion" placeholder="Dirección" value="{{ old('direccion') }}" required>
     <input type="text" id="logo" name="logo" placeholder="URL del Logo" value="{{ old('logo') }}" required>
     <input type="text" id="numero_cuenta" name="numero_cuenta" placeholder="Número de cuenta" value="{{ old('numero_cuenta') }}" required>

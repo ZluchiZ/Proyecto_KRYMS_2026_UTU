@@ -1,10 +1,62 @@
+:root {
+    --color-ink: #202124;
+    --color-muted: #687078;
+    --color-surface: #fff;
+    --color-background: #f5f3ef;
+    --color-accent: #b94b2d;
+    --color-accent-dark: #87351f;
+    --color-border: #d9d6d0;
+    --radius: 8px;
+    --shadow: 0 8px 24px rgba(32, 33, 36, 0.09);
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 100%;
+    -webkit-text-size-adjust: 100%;
+}
+
 body {
     margin: 0;
-    font-family: Arial, sans-serif;
-    background: #f7f7f7;
-    color: #222;
+    font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    background: var(--color-background);
+    color: var(--color-ink);
     min-width: 320px;
+    line-height: 1.5;
 }
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+    -webkit-tap-highlight-color: transparent;
+}
+
+button,
+.btn-registrar-local,
+.btn-registrar-repartidor,
+.purchase-trigger {
+    min-height: 2.75rem;
+}
+
+:where(a, button, input, select, textarea):focus-visible {
+    outline: 3px solid rgba(185, 75, 45, 0.35);
+    outline-offset: 2px;
+}
+
 
 .container {
     display: flex;
@@ -39,7 +91,7 @@ body > form {
     background: #fff;
     padding: 1.25rem;
     border-radius: 8px;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--shadow);
 }
 
 .formularioregistro h2,
@@ -82,7 +134,7 @@ body > form button,
     align-items: center;
     justify-content: center;
     border: 0;
-    background: #333;
+    background: var(--color-accent);
     color: #fff;
     cursor: pointer;
     text-decoration: none;
@@ -93,7 +145,7 @@ body > form button,
 body > form button:hover,
 .btn-registrar-local:hover,
 .btn-registrar-repartidor:hover {
-    background: #555;
+    background: var(--color-accent-dark);
 }
 
 .form-errors,
@@ -303,7 +355,7 @@ p {
     line-height: 1.5;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 40rem) {
     .container {
         flex-direction: row;
         gap: 20px;
@@ -328,7 +380,7 @@ p {
     }
 }
 
-@media (min-width: 900px) {
+@media (min-width: 56rem) {
     .formularioregistro,
     body > form {
         max-width: 58rem;
@@ -350,7 +402,7 @@ p {
     }
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 64rem) {
     .container {
         max-width: 1200px;
         margin: auto;

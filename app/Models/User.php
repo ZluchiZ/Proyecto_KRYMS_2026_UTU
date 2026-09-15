@@ -14,13 +14,15 @@ use Laravel\Sanctum\HasApiTokens;
 class Usuario extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
-    
-    protected $fillable = ['nombre', 'correo', 'contrasena'];
+
+    protected $table = 'Usuario';
+
+    protected $fillable = ['Email', 'Nombre_de_Usuario', 'Contraseña', 'Tipo_Usuario'];
     
     // si tu columna de password no se llama "password"
     public function getAuthPassword()
     {
-        return $this->contrasena;
+        return $this->{'Contraseña'};
     }
 }
 

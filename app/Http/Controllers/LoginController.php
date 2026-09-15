@@ -15,21 +15,48 @@ class LoginController extends Controller
             'password' => 'required'
         ]);
 
-        $cliente = DB::table('usuarios')
-            ->where('correo', $request->email)
-            ->first();
+        $cuentas = [
+            ['tabla' => 'Cliente', 'tipo' => 'cliente', 'id' => 'CI'],
+            ['tabla' => 'Comercio', 'tipo' => 'comercio', 'id' => 'RUT'],
+            ['tabla' => 'Repartidor', 'tipo' => 'repartidor', 'id' => 'CI'],
+        ];
 
-        if (!$cliente) {
-            return back()->with('error', 'Correo o contraseña incorrectos.');
+        foreach ($cuentas as $cuenta) {
+            $usuario = DB::table($cuenta['tabla'])
+                ->where('Email_Usuario', $request->email)
+                ->first();
+
+            if ($usuario && Hash::check($request->password, $usuario->{'Contraseña'})) {
+                $identificador = $usuario->{$cuenta['id']} ?? null;
+
+                if ($cuenta['tipo'] === 'comercio' && ! $identificador) {
+                    $identificador = $usuario->id;
+                }
+
+                $request->session()->regenerate();
+                session([
+                    'email' => $usuario->Email_Usuario,
+                    'tipo_usuario' => $cuenta['tipo'],
+                    'usuario_id' => $identificador,
+                ]);
+
+                return match ($cuenta['tipo']) {
+                    'repartidor' => redirect()->route('dashboard.repartidor'),
+                    'comercio' => redirect()->route('dashboard.local'),
+                    default => redirect()->route('home'),
+                };
+            }
         }
 
-        if (!Hash::check($request->password, $cliente->contrasena)) {
-            return back()->with('error', 'Correo o contraseña incorrectos.');
-        }
+        return back()
+            ->withInput($request->only('email'))
+            ->with('error', 'Correo o contraseña incorrectos.');
+    }
 
-        session([
-            'email' => $cliente->correo,
-        ]);
+    public function logout(Request $request)
+    {
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return redirect()->route('home');
     }

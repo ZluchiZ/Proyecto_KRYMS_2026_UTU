@@ -1,0 +1,30 @@
+body {
+    background-image: url('../img/register-background.svg');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+.form-errors,
+.session-error {
+    color: red;
+    margin-bottom: 1rem;
+}
+
+#mensajeError {
+    color: red;
+    display: none;
+}
+
+#errorCampo,
+#errorApellido {
+    color: red;
+    margin-top: 4px;
+    margin-bottom: 10px;
+}
+
+#errorContrasena,
+#errorFecha {
+    color: red;
+}
