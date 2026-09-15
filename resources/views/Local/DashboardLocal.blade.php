@@ -15,6 +15,7 @@
         .product-content { padding: 1rem; }
         .product h2 { margin: 0 0 .4rem; font-size: 1.15rem; }
         .price { font-weight: bold; }
+        .stock { color: #555; }
         .status { color: #18733c; font-size: .9rem; }
         .status.unavailable { color: #a33; }
         .empty { background: #fff; padding: 2rem; text-align: center; border-radius: 8px; }
@@ -28,6 +29,9 @@
         label { font-weight: bold; }
         input, textarea { width: 100%; box-sizing: border-box; padding: .7rem; border: 1px solid #ccc; border-radius: 5px; font: inherit; }
         textarea { min-height: 90px; resize: vertical; }
+        .quantity-control { display: grid; grid-template-columns: 42px 1fr 42px; gap: .5rem; align-items: center; }
+        .quantity-control input { text-align: center; }
+        .quantity-button { padding: .55rem; font-size: 1.2rem; line-height: 1; }
         .checkbox { display: flex; align-items: center; gap: .5rem; font-weight: normal; }
         .checkbox input { width: auto; }
         .error { color: #a00; margin-bottom: 1rem; }
@@ -35,6 +39,17 @@
         .profile-info { display: grid; gap: .2rem; }
         .profile-info small { color: #666; }
         .profile form { margin: 0; }
+        .orders { margin-bottom: 2rem; }
+        .orders h2 { margin-bottom: 1rem; }
+        .order-list { display: grid; gap: .8rem; }
+        .order { display: grid; gap: .35rem; padding: 1rem; background: #fff; border-radius: 8px; box-shadow: 0 3px 12px #0001; }
+        .order p { margin: 0; }
+        .order-title { display: flex; justify-content: space-between; gap: 1rem; font-weight: bold; }
+        .order-status { color: #18733c; text-transform: capitalize; }
+        .order-status.rejected { color: #a33; }
+        .order-actions { display: flex; gap: .6rem; margin-top: .5rem; }
+        .order-actions button { padding: .55rem .8rem; }
+        .order-actions .reject { background: #a33; }
         @media (max-width: 540px) { body { padding: 1rem; } .dashboard-header { align-items: flex-start; flex-direction: column; } }
     </style>
 </head>
@@ -60,10 +75,6 @@
             <button type="button" id="open-product-modal">Añadir producto</button>
         </header>
 
-        @if (session('success'))
-            <p>{{ session('success') }}</p>
-        @endif
-
         @if ($errors->any())
             <div class="error">
                 @foreach ($errors->all() as $error)
@@ -71,6 +82,52 @@
                 @endforeach
             </div>
         @endif
+
+        <section class="orders">
+            <h2>Pedidos recibidos</h2>
+            @if ($pedidos->isEmpty())
+                <div class="empty">Todavía no hay pedidos para tus productos.</div>
+            @else
+                <div class="order-list">
+                    @foreach ($pedidos as $pedido)
+                        <article class="order">
+                            <div class="order-title">
+                                <span>Pedido #{{ $pedido->ID_Pedido ?? $pedido->N_Pedido }}</span>
+                                <span class="order-status {{ ($pedido->Estado ?? '') === 'rechazado' ? 'rejected' : '' }}">{{ $pedido->Estado ?? 'pendiente' }}</span>
+                            </div>
+                            <p><strong>Producto:</strong> {{ $pedido->Nombre_Producto }}</p>
+                            <p><strong>Cliente:</strong> {{ trim(($pedido->Nombre_Cliente ?? '').' '.($pedido->Apellido_Cliente ?? '')) ?: ($pedido->Correo_Cliente ?? 'Cliente') }}</p>
+                            <p><strong>Cantidad:</strong> {{ $pedido->Cantidad }}</p>
+                            <p><strong>Envío:</strong> {{ $pedido->Direccion_Envio ?? $pedido->Ubicacion }}</p>
+                            <p><strong>Total:</strong> $U {{ number_format($pedido->Total ?? $pedido->Monto_Total, 2, ',', '.') }}</p>
+                            <p><strong>Pago:</strong> {{ ucfirst($pedido->Metodo_Pago ?? $pedido->Metodo_de_pago ?? 'No indicado') }}</p>
+                            @if ($pedido->Telefono_Contacto)
+                                <p><strong>Teléfono:</strong> {{ $pedido->Telefono_Contacto }}</p>
+                            @endif
+                            @if ($pedido->Referencias)
+                                <p><strong>Referencias:</strong> {{ $pedido->Referencias }}</p>
+                            @endif
+                            @if (($pedido->Estado ?? 'pendiente') === 'pendiente')
+                                <div class="order-actions">
+                                    <form method="POST" action="{{ route('pedidos.status', $pedido->ID_Pedido ?? $pedido->N_Pedido) }}" onsubmit="return confirm('¿Rechazar y eliminar este pedido?');">
+                                        @csrf
+                                        @method('PATCH')
+                                        <input type="hidden" name="estado" value="aceptado">
+                                        <button type="submit">Aceptar pedido</button>
+                                    </form>
+                                    <form method="POST" action="{{ route('pedidos.status', $pedido->ID_Pedido ?? $pedido->N_Pedido) }}">
+                                        @csrf
+                                        @method('PATCH')
+                                        <input type="hidden" name="estado" value="rechazado">
+                                        <button type="submit" class="reject">Rechazar pedido</button>
+                                    </form>
+                                </div>
+                            @endif
+                        </article>
+                    @endforeach
+                </div>
+            @endif
+        </section>
 
         @if ($productos->isEmpty())
             <div class="empty">Todavía no hay productos cargados.</div>
@@ -84,6 +141,7 @@
                             <p>{{ $producto->Categoria }}</p>
                             <p>{{ $producto->Descripcion }}</p>
                             <p class="price">$U {{ number_format($producto->Precio, 2, ',', '.') }}</p>
+                            <p class="stock">Stock: {{ $producto->Stock }}</p>
                             <p class="status {{ $producto->Disponible ? '' : 'unavailable' }}">
                                 {{ $producto->Disponible ? 'Disponible para pedidos' : 'No disponible para pedidos' }}
                             </p>
@@ -122,6 +180,13 @@
                 <label for="imagen_url">Imagen URL</label>
                 <input id="imagen_url" name="imagen_url" type="url" value="{{ old('imagen_url') }}" required maxlength="2048">
 
+                <label for="stock">Cantidad disponible</label>
+                <div class="quantity-control">
+                    <button type="button" class="quantity-button" data-quantity-decrease aria-label="Disminuir cantidad">-</button>
+                    <input id="stock" name="stock" type="number" value="{{ old('stock', 1) }}" min="0" max="999999" step="1" required>
+                    <button type="button" class="quantity-button" data-quantity-increase aria-label="Aumentar cantidad">+</button>
+                </div>
+
                 <label class="checkbox">
                     <input name="disponible" type="checkbox" value="1" {{ old('disponible', '1') ? 'checked' : '' }}>
                     Disponible para pedidos
@@ -138,6 +203,15 @@
         modal.addEventListener('click', (event) => {
             if (event.target === modal) modal.close();
         });
+
+        const stockInput = document.getElementById('stock');
+        document.querySelector('[data-quantity-decrease]').addEventListener('click', () => {
+            stockInput.value = Math.max(0, Number(stockInput.value || 0) - 1);
+        });
+        document.querySelector('[data-quantity-increase]').addEventListener('click', () => {
+            stockInput.value = Math.min(999999, Number(stockInput.value || 0) + 1);
+        });
+
         @if ($errors->any())
             modal.showModal();
         @endif

@@ -18,6 +18,7 @@ class LocalController extends Controller
             'categoria' => 'required|string|max:100',
             'descripcion' => 'required|string|max:1000',
             'imagen_url' => 'required|url|max:2048',
+            'stock' => 'required|integer|min:0|max:999999',
             'disponible' => 'nullable|boolean',
         ]);
 
@@ -59,6 +60,7 @@ class LocalController extends Controller
                 'Categoria' => $validated['categoria'],
                 'Descripcion' => $validated['descripcion'],
                 'Foto_Producto' => $validated['imagen_url'],
+                'Stock' => $validated['stock'],
                 'Disponible' => $request->boolean('disponible'),
             ]);
         });
