@@ -15,14 +15,14 @@ class Usuario extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    protected $table = 'cliente';
+    protected $table = 'Usuario';
 
-    protected $fillable = ['nombre', 'correo', 'contrasena'];
+    protected $fillable = ['Email', 'Nombre_de_Usuario', 'Contraseña', 'Tipo_Usuario'];
     
     // si tu columna de password no se llama "password"
     public function getAuthPassword()
     {
-        return $this->contrasena;
+        return $this->{'Contraseña'};
     }
 }
 

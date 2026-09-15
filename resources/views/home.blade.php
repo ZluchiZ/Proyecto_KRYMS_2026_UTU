@@ -78,9 +78,7 @@
                     <img src="{{ $producto->Foto_Producto }}" alt="{{ $producto->Nombre_Producto }}">
                     <h3>{{ $producto->Nombre_Producto }}</h3>
                     <p>{{ $producto->Categoria }}</p>
-                    <p>{{ $producto->Descripcion }}</p>
                     <strong>$U {{ number_format($producto->Precio, 2, ',', '.') }}</strong>
-                    <p>Stock: {{ $producto->Stock }}</p>
                     <p>Local: {{ $producto->Nombre_Comercio ?? 'Local no disponible' }}</p>
                     @if ($esClienteRegistrado)
                         <button
@@ -90,10 +88,9 @@
                             data-product-name="{{ $producto->Nombre_Producto }}"
                             data-product-price="$U {{ number_format($producto->Precio, 2, ',', '.') }}"
                             data-product-local="{{ $producto->Nombre_Comercio ?? 'Local no disponible' }}"
-                            data-product-stock="{{ $producto->Stock }}"
-                            {{ $producto->Stock < 1 ? 'disabled' : '' }}
+                            data-product-stock="1"
                         >
-                            {{ $producto->Stock < 1 ? 'Sin stock' : 'Comprar' }}
+                            Comprar
                         </button>
                     @else
                         <a class="purchase-trigger" href="{{ route('login') }}">Inicia sesión para comprar</a>
@@ -120,7 +117,6 @@
                 <strong id="purchase-product-name"></strong>
                 <p id="purchase-product-local"></p>
                 <p id="purchase-product-price"></p>
-                <p>Stock disponible: <span id="purchase-product-stock"></span></p>
             </div>
 
             <form method="POST" action="{{ route('carrito.add') }}" class="purchase-form">
@@ -154,13 +150,11 @@
 
         document.querySelectorAll('.purchase-trigger[data-product-id]').forEach((trigger) => {
             trigger.addEventListener('click', () => {
-                const stock = Number(trigger.dataset.productStock);
                 productIdInput.value = trigger.dataset.productId;
                 document.getElementById('purchase-product-name').textContent = trigger.dataset.productName;
                 document.getElementById('purchase-product-local').textContent = `Local: ${trigger.dataset.productLocal}`;
                 document.getElementById('purchase-product-price').textContent = trigger.dataset.productPrice;
-                document.getElementById('purchase-product-stock').textContent = stock;
-                quantityInput.max = stock;
+                quantityInput.removeAttribute('max');
                 quantityInput.value = 1;
                 purchaseModal.showModal();
             });

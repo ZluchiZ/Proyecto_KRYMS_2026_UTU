@@ -16,9 +16,7 @@ class RepartidorController extends Controller
                 'required',
                 'email',
                 'max:255',
-                Rule::unique('cliente', 'correo'),
-                Rule::unique('comercio', 'correo'),
-                Rule::unique('repartidor', 'correo'),
+                Rule::unique('Usuario', 'Email'),
             ],
             'nombre' => 'required|string|max:255',
             'apellido' => 'required|string|max:255',
@@ -30,17 +28,25 @@ class RepartidorController extends Controller
         ]);
 
         try {
-            DB::table('repartidor')->insert([
-                'cedula' => $validated['cedula'],
-                'correo' => $validated['correo'],
-                'nombre' => $validated['nombre'],
-                'apellido' => $validated['apellido'],
-                'telefono' => $validated['telefono'],
-                'fecha_nacimiento' => $validated['fecha_nacimiento'],
-                'contrasena' => bcrypt($validated['contrasena']),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            $password = bcrypt($validated['contrasena']);
+
+            DB::transaction(function () use ($validated, $password) {
+                DB::table('Usuario')->insert([
+                    'Email' => $validated['correo'],
+                    'Nombre_de_Usuario' => $validated['nombre'],
+                    'Contraseña' => $password,
+                    'Tipo_Usuario' => 'repartidor',
+                ]);
+
+                DB::table('Repartidor')->insert([
+                    'CI' => $validated['cedula'],
+                    'Email_Usuario' => $validated['correo'],
+                    'Contraseña' => $password,
+                    'Nombre' => $validated['nombre'],
+                    'Apellido' => $validated['apellido'],
+                    'Teléfono' => $validated['telefono'],
+                ]);
+            });
 
             return redirect()
                 ->route('login')

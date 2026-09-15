@@ -25,21 +25,19 @@ class PedidoController extends Controller
         $producto = DB::table('Producto')
             ->where('ID_Producto', $validated['producto_id'])
             ->where('Disponible', true)
-            ->first(['ID_Producto', 'Stock']);
+            ->first(['ID_Producto']);
 
         abort_unless($producto, 404, 'El producto ya no está disponible.');
 
         $carrito = DB::table('Carrito')
-            ->where('ID_Cliente', session('usuario_id'))
+            ->where('CI_Cliente', session('usuario_id'))
             ->where('ID_Producto', $producto->ID_Producto)
             ->first();
         $cantidad = ($carrito->Cantidad ?? 0) + $validated['cantidad'];
 
-        abort_if($cantidad > $producto->Stock, 422, 'La cantidad solicitada supera el stock disponible.');
-
         DB::table('Carrito')->updateOrInsert(
             [
-                'ID_Cliente' => session('usuario_id'),
+                'CI_Cliente' => session('usuario_id'),
                 'ID_Producto' => $producto->ID_Producto,
             ],
             [
@@ -58,17 +56,16 @@ class PedidoController extends Controller
 
         $items = DB::table('Carrito')
             ->join('Producto', 'Carrito.ID_Producto', '=', 'Producto.ID_Producto')
-            ->leftJoin('comercio', 'Producto.Correo_Comercio', '=', 'comercio.correo')
-            ->where('Carrito.ID_Cliente', session('usuario_id'))
-            ->select('Carrito.*', 'Producto.Nombre_Producto', 'Producto.Precio', 'Producto.Stock', 'Producto.Foto_Producto', 'comercio.nombre as Nombre_Comercio')
+            ->leftJoin('Comercio', 'Producto.RUT_Comercio', '=', 'Comercio.RUT')
+            ->where('Carrito.CI_Cliente', session('usuario_id'))
+            ->select('Carrito.*', 'Producto.Nombre_Producto', 'Producto.Precio', 'Producto.Foto_Producto', 'Comercio.Nombre_Comercio')
             ->orderBy('Carrito.ID_Carrito')
             ->get();
-
-        $cliente = DB::table('cliente')->find(session('usuario_id'));
+        $cliente = DB::table('Cliente')->where('CI', session('usuario_id'))->first();
 
         return view('Cliente.Carrito', [
             'items' => $items,
-            'telefonoUsuario' => $cliente?->telefono,
+            'telefonoUsuario' => $cliente?->{'Teléfono'},
         ]);
     }
 
@@ -78,7 +75,7 @@ class PedidoController extends Controller
 
         DB::table('Carrito')
             ->where('ID_Carrito', $item)
-            ->where('ID_Cliente', session('usuario_id'))
+            ->where('CI_Cliente', session('usuario_id'))
             ->delete();
 
         return redirect()->route('carrito')->with('success', 'Producto eliminado del carrito.');
@@ -97,7 +94,7 @@ class PedidoController extends Controller
 
         $pedidos = DB::transaction(function () use ($validated) {
             $items = DB::table('Carrito')
-                ->where('ID_Cliente', session('usuario_id'))
+                ->where('CI_Cliente', session('usuario_id'))
                 ->lockForUpdate()
                 ->get();
 
@@ -109,15 +106,13 @@ class PedidoController extends Controller
                     ->where('ID_Producto', $item->ID_Producto)
                     ->where('Disponible', true)
                     ->lockForUpdate()
-                    ->first(['ID_Producto', 'Precio', 'Stock']);
+                    ->first(['ID_Producto', 'Precio', 'RUT_Comercio']);
 
                 abort_unless($producto, 422, 'Uno de los productos ya no está disponible.');
-                abort_if($item->Cantidad > $producto->Stock, 422, "No hay stock suficiente para el producto #{$producto->ID_Producto}.");
-
                 $ids[] = $this->insertOrder($producto, $item->Cantidad, $validated);
             }
 
-            DB::table('Carrito')->where('ID_Cliente', session('usuario_id'))->delete();
+            DB::table('Carrito')->where('CI_Cliente', session('usuario_id'))->delete();
 
             return $ids;
         });
@@ -133,49 +128,12 @@ class PedidoController extends Controller
             'estado' => 'required|in:aceptado,rechazado',
         ]);
 
-        DB::transaction(function () use ($pedido, $validated) {
-            $correoComercio = session('email');
-            $idColumn = Schema::hasColumn('Pedido', 'N_Pedido') ? 'Pedido.N_Pedido' : 'Pedido.ID_Pedido';
-            $pedidoActual = DB::table('Pedido')
-                ->join('Producto', 'Pedido.ID_Producto', '=', 'Producto.ID_Producto')
-                ->where($idColumn, $pedido)
-                ->where('Producto.Correo_Comercio', $correoComercio)
-                ->lockForUpdate()
-                ->first(['Pedido.Estado', 'Pedido.Cantidad', 'Pedido.ID_Producto']);
+        $actualizado = DB::table('Subpedido')
+            ->where('N_Subpedido', $pedido)
+            ->where('RUT_Comercio', session('usuario_id'))
+            ->update(['Estado' => $validated['estado']]);
 
-            abort_unless($pedidoActual, 404);
-
-            if ($pedidoActual->Estado === 'rechazado' || $pedidoActual->Estado === 'aceptado') {
-                return;
-            }
-
-            if ($validated['estado'] === 'rechazado') {
-                DB::table('Pedido')
-                    ->where($idColumn, $pedido)
-                    ->delete();
-
-                return;
-            }
-
-            $producto = DB::table('Producto')
-                ->where('ID_Producto', $pedidoActual->ID_Producto)
-                ->lockForUpdate()
-                ->first(['Stock']);
-
-            abort_unless($producto, 404);
-            abort_if($pedidoActual->Cantidad > $producto->Stock, 422, 'No hay stock suficiente para aceptar este pedido.');
-
-            DB::table('Producto')
-                ->where('ID_Producto', $pedidoActual->ID_Producto)
-                ->decrement('Stock', $pedidoActual->Cantidad);
-
-            DB::table('Pedido')
-                ->where($idColumn, $pedido)
-                ->update([
-                    'Estado' => $validated['estado'],
-                    'updated_at' => now(),
-                ]);
-        });
+        abort_unless($actualizado, 404);
 
         return redirect()->route('dashboard.local');
     }
@@ -183,47 +141,43 @@ class PedidoController extends Controller
     private function insertOrder(object $producto, int $cantidad, array $validated): int
     {
             $total = $producto->Precio * $cantidad;
-            $datosPedido = [
-                'ID_Cliente' => session('usuario_id'),
+            $repartidor = DB::table('Repartidor')->value('CI');
+
+            $tarjeta = DB::table('Tarjeta')
+                ->where('CI_Cliente', session('usuario_id'))
+                ->value('ID');
+            $tarjeta ??= DB::table('Tarjeta')->insertGetId([
+                'CI_Cliente' => session('usuario_id'),
+                'Banco' => $validated['metodo_pago'],
+            ]);
+
+            $pedido = DB::table('Pedido')->insertGetId([
+                'CI_Cliente' => session('usuario_id'),
+                'CI_Repartidor' => $repartidor,
+                'ID_Tarjeta' => $tarjeta,
+                'Fecha' => now()->toDateString(),
+                'Hora' => now()->toTimeString(),
+                'Estado' => 'pendiente',
+                'Ubicacion' => $validated['direccion_envio'],
+                'Monto_Total' => $total,
+                'Metodo_de_pago' => $validated['metodo_pago'],
+            ], 'N_Pedido');
+
+            $subpedido = DB::table('Subpedido')->insertGetId([
+                'N_Pedido' => $pedido,
+                'RUT_Comercio' => $producto->RUT_Comercio,
+                'Fecha' => now()->toDateString(),
+                'Hora' => now()->toTimeString(),
+                'Monto_Total' => $total,
+                'Estado' => 'pendiente',
+            ], 'N_Subpedido');
+
+            DB::table('Detalle_de_pedido')->insert([
+                'N_Subpedido' => $subpedido,
                 'ID_Producto' => $producto->ID_Producto,
                 'Cantidad' => $cantidad,
-                'Total' => $total,
-                'Direccion_Envio' => $validated['direccion_envio'],
-                'Telefono_Contacto' => $validated['telefono_contacto'] ?? null,
-                'Referencias' => $validated['referencias'] ?? null,
-                'Metodo_Pago' => $validated['metodo_pago'],
-                'Estado' => 'pendiente',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
+            ]);
 
-            if (Schema::hasColumn('Pedido', 'CI_Cliente')) {
-                $datosPedido['CI_Cliente'] = null;
-            }
-            if (Schema::hasColumn('Pedido', 'CI_Repartidor')) {
-                $datosPedido['CI_Repartidor'] = null;
-            }
-            if (Schema::hasColumn('Pedido', 'ID_Tarjeta')) {
-                $datosPedido['ID_Tarjeta'] = null;
-            }
-            if (Schema::hasColumn('Pedido', 'Fecha')) {
-                $datosPedido['Fecha'] = now()->toDateString();
-            }
-            if (Schema::hasColumn('Pedido', 'Hora')) {
-                $datosPedido['Hora'] = now()->toTimeString();
-            }
-            if (Schema::hasColumn('Pedido', 'Ubicacion')) {
-                $datosPedido['Ubicacion'] = $validated['direccion_envio'];
-            }
-            if (Schema::hasColumn('Pedido', 'Monto_Total')) {
-                $datosPedido['Monto_Total'] = $total;
-            }
-            if (Schema::hasColumn('Pedido', 'Metodo_de_pago')) {
-                $datosPedido['Metodo_de_pago'] = $validated['metodo_pago'];
-            }
-
-            $idColumn = Schema::hasColumn('Pedido', 'ID_Pedido') ? 'ID_Pedido' : 'N_Pedido';
-
-            return DB::table('Pedido')->insertGetId($datosPedido, $idColumn);
+            return $pedido;
     }
 }

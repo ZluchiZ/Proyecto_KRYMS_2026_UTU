@@ -11,16 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('repartidor', function (Blueprint $table) {
-            $table->id();
-            $table->string('cedula');
-            $table->string('correo')->unique();
-            $table->string('nombre');
-            $table->string('apellido');
-            $table->string('telefono');
-            $table->date('fecha_nacimiento');
-            $table->string('contrasena');
-            $table->timestamps();
+        Schema::create('Repartidor', function (Blueprint $table) {
+            $table->string('CI', 20)->primary();
+            $table->string('Email_Usuario', 255);
+            $table->string('Contraseña', 255);
+            $table->string('Nombre', 100)->nullable();
+            $table->string('Apellido', 100)->nullable();
+            $table->string('Teléfono', 30)->nullable();
+            $table->string('Estado_Repartidor', 50)->nullable();
+            $table->string('Foto_Libreta', 255)->nullable();
         });
     }
 
@@ -29,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('repartidor');
+        Schema::dropIfExists('Repartidor');
     }
 };

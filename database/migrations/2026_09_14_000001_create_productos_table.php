@@ -11,13 +11,12 @@ return new class extends Migration
         if (! Schema::hasTable('Producto')) {
             Schema::create('Producto', function (Blueprint $table) {
                 $table->id('ID_Producto');
-                $table->string('RUT_Comercio');
-                $table->string('Nombre_Producto');
-                $table->string('Categoria');
-                $table->decimal('Precio', 10, 2);
-                $table->decimal('Descuento_Porcentaje', 5, 2)->default(0);
-                $table->string('Foto_Producto');
-                $table->text('Descripcion');
+                $table->string('RUT_Comercio', 20);
+                $table->string('Nombre_Producto', 150)->nullable();
+                $table->string('Categoria', 100)->nullable();
+                $table->decimal('Precio', 10, 2)->nullable();
+                $table->decimal('Descuento_Porcentaje', 5, 2)->nullable();
+                $table->string('Foto_Producto', 255)->nullable();
                 $table->boolean('Disponible')->default(true);
             });
 
@@ -25,9 +24,6 @@ return new class extends Migration
         }
 
         Schema::table('Producto', function (Blueprint $table) {
-            if (! Schema::hasColumn('Producto', 'Descripcion')) {
-                $table->text('Descripcion')->nullable();
-            }
             if (! Schema::hasColumn('Producto', 'Disponible')) {
                 $table->boolean('Disponible')->default(true);
             }
@@ -38,9 +34,6 @@ return new class extends Migration
     {
         if (Schema::hasTable('Producto')) {
             Schema::table('Producto', function (Blueprint $table) {
-                if (Schema::hasColumn('Producto', 'Descripcion')) {
-                    $table->dropColumn('Descripcion');
-                }
                 if (Schema::hasColumn('Producto', 'Disponible')) {
                     $table->dropColumn('Disponible');
                 }

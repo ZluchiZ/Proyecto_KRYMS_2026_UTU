@@ -18,9 +18,7 @@ class ClienteController extends Controller
             'required',
             'email',
             'max:255',
-            Rule::unique('cliente', 'correo'),
-            Rule::unique('comercio', 'correo'),
-            Rule::unique('repartidor', 'correo'),
+            Rule::unique('Usuario', 'Email'),
         ],
         'Numero' => 'required|string|max:9',
         'password' => 'required|string|min:8',
@@ -31,17 +29,26 @@ class ClienteController extends Controller
     ]);
 
     try {
-        DB::table('cliente')->insert([
-            'cedula' => $validated['cedula'],
-            'nombre' => $validated['nombre'],
-            'apellido' => $validated['apellido'],
-            'telefono' => $validated['Numero'],
-            'fecha_nacimiento' => $validated['nacimiento'],
-            'correo' => $validated['email'],
-            'contrasena' => bcrypt($validated['password']),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        $password = bcrypt($validated['password']);
+
+        DB::transaction(function () use ($validated, $password) {
+            DB::table('Usuario')->insert([
+                'Email' => $validated['email'],
+                'Nombre_de_Usuario' => $validated['nombre'],
+                'Contraseña' => $password,
+                'Tipo_Usuario' => 'cliente',
+            ]);
+
+            DB::table('Cliente')->insert([
+                'CI' => $validated['cedula'],
+                'Email_Usuario' => $validated['email'],
+                'Contraseña' => $password,
+                'Fecha_nacimiento' => $validated['nacimiento'],
+                'Nombre' => $validated['nombre'],
+                'Apellido' => $validated['apellido'],
+                'Teléfono' => $validated['Numero'],
+            ]);
+        });
 
         return redirect()
             ->route('login')

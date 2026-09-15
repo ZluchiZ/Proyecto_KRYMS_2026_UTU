@@ -8,19 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (! Schema::hasColumn('Producto', 'Stock')) {
-            Schema::table('Producto', function (Blueprint $table) {
-                $table->unsignedInteger('Stock')->default(0)->after('Disponible');
-            });
-        }
+        return;
     }
 
     public function down(): void
     {
-        if (Schema::hasColumn('Producto', 'Stock')) {
-            Schema::table('Producto', function (Blueprint $table) {
-                $table->dropColumn('Stock');
-            });
-        }
+        return;
     }
 };

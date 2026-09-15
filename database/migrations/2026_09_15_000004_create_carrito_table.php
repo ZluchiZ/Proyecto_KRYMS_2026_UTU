@@ -11,11 +11,11 @@ return new class extends Migration
         if (! Schema::hasTable('Carrito')) {
             Schema::create('Carrito', function (Blueprint $table) {
                 $table->id('ID_Carrito');
-                $table->unsignedBigInteger('ID_Cliente');
+                $table->string('CI_Cliente', 20);
                 $table->unsignedBigInteger('ID_Producto');
                 $table->unsignedInteger('Cantidad');
                 $table->timestamps();
-                $table->unique(['ID_Cliente', 'ID_Producto']);
+                $table->unique(['CI_Cliente', 'ID_Producto']);
             });
         }
     }

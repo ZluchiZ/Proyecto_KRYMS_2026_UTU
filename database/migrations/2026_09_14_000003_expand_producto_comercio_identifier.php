@@ -8,15 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('Producto', function (Blueprint $table) {
-            $table->string('Correo_Comercio', 255)->nullable()->after('RUT_Comercio');
-        });
+        return;
     }
 
     public function down(): void
     {
-        Schema::table('Producto', function (Blueprint $table) {
-            $table->dropColumn('Correo_Comercio');
-        });
+        return;
     }
 };

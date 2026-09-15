@@ -10,17 +10,19 @@ return new class extends Migration
     {
         if (! Schema::hasTable('Pedido')) {
             Schema::create('Pedido', function (Blueprint $table) {
-                $table->id('ID_Pedido');
-                $table->unsignedBigInteger('ID_Cliente');
-                $table->unsignedBigInteger('ID_Producto');
-                $table->unsignedInteger('Cantidad');
-                $table->decimal('Total', 10, 2);
-                $table->string('Direccion_Envio', 500);
-                $table->string('Telefono_Contacto', 30)->nullable();
-                $table->text('Referencias')->nullable();
-                $table->string('Metodo_Pago', 30);
-                $table->string('Estado', 30)->default('pendiente');
-                $table->timestamps();
+                $table->id('N_Pedido');
+                $table->string('CI_Cliente', 20);
+                $table->string('CI_Repartidor', 20)->nullable();
+                $table->unsignedInteger('ID_Tarjeta');
+                $table->date('Fecha')->nullable();
+                $table->time('Hora')->nullable();
+                $table->string('Estado', 50)->nullable();
+                $table->string('Ubicacion', 255)->nullable();
+                $table->decimal('Costo_de_envio', 10, 2)->nullable();
+                $table->decimal('Monto_Total', 10, 2)->nullable();
+                $table->boolean('Confirmacion_entrega')->nullable();
+                $table->integer('Tiempo_estimado')->nullable();
+                $table->string('Metodo_de_pago', 50)->nullable();
             });
         }
     }

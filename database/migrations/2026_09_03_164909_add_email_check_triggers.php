@@ -7,6 +7,7 @@ return new class extends Migration
 {
     public function up(): void
     {
+        return;
         DB::unprepared(<<<'SQL'
             CREATE TRIGGER check_email_usuarios_before_insert
             BEFORE INSERT ON cliente

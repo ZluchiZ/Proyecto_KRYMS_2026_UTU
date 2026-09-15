@@ -54,11 +54,8 @@
                             <p><strong>Envío:</strong> {{ $pedido->Direccion_Envio ?? $pedido->Ubicacion }}</p>
                             <p><strong>Total:</strong> $U {{ number_format($pedido->Total ?? $pedido->Monto_Total, 2, ',', '.') }}</p>
                             <p><strong>Pago:</strong> {{ ucfirst($pedido->Metodo_Pago ?? $pedido->Metodo_de_pago ?? 'No indicado') }}</p>
-                            @if ($pedido->Telefono_Contacto)
-                                <p><strong>Teléfono:</strong> {{ $pedido->Telefono_Contacto }}</p>
-                            @endif
-                            @if ($pedido->Referencias)
-                                <p><strong>Referencias:</strong> {{ $pedido->Referencias }}</p>
+                            @if ($pedido->Telefono_Cliente)
+                                <p><strong>Teléfono:</strong> {{ $pedido->Telefono_Cliente }}</p>
                             @endif
                             @if (($pedido->Estado ?? 'pendiente') === 'pendiente')
                                 <div class="order-actions">
@@ -92,9 +89,7 @@
                         <div class="product-content">
                             <h2>{{ $producto->Nombre_Producto }}</h2>
                             <p>{{ $producto->Categoria }}</p>
-                            <p>{{ $producto->Descripcion }}</p>
                             <p class="price">$U {{ number_format($producto->Precio, 2, ',', '.') }}</p>
-                            <p class="stock">Stock: {{ $producto->Stock }}</p>
                             <p class="status {{ $producto->Disponible ? '' : 'unavailable' }}">
                                 {{ $producto->Disponible ? 'Disponible para pedidos' : 'No disponible para pedidos' }}
                             </p>

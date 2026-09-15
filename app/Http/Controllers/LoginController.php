@@ -16,22 +16,22 @@ class LoginController extends Controller
         ]);
 
         $cuentas = [
-            ['tabla' => 'cliente', 'tipo' => 'cliente'],
-            ['tabla' => 'comercio', 'tipo' => 'comercio'],
-            ['tabla' => 'repartidor', 'tipo' => 'repartidor'],
+            ['tabla' => 'Cliente', 'tipo' => 'cliente', 'id' => 'CI'],
+            ['tabla' => 'Comercio', 'tipo' => 'comercio', 'id' => 'RUT'],
+            ['tabla' => 'Repartidor', 'tipo' => 'repartidor', 'id' => 'CI'],
         ];
 
         foreach ($cuentas as $cuenta) {
             $usuario = DB::table($cuenta['tabla'])
-                ->where('correo', $request->email)
+                ->where('Email_Usuario', $request->email)
                 ->first();
 
-            if ($usuario && Hash::check($request->password, $usuario->contrasena)) {
+            if ($usuario && Hash::check($request->password, $usuario->{'Contraseña'})) {
                 $request->session()->regenerate();
                 session([
-                    'email' => $usuario->correo,
+                    'email' => $usuario->Email_Usuario,
                     'tipo_usuario' => $cuenta['tipo'],
-                    'usuario_id' => $usuario->id,
+                    'usuario_id' => $usuario->{$cuenta['id']},
                 ]);
 
                 return match ($cuenta['tipo']) {
