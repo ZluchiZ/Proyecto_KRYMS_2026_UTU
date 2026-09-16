@@ -161,13 +161,19 @@ class PedidoController extends Controller
         $subpedido = DB::table('Subpedido')
             ->where('N_Subpedido', $pedido)
             ->where('RUT_Comercio', $rutComercio)
-            ->first(['N_Subpedido']);
+            ->first(['N_Subpedido', 'N_Pedido']);
 
         abort_unless($subpedido, 404, 'El pedido no pertenece a este local.');
 
         DB::table('Subpedido')
             ->where('N_Subpedido', $subpedido->N_Subpedido)
             ->update(['Estado' => $validated['estado']]);
+
+        DB::table('Pedido')
+            ->where('N_Pedido', $subpedido->N_Pedido)
+            ->update([
+                'Confirmacion_entrega' => $validated['estado'] === 'aceptado',
+            ]);
 
         return redirect()
             ->route('dashboard.local')

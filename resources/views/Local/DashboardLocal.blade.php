@@ -41,8 +41,13 @@
         @endif
 
         @foreach ([
+<<<<<<< HEAD
             ['titulo' => 'Pedidos pendientes', 'items' => $pedidos->where('Estado_Subpedido', 'pendiente'), 'acciones' => true],
             ['titulo' => 'Pedidos aceptados', 'items' => $pedidos->where('Estado_Subpedido', 'aceptado'), 'acciones' => false],
+=======
+            ['titulo' => 'Pedidos pendientes', 'items' => $pedidos->where('Estado_Subpedido', 'pendiente')],
+            ['titulo' => 'Pedidos aceptados', 'items' => $pedidos->where('Estado_Subpedido', 'aceptado')],
+>>>>>>> 5ff7287f2ca91edcc0597d36b7b2a973fb54a7d8
         ] as $seccion)
             <section class="orders">
                 <h2>{{ $seccion['titulo'] }}</h2>
@@ -65,7 +70,11 @@
                             @if ($pedido->Telefono_Cliente)
                                 <p><strong>Teléfono:</strong> {{ $pedido->Telefono_Cliente }}</p>
                             @endif
+<<<<<<< HEAD
                             @if ($seccion['acciones'])
+=======
+                            @if (($pedido->Estado_Subpedido ?? 'pendiente') === 'pendiente')
+>>>>>>> 5ff7287f2ca91edcc0597d36b7b2a973fb54a7d8
                                 <div class="order-actions">
                                     <form method="POST" action="{{ route('pedidos.status', $pedido->N_Subpedido) }}" onsubmit="return confirm('¿Rechazar y eliminar este pedido?');">
                                         @csrf
@@ -172,6 +181,7 @@
             if (event.target === modal) modal.close();
         });
 
+<<<<<<< HEAD
         document.querySelectorAll('[data-edit-product]').forEach((button) => {
             button.addEventListener('click', () => {
                 const panel = document.querySelector(`[data-product-panel="${button.dataset.editProduct}"]`);
@@ -190,6 +200,8 @@
             });
         });
 
+=======
+>>>>>>> 5ff7287f2ca91edcc0597d36b7b2a973fb54a7d8
         @if ($errors->any())
             modal.showModal();
         @endif

@@ -59,7 +59,11 @@ Route::get('/', function (Request $request) {
             }
 
             if ($usuario && session('tipo_usuario') === 'comercio') {
+<<<<<<< HEAD
                 $identificadorComercio = $usuario->{'RUT'} ?? session('usuario_id');
+=======
+                $identificadorComercio = $usuario->{'RUT'} ?: $usuario->{'id'};
+>>>>>>> 5ff7287f2ca91edcc0597d36b7b2a973fb54a7d8
             }
         }
     }

@@ -11,12 +11,14 @@ return new class extends Migration
      */
    public function up(): void
 {
-    Schema::create('Usuario', function (Blueprint $table) {
-        $table->string('Email', 255)->primary();
-        $table->string('Nombre_de_Usuario', 100);
-        $table->string('Contraseña', 255);
-        $table->string('Tipo_Usuario', 50);
-    });
+    if (! Schema::hasTable('Usuario')) {
+        Schema::create('Usuario', function (Blueprint $table) {
+            $table->string('Email', 255)->primary();
+            $table->string('Nombre_de_Usuario', 100);
+            $table->string('Contraseña', 255);
+            $table->string('Tipo_Usuario', 50);
+        });
+    }
 }
 
     /**
