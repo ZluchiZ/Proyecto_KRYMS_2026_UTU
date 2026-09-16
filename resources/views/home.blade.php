@@ -78,22 +78,31 @@
                     <img src="{{ $producto->Foto_Producto }}" alt="{{ $producto->Nombre_Producto }}">
                     <h3>{{ $producto->Nombre_Producto }}</h3>
                     <p>{{ $producto->Categoria }}</p>
-                    <strong>$U {{ number_format($producto->Precio, 2, ',', '.') }}</strong>
-                    <p>Local: {{ $producto->Nombre_Comercio ?? 'Local no disponible' }}</p>
-                    @if ($esClienteRegistrado)
-                        <button
-                            type="button"
-                            class="purchase-trigger"
-                            data-product-id="{{ $producto->ID_Producto }}"
-                            data-product-name="{{ $producto->Nombre_Producto }}"
-                            data-product-price="$U {{ number_format($producto->Precio, 2, ',', '.') }}"
-                            data-product-local="{{ $producto->Nombre_Comercio ?? 'Local no disponible' }}"
-                            data-product-stock="1"
-                        >
-                            Comprar
-                        </button>
+                    @if ($producto->Disponible)
+                        <strong>$U {{ number_format($producto->Precio, 2, ',', '.') }}</strong>
+                        <p>Local: {{ $producto->Nombre_Comercio ?? 'Local no disponible' }}</p>
+                        @if ($esClienteRegistrado)
+                            <button
+                                type="button"
+                                class="purchase-trigger"
+                                data-product-id="{{ $producto->ID_Producto }}"
+                                data-product-name="{{ $producto->Nombre_Producto }}"
+                                data-product-price="$U {{ number_format($producto->Precio, 2, ',', '.') }}"
+                                data-product-local="{{ $producto->Nombre_Comercio ?? 'Local no disponible' }}"
+                                data-product-stock="1"
+                            >
+                                Comprar
+                            </button>
+                        @else
+                            <a class="purchase-trigger" href="{{ route('login') }}">Inicia sesión para comprar</a>
+                        @endif
                     @else
-                        <a class="purchase-trigger" href="{{ route('login') }}">Inicia sesión para comprar</a>
+                        <p><strong>Precio:</strong> $U {{ number_format($producto->Precio, 2, ',', '.') }}</p>
+                        <p>Local: {{ $producto->Nombre_Comercio ?? 'Local no disponible' }}</p>
+                        <div class="unavailable-product">
+                            <strong>En estos momentos no disponemos de este producto.</strong>
+                            <span>Vuelve a intentarlo más tarde.</span>
+                        </div>
                     @endif
                 </article>
             @empty

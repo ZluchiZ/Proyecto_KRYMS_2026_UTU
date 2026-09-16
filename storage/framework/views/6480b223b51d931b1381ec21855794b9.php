@@ -37,7 +37,9 @@
     <button type="submit">Entrar</button>
 </form>
 
-   <h3>
+<a href="<?php echo e(route('google.login')); ?>" class="google-btn">Continuar con Google</a>
+
+<h3>
     No tienes cuenta,
     <a href="<?php echo e(route('register')); ?>">¡Regístrate!</a>
 </h3>
@@ -45,4 +47,4 @@
 </div>
 
 </body>
-</html><?php /**PATH /opt/lampp/htdocs/Proyecto_KRYMS_2026_UTU/resources/views/Login.blade.php ENDPATH**/ ?>
+</html><?php /**PATH C:\xampp\htdocs\Proyecto_KRYMS_2026_UTU-main\resources\views/Login.blade.php ENDPATH**/ ?>

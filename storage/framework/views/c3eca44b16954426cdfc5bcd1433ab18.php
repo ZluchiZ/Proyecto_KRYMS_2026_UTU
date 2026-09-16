@@ -78,22 +78,31 @@
                     <img src="<?php echo e($producto->Foto_Producto); ?>" alt="<?php echo e($producto->Nombre_Producto); ?>">
                     <h3><?php echo e($producto->Nombre_Producto); ?></h3>
                     <p><?php echo e($producto->Categoria); ?></p>
-                    <strong>$U <?php echo e(number_format($producto->Precio, 2, ',', '.')); ?></strong>
-                    <p>Local: <?php echo e($producto->Nombre_Comercio ?? 'Local no disponible'); ?></p>
-                    <?php if($esClienteRegistrado): ?>
-                        <button
-                            type="button"
-                            class="purchase-trigger"
-                            data-product-id="<?php echo e($producto->ID_Producto); ?>"
-                            data-product-name="<?php echo e($producto->Nombre_Producto); ?>"
-                            data-product-price="$U <?php echo e(number_format($producto->Precio, 2, ',', '.')); ?>"
-                            data-product-local="<?php echo e($producto->Nombre_Comercio ?? 'Local no disponible'); ?>"
-                            data-product-stock="1"
-                        >
-                            Comprar
-                        </button>
+                    <?php if($producto->Disponible): ?>
+                        <strong>$U <?php echo e(number_format($producto->Precio, 2, ',', '.')); ?></strong>
+                        <p>Local: <?php echo e($producto->Nombre_Comercio ?? 'Local no disponible'); ?></p>
+                        <?php if($esClienteRegistrado): ?>
+                            <button
+                                type="button"
+                                class="purchase-trigger"
+                                data-product-id="<?php echo e($producto->ID_Producto); ?>"
+                                data-product-name="<?php echo e($producto->Nombre_Producto); ?>"
+                                data-product-price="$U <?php echo e(number_format($producto->Precio, 2, ',', '.')); ?>"
+                                data-product-local="<?php echo e($producto->Nombre_Comercio ?? 'Local no disponible'); ?>"
+                                data-product-stock="1"
+                            >
+                                Comprar
+                            </button>
+                        <?php else: ?>
+                            <a class="purchase-trigger" href="<?php echo e(route('login')); ?>">Inicia sesión para comprar</a>
+                        <?php endif; ?>
                     <?php else: ?>
-                        <a class="purchase-trigger" href="<?php echo e(route('login')); ?>">Inicia sesión para comprar</a>
+                        <p><strong>Precio:</strong> $U <?php echo e(number_format($producto->Precio, 2, ',', '.')); ?></p>
+                        <p>Local: <?php echo e($producto->Nombre_Comercio ?? 'Local no disponible'); ?></p>
+                        <div class="unavailable-product">
+                            <strong>En estos momentos no disponemos de este producto.</strong>
+                            <span>Vuelve a intentarlo más tarde.</span>
+                        </div>
                     <?php endif; ?>
                 </article>
             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>

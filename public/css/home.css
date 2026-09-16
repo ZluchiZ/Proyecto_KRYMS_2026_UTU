@@ -1,3 +1,14 @@
+body {
+    background: #ffffff;
+    margin: 0;
+    font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    color: #222;
+}
+
+main.container {
+    background: transparent;
+}
+
 .purchase-trigger {
     width: calc(100% - 30px);
     margin: 0 15px 15px;
@@ -78,7 +89,22 @@
 .success-message {
     color: #18733c;
 }
-<<<<<<< HEAD
+
+.unavailable-product {
+    display: grid;
+    gap: .35rem;
+    margin-top: .75rem;
+    padding: .8rem;
+    border-radius: 8px;
+    background: #fff4f4;
+    color: #8a1f1f;
+    border: 1px solid #f0c7c7;
+}
+
+.unavailable-product strong,
+.unavailable-product span {
+    display: block;
+}
 
 @media (min-width: 40rem) {
     .purchase-trigger {
@@ -86,5 +112,3 @@
         margin: 0 1rem 1rem;
     }
 }
-=======
->>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50

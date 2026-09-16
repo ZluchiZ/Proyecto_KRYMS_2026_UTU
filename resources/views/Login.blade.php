@@ -36,7 +36,9 @@
     <button type="submit">Entrar</button>
 </form>
 
-   <h3>
+<a href="{{ route('google.login') }}" class="google-btn">Continuar con Google</a>
+
+<h3>
     No tienes cuenta,
     <a href="{{ route('register') }}">¡Regístrate!</a>
 </h3>

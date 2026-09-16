@@ -12,4 +12,4 @@ ns="http://www.w3.org/2000/svg";
 const ox=0.32415,oy=7.3223,cw=5.4907,rh=10.0,zx=1.923,zy=0.0915;
 d.split("|").forEach((r,ri)=>{const g=document.createElementNS(ns,"g");g.setAttribute("transform","translate(0,"+(oy+ri*rh)+")");let col=0;for(let i=0;i<r.length;i++){let c=r[i],n=1;if(c>="0"&&c<="9"){n=c;while(i+1<r.length&&r[i+1]>="0"&&r[i+1]<="9")n+=r[++i];n=+n;c=r[++i];}if(c==="."){col+=n;continue;}for(let j=0;j<n;j++){const u=document.createElementNS(ns,"use");u.setAttribute("href",c==="A"?"#a":"#b");u.setAttribute("x",ox+col*cw+(c==="B"?zx:0));if(c==="B")u.setAttribute("y",zy);g.appendChild(u);col++;}}s.appendChild(g);});
 })();
-</script><?php /**PATH C:\xampp\htdocs\Proyecto_KRYMS_2026_UTU-main\vendor\laravel\framework\src\Illuminate\Foundation\resources\exceptions\renderer\components\icons\laravel-ascii.blade.php ENDPATH**/ ?>
+</script><?php /**PATH C:\xampp\htdocs\Proyecto_KRYMS_2026_UTU-main\vendor\laravel\framework\src\Illuminate\Foundation\Providers/../resources/exceptions/renderer/components/icons/laravel-ascii.blade.php ENDPATH**/ ?>

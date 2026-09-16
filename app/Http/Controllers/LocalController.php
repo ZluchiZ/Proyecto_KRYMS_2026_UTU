@@ -14,7 +14,7 @@ class LocalController extends Controller
 
         $validated = $request->validate([
             'nombre' => 'required|string|max:255',
-            'precio' => 'required|numeric|min:0',
+            'precio' => 'required|numeric|min:0|max:99999999.99',
             'categoria' => 'required|string|max:100',
             'descripcion' => 'required|string|max:1000',
             'imagen_url' => 'required|url|max:2048',
@@ -22,32 +22,16 @@ class LocalController extends Controller
         ]);
 
         $comercio = DB::table('Comercio')
-<<<<<<< HEAD
-            ->where('Email_Usuario', session('email'))
-            ->first(['RUT', 'Email_Usuario', 'Nombre_Comercio', 'id']);
-
-        abort_unless($comercio, 403);
-
-        $identificadorComercio = $comercio->RUT;
-        if (! $identificadorComercio) {
-            $identificadorComercio = 'LOCAL-'.$comercio->id;
-            DB::table('Comercio')
-                ->where('Email_Usuario', $comercio->Email_Usuario)
-                ->update(['RUT' => $identificadorComercio]);
-        }
-
-        DB::table('Producto')->insert([
-                'RUT_Comercio' => $identificadorComercio,
-=======
-            ->where('RUT', session('usuario_id'))
             ->where('Email_Usuario', session('email'))
             ->first(['RUT', 'Email_Usuario', 'Nombre_Comercio']);
 
         abort_unless($comercio, 403);
 
+        $identificadorComercio = $comercio->RUT ?? session('usuario_id');
+        abort_unless($identificadorComercio, 403, 'Este comercio no tiene un RUT asociado.');
+
         DB::table('Producto')->insert([
-                'RUT_Comercio' => $comercio->RUT,
->>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
+                'RUT_Comercio' => $identificadorComercio,
                 'Nombre_Producto' => $validated['nombre'],
                 'Precio' => $validated['precio'],
                 'Categoria' => $validated['categoria'],
@@ -58,6 +42,40 @@ class LocalController extends Controller
         return redirect()
             ->route('dashboard.local')
             ->with('success', 'Producto añadido correctamente.');
+    }
+
+    public function updateProducto(Request $request, int $producto): \Illuminate\Http\RedirectResponse
+    {
+        abort_unless(session('tipo_usuario') === 'comercio' && session('usuario_id') && session('email'), 403);
+
+        $validated = $request->validate([
+            'precio' => 'required|numeric|min:0|max:99999999.99',
+            'disponible' => 'required|boolean',
+        ]);
+
+        $comercio = DB::table('Comercio')
+            ->where('Email_Usuario', session('email'))
+            ->first(['RUT']);
+
+        abort_unless($comercio, 403);
+
+        $identificadorComercio = $comercio->RUT ?? session('usuario_id');
+        abort_unless($identificadorComercio, 403, 'Este comercio no tiene un RUT asociado.');
+
+        $productoQuery = DB::table('Producto')
+            ->where('ID_Producto', $producto)
+            ->where('RUT_Comercio', $identificadorComercio);
+
+        abort_unless($productoQuery->exists(), 404);
+
+        $productoQuery->update([
+            'Precio' => $validated['precio'],
+            'Disponible' => $request->boolean('disponible'),
+        ]);
+
+        return redirect()
+            ->route('dashboard.local')
+            ->with('success', 'Producto actualizado correctamente.');
     }
 
     public function destroyProducto(int $producto): \Illuminate\Http\RedirectResponse
@@ -79,7 +97,6 @@ class LocalController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-<<<<<<< HEAD
             'rut' => [
                 'nullable',
                 'string',
@@ -90,10 +107,6 @@ class LocalController extends Controller
             'nombre_dueno' => 'required|string|max:100',
             'cedula_dueno' => 'required|string|max:20',
             'horario' => ['required', 'string', 'max:255', 'regex:/^([01]\d|2[0-3]):[0-5]\d hrs - ([01]\d|2[0-3]):[0-5]\d hrs$/'],
-=======
-            'rut' => 'required|string|max:20',
-            'nombre' => 'required|string|max:150',
->>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
             'direccion' => 'nullable|string|max:255',
             'logo' => 'nullable|string|max:255',
             'correo' => [
@@ -104,10 +117,7 @@ class LocalController extends Controller
             ],
             'contrasena' => 'required|string|min:8|confirmed',
         ], [
-<<<<<<< HEAD
             'rut.unique' => 'Este RUT ya está registrado. Puedes dejarlo vacío o ingresar otro.',
-=======
->>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
             'correo.unique' => 'Este correo ya está registrado.',
         ]);
 
@@ -125,16 +135,11 @@ class LocalController extends Controller
                 DB::table('Comercio')->insert([
                     'Email_Usuario' => $validated['correo'],
                     'Contraseña' => $password,
-<<<<<<< HEAD
                     'RUT' => $validated['rut'] ?? null,
                     'Nombre_Comercio' => $validated['nombre'],
                     'Nombre_dueño' => $validated['nombre_dueno'],
                     'CI_Dueño' => $validated['cedula_dueno'],
                     'Horario' => $validated['horario'],
-=======
-                    'RUT' => $validated['rut'],
-                    'Nombre_Comercio' => $validated['nombre'],
->>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
                     'Dirección' => $validated['direccion'] ?? null,
                     'Logo' => $validated['logo'] ?? null,
                 ]);

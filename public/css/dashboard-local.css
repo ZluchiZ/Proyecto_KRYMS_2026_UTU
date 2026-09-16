@@ -1,14 +1,8 @@
 body {
-<<<<<<< HEAD
     font-family: "Trebuchet MS", "Segoe UI", sans-serif;
     margin: 0;
     padding: 1rem;
-=======
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 2rem;
->>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
-    background: #f4f4f4;
+    background: #ffffff;
     color: #222;
 }
 
@@ -21,9 +15,24 @@ button { border: 0; border-radius: 6px; padding: .8rem 1rem; font: inherit; curs
 .product-content { padding: 1rem; }
 .product h2 { margin: 0 0 .4rem; font-size: 1.15rem; }
 .price { font-weight: bold; }
-.stock { color: #555; }
 .status { color: #18733c; font-size: .9rem; }
 .status.unavailable { color: #a33; }
+.product-actions { display: flex; align-items: center; gap: .6rem; margin: .8rem 0; }
+.product-actions form { margin: 0; }
+.product-actions button { width: auto; }
+.edit-product { display: inline-block; visibility: visible; }
+.product-edit-panel {
+    display: none;
+    margin-top: .8rem;
+    border: 1px solid #e5e5e5;
+    background: #fafafa;
+    border-radius: 8px;
+    padding: 1rem;
+}
+.product-edit-panel.visible {
+    display: block;
+}
+.product-edit-form { display: grid; gap: .8rem; margin: 0; }
 .empty { background: #fff; padding: 2rem; text-align: center; border-radius: 8px; }
 dialog { width: min(92vw, 520px); border: 0; border-radius: 8px; padding: 0; box-shadow: 0 12px 40px #0005; }
 dialog::backdrop { background: #0008; }
@@ -56,7 +65,6 @@ textarea { min-height: 90px; resize: vertical; }
 .order-actions { display: flex; gap: .6rem; margin-top: .5rem; }
 .order-actions button { padding: .55rem .8rem; }
 .order-actions .reject { background: #a33; }
-<<<<<<< HEAD
 .success { color: #18733c; margin-bottom: 1rem; }
 
 @media (max-width: 39.99rem) {
@@ -74,10 +82,4 @@ textarea { min-height: 90px; resize: vertical; }
 
 @media (min-width: 40rem) {
     body { padding: 2rem; }
-=======
-
-@media (max-width: 540px) {
-    body { padding: 1rem; }
-    .dashboard-header { align-items: flex-start; flex-direction: column; }
->>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
 }

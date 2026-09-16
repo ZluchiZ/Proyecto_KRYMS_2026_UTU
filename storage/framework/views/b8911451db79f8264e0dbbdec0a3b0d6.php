@@ -41,8 +41,8 @@
         <?php endif; ?>
 
         <?php $__currentLoopData = [
-            ['titulo' => 'Pedidos pendientes', 'items' => $pedidos->where('Estado', 'pendiente'), 'acciones' => true],
-            ['titulo' => 'Pedidos aceptados', 'items' => $pedidos->where('Estado', 'aceptado'), 'acciones' => false],
+            ['titulo' => 'Pedidos pendientes', 'items' => $pedidos->where('Estado_Subpedido', 'pendiente'), 'acciones' => true],
+            ['titulo' => 'Pedidos aceptados', 'items' => $pedidos->where('Estado_Subpedido', 'aceptado'), 'acciones' => false],
         ]; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $seccion): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
             <section class="orders">
                 <h2><?php echo e($seccion['titulo']); ?></h2>
@@ -54,7 +54,7 @@
                         <article class="order">
                             <div class="order-title">
                                 <span>Pedido #<?php echo e($pedido->ID_Pedido ?? $pedido->N_Pedido); ?></span>
-                                <span class="order-status <?php echo e(($pedido->Estado ?? '') === 'rechazado' ? 'rejected' : ''); ?>"><?php echo e($pedido->Estado ?? 'pendiente'); ?></span>
+                                <span class="order-status <?php echo e(($pedido->Estado_Subpedido ?? '') === 'rechazado' ? 'rejected' : ''); ?>"><?php echo e($pedido->Estado_Subpedido ?? 'pendiente'); ?></span>
                             </div>
                             <p><strong>Producto:</strong> <?php echo e($pedido->Nombre_Producto); ?></p>
                             <p><strong>Cliente:</strong> <?php echo e(trim(($pedido->Nombre_Cliente ?? '').' '.($pedido->Apellido_Cliente ?? '')) ?: ($pedido->Correo_Cliente ?? 'Cliente')); ?></p>
@@ -103,11 +103,29 @@
                                 <?php echo e($producto->Disponible ? 'Disponible para pedidos' : 'No disponible para pedidos'); ?>
 
                             </p>
-                            <form method="POST" action="<?php echo e(route('productos.destroy', $producto->ID_Producto)); ?>" onsubmit="return confirm('¿Eliminar este producto?');">
-                                <?php echo csrf_field(); ?>
-                                <?php echo method_field('DELETE'); ?>
-                                <button type="submit">Eliminar producto</button>
-                            </form>
+                            <div class="product-actions">
+                                <button type="button" class="edit-product" data-edit-product="<?php echo e($producto->ID_Producto); ?>">Editar producto</button>
+                                <form method="POST" action="<?php echo e(route('productos.destroy', $producto->ID_Producto)); ?>" onsubmit="return confirm('¿Eliminar este producto?');">
+                                    <?php echo csrf_field(); ?>
+                                    <?php echo method_field('DELETE'); ?>
+                                    <button type="submit">Eliminar producto</button>
+                                </form>
+                            </div>
+
+                            <div class="product-edit-panel" data-product-panel="<?php echo e($producto->ID_Producto); ?>" hidden>
+                                <form class="product-edit-form" data-product-form="<?php echo e($producto->ID_Producto); ?>" method="POST" action="<?php echo e(route('productos.update', $producto->ID_Producto)); ?>">
+                                    <?php echo csrf_field(); ?>
+                                    <?php echo method_field('PATCH'); ?>
+                                    <label for="precio-<?php echo e($producto->ID_Producto); ?>">Precio en $UYU</label>
+                                    <input id="precio-<?php echo e($producto->ID_Producto); ?>" name="precio" type="number" value="<?php echo e($producto->Precio); ?>" min="0" max="99999999.99" step="0.01" required>
+                                    <label class="checkbox">
+                                        <input name="disponible" type="hidden" value="0">
+                                        <input name="disponible" type="checkbox" value="1" <?php echo e($producto->Disponible ? 'checked' : ''); ?>>
+                                        Disponible para pedidos
+                                    </label>
+                                    <button type="submit">Guardar cambios</button>
+                                </form>
+                            </div>
                         </div>
                     </article>
                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
@@ -127,7 +145,7 @@
                 <input id="nombre" name="nombre" type="text" value="<?php echo e(old('nombre')); ?>" required maxlength="255">
 
                 <label for="precio">Precio en $UYU</label>
-                <input id="precio" name="precio" type="number" value="<?php echo e(old('precio')); ?>" min="0" step="0.01" required>
+                <input id="precio" name="precio" type="number" value="<?php echo e(old('precio')); ?>" min="0" max="99999999.99" step="0.01" required>
 
                 <label for="categoria">Categoría</label>
                 <input id="categoria" name="categoria" type="text" value="<?php echo e(old('categoria')); ?>" required maxlength="100">
@@ -137,13 +155,6 @@
 
                 <label for="imagen_url">Imagen URL</label>
                 <input id="imagen_url" name="imagen_url" type="url" value="<?php echo e(old('imagen_url')); ?>" required maxlength="2048">
-
-                <label for="stock">Cantidad disponible</label>
-                <div class="quantity-control">
-                    <button type="button" class="quantity-button" data-quantity-decrease aria-label="Disminuir cantidad">-</button>
-                    <input id="stock" name="stock" type="number" value="<?php echo e(old('stock', 1)); ?>" min="0" max="999999" step="1" required>
-                    <button type="button" class="quantity-button" data-quantity-increase aria-label="Aumentar cantidad">+</button>
-                </div>
 
                 <label class="checkbox">
                     <input name="disponible" type="checkbox" value="1" <?php echo e(old('disponible', '1') ? 'checked' : ''); ?>>
@@ -162,12 +173,22 @@
             if (event.target === modal) modal.close();
         });
 
-        const stockInput = document.getElementById('stock');
-        document.querySelector('[data-quantity-decrease]').addEventListener('click', () => {
-            stockInput.value = Math.max(0, Number(stockInput.value || 0) - 1);
-        });
-        document.querySelector('[data-quantity-increase]').addEventListener('click', () => {
-            stockInput.value = Math.min(999999, Number(stockInput.value || 0) + 1);
+        document.querySelectorAll('[data-edit-product]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const panel = document.querySelector(`[data-product-panel="${button.dataset.editProduct}"]`);
+
+                document.querySelectorAll('.product-edit-panel').forEach((item) => {
+                    if (item !== panel) {
+                        item.hidden = true;
+                        item.classList.remove('visible');
+                    }
+                });
+
+                const shouldShow = panel.hidden;
+                panel.hidden = !shouldShow;
+                panel.classList.toggle('visible', shouldShow);
+                button.textContent = shouldShow ? 'Cancelar edición' : 'Editar producto';
+            });
         });
 
         <?php if($errors->any()): ?>

@@ -27,24 +27,17 @@ class LoginController extends Controller
                 ->first();
 
             if ($usuario && Hash::check($request->password, $usuario->{'Contraseña'})) {
-<<<<<<< HEAD
                 $identificador = $usuario->{$cuenta['id']} ?? null;
 
                 if ($cuenta['tipo'] === 'comercio' && ! $identificador) {
                     $identificador = $usuario->id;
                 }
 
-=======
->>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
                 $request->session()->regenerate();
                 session([
                     'email' => $usuario->Email_Usuario,
                     'tipo_usuario' => $cuenta['tipo'],
-<<<<<<< HEAD
                     'usuario_id' => $identificador,
-=======
-                    'usuario_id' => $usuario->{$cuenta['id']},
->>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
                 ]);
 
                 return match ($cuenta['tipo']) {
