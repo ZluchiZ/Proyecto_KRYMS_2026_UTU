@@ -36,14 +36,13 @@
             </div>
         @endif
 
-<<<<<<< HEAD
         @if (session('success'))
             <div class="success">{{ session('success') }}</div>
         @endif
 
         @foreach ([
-            ['titulo' => 'Pedidos pendientes', 'items' => $pedidos->where('Estado', 'pendiente'), 'acciones' => true],
-            ['titulo' => 'Pedidos aceptados', 'items' => $pedidos->where('Estado', 'aceptado'), 'acciones' => false],
+            ['titulo' => 'Pedidos pendientes', 'items' => $pedidos->where('Estado_Subpedido', 'pendiente')],
+            ['titulo' => 'Pedidos aceptados', 'items' => $pedidos->where('Estado_Subpedido', 'aceptado')],
         ] as $seccion)
             <section class="orders">
                 <h2>{{ $seccion['titulo'] }}</h2>
@@ -52,19 +51,10 @@
                 @else
                     <div class="order-list">
                     @foreach ($seccion['items'] as $pedido)
-=======
-        <section class="orders">
-            <h2>Pedidos recibidos</h2>
-            @if ($pedidos->isEmpty())
-                <div class="empty">Todavía no hay pedidos para tus productos.</div>
-            @else
-                <div class="order-list">
-                    @foreach ($pedidos as $pedido)
->>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
                         <article class="order">
                             <div class="order-title">
                                 <span>Pedido #{{ $pedido->ID_Pedido ?? $pedido->N_Pedido }}</span>
-                                <span class="order-status {{ ($pedido->Estado ?? '') === 'rechazado' ? 'rejected' : '' }}">{{ $pedido->Estado ?? 'pendiente' }}</span>
+                                <span class="order-status {{ ($pedido->Estado_Subpedido ?? '') === 'rechazado' ? 'rejected' : '' }}">{{ $pedido->Estado_Subpedido ?? 'pendiente' }}</span>
                             </div>
                             <p><strong>Producto:</strong> {{ $pedido->Nombre_Producto }}</p>
                             <p><strong>Cliente:</strong> {{ trim(($pedido->Nombre_Cliente ?? '').' '.($pedido->Apellido_Cliente ?? '')) ?: ($pedido->Correo_Cliente ?? 'Cliente') }}</p>
@@ -75,25 +65,15 @@
                             @if ($pedido->Telefono_Cliente)
                                 <p><strong>Teléfono:</strong> {{ $pedido->Telefono_Cliente }}</p>
                             @endif
-<<<<<<< HEAD
-                            @if ($seccion['acciones'])
+                            @if (($pedido->Estado_Subpedido ?? 'pendiente') === 'pendiente')
                                 <div class="order-actions">
                                     <form method="POST" action="{{ route('pedidos.status', $pedido->N_Subpedido) }}" onsubmit="return confirm('¿Rechazar y eliminar este pedido?');">
-=======
-                            @if (($pedido->Estado ?? 'pendiente') === 'pendiente')
-                                <div class="order-actions">
-                                    <form method="POST" action="{{ route('pedidos.status', $pedido->ID_Pedido ?? $pedido->N_Pedido) }}" onsubmit="return confirm('¿Rechazar y eliminar este pedido?');">
->>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
                                         @csrf
                                         @method('PATCH')
                                         <input type="hidden" name="estado" value="aceptado">
                                         <button type="submit">Aceptar pedido</button>
                                     </form>
-<<<<<<< HEAD
                                     <form method="POST" action="{{ route('pedidos.status', $pedido->N_Subpedido) }}">
-=======
-                                    <form method="POST" action="{{ route('pedidos.status', $pedido->ID_Pedido ?? $pedido->N_Pedido) }}">
->>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
                                         @csrf
                                         @method('PATCH')
                                         <input type="hidden" name="estado" value="rechazado">
@@ -103,16 +83,10 @@
                             @endif
                         </article>
                     @endforeach
-<<<<<<< HEAD
                     </div>
                 @endif
             </section>
         @endforeach
-=======
-                </div>
-            @endif
-        </section>
->>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
 
         @if ($productos->isEmpty())
             <div class="empty">Todavía no hay productos cargados.</div>
@@ -163,13 +137,6 @@
                 <label for="imagen_url">Imagen URL</label>
                 <input id="imagen_url" name="imagen_url" type="url" value="{{ old('imagen_url') }}" required maxlength="2048">
 
-                <label for="stock">Cantidad disponible</label>
-                <div class="quantity-control">
-                    <button type="button" class="quantity-button" data-quantity-decrease aria-label="Disminuir cantidad">-</button>
-                    <input id="stock" name="stock" type="number" value="{{ old('stock', 1) }}" min="0" max="999999" step="1" required>
-                    <button type="button" class="quantity-button" data-quantity-increase aria-label="Aumentar cantidad">+</button>
-                </div>
-
                 <label class="checkbox">
                     <input name="disponible" type="checkbox" value="1" {{ old('disponible', '1') ? 'checked' : '' }}>
                     Disponible para pedidos
@@ -185,14 +152,6 @@
         document.getElementById('close-product-modal').addEventListener('click', () => modal.close());
         modal.addEventListener('click', (event) => {
             if (event.target === modal) modal.close();
-        });
-
-        const stockInput = document.getElementById('stock');
-        document.querySelector('[data-quantity-decrease]').addEventListener('click', () => {
-            stockInput.value = Math.max(0, Number(stockInput.value || 0) - 1);
-        });
-        document.querySelector('[data-quantity-increase]').addEventListener('click', () => {
-            stockInput.value = Math.min(999999, Number(stockInput.value || 0) + 1);
         });
 
         @if ($errors->any())

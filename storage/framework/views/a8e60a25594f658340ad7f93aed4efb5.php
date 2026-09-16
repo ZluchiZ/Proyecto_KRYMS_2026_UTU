@@ -36,17 +36,25 @@
             </div>
         <?php endif; ?>
 
-        <section class="orders">
-            <h2>Pedidos recibidos</h2>
-            <?php if($pedidos->isEmpty()): ?>
-                <div class="empty">Todavía no hay pedidos para tus productos.</div>
-            <?php else: ?>
-                <div class="order-list">
-                    <?php $__currentLoopData = $pedidos; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $pedido): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+        <?php if(session('success')): ?>
+            <div class="success"><?php echo e(session('success')); ?></div>
+        <?php endif; ?>
+
+        <?php $__currentLoopData = [
+            ['titulo' => 'Pedidos pendientes', 'items' => $pedidos->where('Estado_Subpedido', 'pendiente')],
+            ['titulo' => 'Pedidos aceptados', 'items' => $pedidos->where('Estado_Subpedido', 'aceptado')],
+        ]; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $seccion): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+            <section class="orders">
+                <h2><?php echo e($seccion['titulo']); ?></h2>
+                <?php if($seccion['items']->isEmpty()): ?>
+                    <div class="empty">No hay pedidos en esta sección.</div>
+                <?php else: ?>
+                    <div class="order-list">
+                    <?php $__currentLoopData = $seccion['items']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $pedido): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                         <article class="order">
                             <div class="order-title">
                                 <span>Pedido #<?php echo e($pedido->ID_Pedido ?? $pedido->N_Pedido); ?></span>
-                                <span class="order-status <?php echo e(($pedido->Estado ?? '') === 'rechazado' ? 'rejected' : ''); ?>"><?php echo e($pedido->Estado ?? 'pendiente'); ?></span>
+                                <span class="order-status <?php echo e(($pedido->Estado_Subpedido ?? '') === 'rechazado' ? 'rejected' : ''); ?>"><?php echo e($pedido->Estado_Subpedido ?? 'pendiente'); ?></span>
                             </div>
                             <p><strong>Producto:</strong> <?php echo e($pedido->Nombre_Producto); ?></p>
                             <p><strong>Cliente:</strong> <?php echo e(trim(($pedido->Nombre_Cliente ?? '').' '.($pedido->Apellido_Cliente ?? '')) ?: ($pedido->Correo_Cliente ?? 'Cliente')); ?></p>
@@ -57,15 +65,15 @@
                             <?php if($pedido->Telefono_Cliente): ?>
                                 <p><strong>Teléfono:</strong> <?php echo e($pedido->Telefono_Cliente); ?></p>
                             <?php endif; ?>
-                            <?php if(($pedido->Estado ?? 'pendiente') === 'pendiente'): ?>
+                            <?php if(($pedido->Estado_Subpedido ?? 'pendiente') === 'pendiente'): ?>
                                 <div class="order-actions">
-                                    <form method="POST" action="<?php echo e(route('pedidos.status', $pedido->ID_Pedido ?? $pedido->N_Pedido)); ?>" onsubmit="return confirm('¿Rechazar y eliminar este pedido?');">
+                                    <form method="POST" action="<?php echo e(route('pedidos.status', $pedido->N_Subpedido)); ?>" onsubmit="return confirm('¿Rechazar y eliminar este pedido?');">
                                         <?php echo csrf_field(); ?>
                                         <?php echo method_field('PATCH'); ?>
                                         <input type="hidden" name="estado" value="aceptado">
                                         <button type="submit">Aceptar pedido</button>
                                     </form>
-                                    <form method="POST" action="<?php echo e(route('pedidos.status', $pedido->ID_Pedido ?? $pedido->N_Pedido)); ?>">
+                                    <form method="POST" action="<?php echo e(route('pedidos.status', $pedido->N_Subpedido)); ?>">
                                         <?php echo csrf_field(); ?>
                                         <?php echo method_field('PATCH'); ?>
                                         <input type="hidden" name="estado" value="rechazado">
@@ -75,9 +83,10 @@
                             <?php endif; ?>
                         </article>
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                </div>
-            <?php endif; ?>
-        </section>
+                    </div>
+                <?php endif; ?>
+            </section>
+        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 
         <?php if($productos->isEmpty()): ?>
             <div class="empty">Todavía no hay productos cargados.</div>
@@ -129,13 +138,6 @@
                 <label for="imagen_url">Imagen URL</label>
                 <input id="imagen_url" name="imagen_url" type="url" value="<?php echo e(old('imagen_url')); ?>" required maxlength="2048">
 
-                <label for="stock">Cantidad disponible</label>
-                <div class="quantity-control">
-                    <button type="button" class="quantity-button" data-quantity-decrease aria-label="Disminuir cantidad">-</button>
-                    <input id="stock" name="stock" type="number" value="<?php echo e(old('stock', 1)); ?>" min="0" max="999999" step="1" required>
-                    <button type="button" class="quantity-button" data-quantity-increase aria-label="Aumentar cantidad">+</button>
-                </div>
-
                 <label class="checkbox">
                     <input name="disponible" type="checkbox" value="1" <?php echo e(old('disponible', '1') ? 'checked' : ''); ?>>
                     Disponible para pedidos
@@ -151,14 +153,6 @@
         document.getElementById('close-product-modal').addEventListener('click', () => modal.close());
         modal.addEventListener('click', (event) => {
             if (event.target === modal) modal.close();
-        });
-
-        const stockInput = document.getElementById('stock');
-        document.querySelector('[data-quantity-decrease]').addEventListener('click', () => {
-            stockInput.value = Math.max(0, Number(stockInput.value || 0) - 1);
-        });
-        document.querySelector('[data-quantity-increase]').addEventListener('click', () => {
-            stockInput.value = Math.min(999999, Number(stockInput.value || 0) + 1);
         });
 
         <?php if($errors->any()): ?>

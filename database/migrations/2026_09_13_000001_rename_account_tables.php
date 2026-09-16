@@ -72,6 +72,15 @@ return new class extends Migration
 
     private function createEmailTriggers(): void
     {
+        if (! Schema::hasTable('cliente')
+            || ! Schema::hasTable('comercio')
+            || ! Schema::hasTable('repartidor')
+            || ! Schema::hasColumn('cliente', 'correo')
+            || ! Schema::hasColumn('comercio', 'correo')
+            || ! Schema::hasColumn('repartidor', 'correo')) {
+            return;
+        }
+
         DB::unprepared(<<<'SQL'
             CREATE TRIGGER check_email_usuarios_before_insert
             BEFORE INSERT ON cliente

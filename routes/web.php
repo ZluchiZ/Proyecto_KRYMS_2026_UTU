@@ -38,13 +38,9 @@ Route::get('/', function (Request $request) {
         $cuenta = $tablas[session('tipo_usuario')] ?? null;
 
         if ($cuenta) {
-<<<<<<< HEAD
             $usuario = DB::table($cuenta['tabla'])
                 ->where('Email_Usuario', session('email'))
                 ->first();
-=======
-            $usuario = DB::table($cuenta['tabla'])->where($cuenta['clave'], session('usuario_id'))->first();
->>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
             $nombreUsuario = $usuario?->{'Nombre'} ?? $usuario?->{'Nombre_Comercio'};
             $tipoUsuario = match (session('tipo_usuario')) {
                 'comercio' => 'Local',
@@ -62,11 +58,7 @@ Route::get('/', function (Request $request) {
             }
 
             if ($usuario && session('tipo_usuario') === 'comercio') {
-<<<<<<< HEAD
                 $identificadorComercio = $usuario->{'RUT'} ?: $usuario->{'id'};
-=======
-                $identificadorComercio = $usuario->{'RUT'};
->>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
             }
         }
     }
@@ -90,7 +82,6 @@ Route::get('/', function (Request $request) {
         ->orderByDesc('ID_Producto')
         ->get();
 
-<<<<<<< HEAD
     $cantidadCarrito = 0;
     if (session('tipo_usuario') === 'cliente' && session('usuario_id')) {
         $columnaClienteCarrito = Schema::hasColumn('Carrito', 'ID_Cliente')
@@ -104,11 +95,6 @@ Route::get('/', function (Request $request) {
             ->where($columnaClienteCarrito, $idClienteCarrito)
             ->sum('Cantidad');
     }
-=======
-    $cantidadCarrito = session('tipo_usuario') === 'cliente'
-        ? DB::table('Carrito')->where('CI_Cliente', session('usuario_id'))->sum('Cantidad')
-        : 0;
->>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
 
     return view('home', [
         'nombreUsuario' => $nombreUsuario,
@@ -125,9 +111,8 @@ Route::get('/dashboard-local', function () {
     abort_unless(session('tipo_usuario') === 'comercio' && session('usuario_id'), 403);
 
     $comercio = DB::table('Comercio')
-<<<<<<< HEAD
         ->where('Email_Usuario', session('email'))
-        ->first(['Nombre_Comercio', 'Email_Usuario', 'RUT', 'id']);
+        ->first(['Nombre_Comercio', 'Email_Usuario', 'RUT']);
 
     abort_unless($comercio, 403);
 
@@ -152,6 +137,7 @@ Route::get('/dashboard-local', function () {
             ->select(
                 'Pedido.*',
                 'Subpedido.N_Subpedido',
+                'Subpedido.Estado as Estado_Subpedido',
                 'Producto.Nombre_Producto',
                 'Detalle_de_pedido.Cantidad',
                 'Cliente.Nombre as Nombre_Cliente',
@@ -164,38 +150,6 @@ Route::get('/dashboard-local', function () {
             ->orderByDesc('Pedido.N_Pedido')
             ->get();
     }
-=======
-        ->where('RUT', session('usuario_id'))
-        ->where('Email_Usuario', session('email'))
-        ->first(['Nombre_Comercio', 'Email_Usuario']);
-
-    abort_unless($comercio, 403);
-
-    $productos = DB::table('Producto')
-        ->where('RUT_Comercio', session('usuario_id'))
-        ->orderByDesc('ID_Producto')
-        ->get();
-
-    $pedidos = DB::table('Pedido')
-        ->join('Subpedido', 'Pedido.N_Pedido', '=', 'Subpedido.N_Pedido')
-        ->join('Detalle_de_pedido', 'Subpedido.N_Subpedido', '=', 'Detalle_de_pedido.N_Subpedido')
-        ->join('Producto', 'Detalle_de_pedido.ID_Producto', '=', 'Producto.ID_Producto')
-        ->leftJoin('Cliente', 'Pedido.CI_Cliente', '=', 'Cliente.CI')
-        ->where('Subpedido.RUT_Comercio', session('usuario_id'))
-        ->select(
-            'Pedido.*',
-            'Producto.Nombre_Producto',
-            'Detalle_de_pedido.Cantidad',
-            'Cliente.Nombre as Nombre_Cliente',
-            'Cliente.Apellido as Apellido_Cliente',
-            'Cliente.Email_Usuario as Correo_Cliente',
-            'Cliente.Teléfono as Telefono_Cliente',
-            DB::raw('NULL as Telefono_Contacto'),
-            DB::raw('NULL as Referencias')
-        )
-        ->orderByDesc(Schema::hasColumn('Pedido', 'N_Pedido') ? 'Pedido.N_Pedido' : 'Pedido.ID_Pedido')
-        ->get();
->>>>>>> a391eb105a2f6f2cbe09e9877773fb0cef2cdc50
 
     return view('Local.DashboardLocal', [
         'productos' => $productos,

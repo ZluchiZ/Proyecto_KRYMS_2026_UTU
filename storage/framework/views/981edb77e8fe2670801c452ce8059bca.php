@@ -40,13 +40,13 @@
     <input type="date" id="fechaNacimiento" name="nacimiento" placeholder="Fecha de Nacimiento" value="<?php echo e(old('nacimiento')); ?>" required>
     <input type="password" id="password" name="password" placeholder="Contraseña" required minlength="8">
     <input type="password" id="password2" name="password2" placeholder="Repetir Contraseña" required minlength="8">
-    <button type="submit">Entrar</button>
+    <button type="submit">Registrar</button>
   </form>
-    <p id="mensajeError">Por favor, ingresa un correo válido.</p>
-    <p id="errorCampo"></p>
-    <p id="errorApellido"></p>
-    <p id="errorContrasena"></p>
-    <p id="errorFecha"></p>
+    <p id="mensajeError" role="alert">Por favor, ingresa un correo válido.</p>
+    <p id="errorCampo" role="alert"></p>
+    <p id="errorApellido" role="alert"></p>
+    <p id="errorContrasena" role="alert"></p>
+    <p id="errorFecha" role="alert"></p>
   </div>
 </div> 
 
