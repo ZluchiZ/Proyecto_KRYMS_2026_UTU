@@ -16,9 +16,9 @@ class LoginController extends Controller
         ]);
 
         $cuentas = [
-            ['tabla' => 'Cliente', 'tipo' => 'cliente', 'id' => 'CI'],
-            ['tabla' => 'Comercio', 'tipo' => 'comercio', 'id' => 'RUT'],
-            ['tabla' => 'Repartidor', 'tipo' => 'repartidor', 'id' => 'CI'],
+            ['tabla' => 'cliente', 'tipo' => 'cliente', 'id' => 'CI'],
+            ['tabla' => 'comercio', 'tipo' => 'comercio', 'id' => 'RUT'],
+            ['tabla' => 'repartidor', 'tipo' => 'repartidor', 'id' => 'CI'],
         ];
 
         foreach ($cuentas as $cuenta) {

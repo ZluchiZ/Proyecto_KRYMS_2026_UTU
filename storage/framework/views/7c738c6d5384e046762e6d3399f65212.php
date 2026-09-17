@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/home.css') }}">
+    <link rel="stylesheet" href="<?php echo e(asset('css/styles.css')); ?>">
+    <link rel="stylesheet" href="<?php echo e(asset('css/home.css')); ?>">
     <title>ElGauchoVa</title>
 </head>
 
@@ -12,12 +12,12 @@
 
 <main class="container">
 
-@if (session('success'))
-    <p class="alert success-message toast-notification" role="status">{{ session('success') }}</p>
-@endif
+<?php if(session('success')): ?>
+    <p class="alert success-message toast-notification" role="status"><?php echo e(session('success')); ?></p>
+<?php endif; ?>
     <input type="checkbox" id="sidebar-toggle">
     <header class="site-header">
-        <img src="{{ asset('img/Logo_Gaucho_Va.png') }}" alt="Logo de ElGauchoVa" class="logo">
+        <img src="<?php echo e(asset('img/Logo_Gaucho_Va.png')); ?>" alt="Logo de ElGauchoVa" class="logo">
         <!-- Sección: botón de menú hamburguesa para abrir/cerrar el sidebar -->
         <label for="sidebar-toggle" class="menu-btn" aria-label="Abrir o cerrar menú">
             <span></span>
@@ -29,26 +29,26 @@
             <div class="icon-group">
                 <span class="location-icon">📍</span>
 
-                @if ($esClienteRegistrado)
-                    <a class="cart-link" href="{{ route('carrito') }}" aria-label="Ver carrito">🛒 {{ $cantidadCarrito }}</a>
-                @endif
+                <?php if($esClienteRegistrado): ?>
+                    <a class="cart-link" href="<?php echo e(route('carrito')); ?>" aria-label="Ver carrito">🛒 <?php echo e($cantidadCarrito); ?></a>
+                <?php endif; ?>
 
                 <div class="profile-container">
                     <input type="checkbox" id="toggleProfile">
                     <label for="toggleProfile" class="profile-icon">👤</label>
 
                     <div class="profile-menu">
-                        @if ($nombreUsuario)
-                            <strong>{{ $nombreUsuario }}</strong>
-                            <span>{{ $tipoUsuario }}</span>
-                            <small>{{ $correoUsuario }}</small>
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
+                        <?php if($nombreUsuario): ?>
+                            <strong><?php echo e($nombreUsuario); ?></strong>
+                            <span><?php echo e($tipoUsuario); ?></span>
+                            <small><?php echo e($correoUsuario); ?></small>
+                            <form method="POST" action="<?php echo e(route('logout')); ?>">
+                                <?php echo csrf_field(); ?>
                                 <button type="submit">Cerrar sesión</button>
                             </form>
-                        @else
-                            <a href="{{ route('login') }}">Iniciar Sesión / Registrarse</a>
-                        @endif
+                        <?php else: ?>
+                            <a href="<?php echo e(route('login')); ?>">Iniciar Sesión / Registrarse</a>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -75,9 +75,9 @@
         </div>
 
         <!-- Formulario de búsqueda para consultar productos o categorías -->
-        <form method="GET" action="{{ route('home') }}">
+        <form method="GET" action="<?php echo e(route('home')); ?>">
             <label for="campo-busqueda"></label>
-            <input type="search" id="campo-busqueda" name="q" value="{{ request('q') }}" placeholder="¿Qué estás buscando?">
+            <input type="search" id="campo-busqueda" name="q" value="<?php echo e(request('q')); ?>" placeholder="¿Qué estás buscando?">
             <button type="submit">Buscar</button>
         </form>
 
@@ -90,104 +90,104 @@
         </nav>
 
         <!-- Sección: productos disponibles de los locales -->
-        @if (request()->filled('q'))
+        <?php if(request()->filled('q')): ?>
             <div class="search-results" id="productos">
                 <div class="search-results-heading">
-                    <h2>Resultados para “{{ request('q') }}”</h2>
-                    <span>{{ $productos->count() }} producto(s)</span>
+                    <h2>Resultados para “<?php echo e(request('q')); ?>”</h2>
+                    <span><?php echo e($productos->count()); ?> producto(s)</span>
                 </div>
-                @if ($productos->isNotEmpty())
+                <?php if($productos->isNotEmpty()): ?>
                     <div class="search-product-grid">
-                        @foreach ($productos as $producto)
+                        <?php $__currentLoopData = $productos; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $producto): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <article class="search-product-card">
-                                <img src="{{ $producto->Foto_Producto }}" alt="{{ $producto->Nombre_Producto }}">
+                                <img src="<?php echo e($producto->Foto_Producto); ?>" alt="<?php echo e($producto->Nombre_Producto); ?>">
                                 <div class="search-product-content">
-                                    <h3>{{ $producto->Nombre_Producto }}</h3>
-                                    <p class="product-category">{{ $producto->Categoria }}</p>
+                                    <h3><?php echo e($producto->Nombre_Producto); ?></h3>
+                                    <p class="product-category"><?php echo e($producto->Categoria); ?></p>
                                     <div class="product-meta">
-                                        <strong class="product-price">$U {{ number_format($producto->Precio, 2, ',', '.') }}</strong>
-                                        <p class="product-store"><span>Local</span> {{ $producto->Nombre_Comercio ?? 'Local no disponible' }}</p>
+                                        <strong class="product-price">$U <?php echo e(number_format($producto->Precio, 2, ',', '.')); ?></strong>
+                                        <p class="product-store"><span>Local</span> <?php echo e($producto->Nombre_Comercio ?? 'Local no disponible'); ?></p>
                                     </div>
-                                    @if ($producto->Disponible && $esClienteRegistrado)
+                                    <?php if($producto->Disponible && $esClienteRegistrado): ?>
                                         <button
                                             type="button"
                                             class="purchase-trigger"
-                                            data-product-id="{{ $producto->ID_Producto }}"
-                                            data-product-name="{{ $producto->Nombre_Producto }}"
-                                            data-product-price="$U {{ number_format($producto->Precio, 2, ',', '.') }}"
-                                            data-product-local="{{ $producto->Nombre_Comercio ?? 'Local no disponible' }}"
+                                            data-product-id="<?php echo e($producto->ID_Producto); ?>"
+                                            data-product-name="<?php echo e($producto->Nombre_Producto); ?>"
+                                            data-product-price="$U <?php echo e(number_format($producto->Precio, 2, ',', '.')); ?>"
+                                            data-product-local="<?php echo e($producto->Nombre_Comercio ?? 'Local no disponible'); ?>"
                                             data-product-stock="1"
                                         >
                                             Comprar
                                         </button>
-                                    @elseif (! $producto->Disponible)
+                                    <?php elseif(! $producto->Disponible): ?>
                                         <span class="search-unavailable">No disponible</span>
-                                    @else
-                                        <a class="purchase-trigger" href="{{ route('login') }}">Iniciar sesión</a>
-                                    @endif
+                                    <?php else: ?>
+                                        <a class="purchase-trigger" href="<?php echo e(route('login')); ?>">Iniciar sesión</a>
+                                    <?php endif; ?>
                                 </div>
                             </article>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </div>
-                @else
+                <?php else: ?>
                     <p class="empty-search">No encontramos productos para esta búsqueda.</p>
-                @endif
+                <?php endif; ?>
             </div>
-        @else
+        <?php else: ?>
         <div class="product-carousel" data-carousel>
             <button type="button" class="carousel-arrow carousel-arrow-prev" data-carousel-prev aria-label="Productos anteriores">&#8249;</button>
             <div class="comidas-container" id="productos">
-            @forelse ($productos as $producto)
+            <?php $__empty_1 = true; $__currentLoopData = $productos; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $producto): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                 <article class="comida-card">
-                    <img src="{{ $producto->Foto_Producto }}" alt="{{ $producto->Nombre_Producto }}">
+                    <img src="<?php echo e($producto->Foto_Producto); ?>" alt="<?php echo e($producto->Nombre_Producto); ?>">
                     <div class="product-card-content">
-                        <h3>{{ $producto->Nombre_Producto }}</h3>
-                        <p class="product-category">{{ $producto->Categoria }}</p>
-                        @if ($producto->Disponible)
+                        <h3><?php echo e($producto->Nombre_Producto); ?></h3>
+                        <p class="product-category"><?php echo e($producto->Categoria); ?></p>
+                        <?php if($producto->Disponible): ?>
                             <div class="product-meta">
-                                <strong class="product-price">$U {{ number_format($producto->Precio, 2, ',', '.') }}</strong>
-                                <p class="product-store"><span>Local</span> {{ $producto->Nombre_Comercio ?? 'Local no disponible' }}</p>
+                                <strong class="product-price">$U <?php echo e(number_format($producto->Precio, 2, ',', '.')); ?></strong>
+                                <p class="product-store"><span>Local</span> <?php echo e($producto->Nombre_Comercio ?? 'Local no disponible'); ?></p>
                             </div>
-                            @if ($esClienteRegistrado)
+                            <?php if($esClienteRegistrado): ?>
                                 <button
                                     type="button"
                                     class="purchase-trigger"
-                                    data-product-id="{{ $producto->ID_Producto }}"
-                                    data-product-name="{{ $producto->Nombre_Producto }}"
-                                    data-product-price="$U {{ number_format($producto->Precio, 2, ',', '.') }}"
-                                    data-product-local="{{ $producto->Nombre_Comercio ?? 'Local no disponible' }}"
+                                    data-product-id="<?php echo e($producto->ID_Producto); ?>"
+                                    data-product-name="<?php echo e($producto->Nombre_Producto); ?>"
+                                    data-product-price="$U <?php echo e(number_format($producto->Precio, 2, ',', '.')); ?>"
+                                    data-product-local="<?php echo e($producto->Nombre_Comercio ?? 'Local no disponible'); ?>"
                                     data-product-stock="1"
                                 >
                                     Comprar
                                 </button>
-                            @else
-                                <a class="purchase-trigger" href="{{ route('login') }}">Inicia sesión para comprar</a>
-                            @endif
-                        @else
+                            <?php else: ?>
+                                <a class="purchase-trigger" href="<?php echo e(route('login')); ?>">Inicia sesión para comprar</a>
+                            <?php endif; ?>
+                        <?php else: ?>
                             <div class="product-meta">
-                                <p class="product-price"><strong>Precio:</strong> $U {{ number_format($producto->Precio, 2, ',', '.') }}</p>
-                                <p class="product-store"><span>Local</span> {{ $producto->Nombre_Comercio ?? 'Local no disponible' }}</p>
+                                <p class="product-price"><strong>Precio:</strong> $U <?php echo e(number_format($producto->Precio, 2, ',', '.')); ?></p>
+                                <p class="product-store"><span>Local</span> <?php echo e($producto->Nombre_Comercio ?? 'Local no disponible'); ?></p>
                             </div>
                             <div class="unavailable-product">
                                 <strong>No disponible</strong>
                                 <span>Vuelve a intentarlo más tarde.</span>
                             </div>
-                        @endif
+                        <?php endif; ?>
                     </div>
                 </article>
-            @empty
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                 <p>No hay productos disponibles en este momento.</p>
-            @endforelse
+            <?php endif; ?>
             </div>
             <button type="button" class="carousel-arrow carousel-arrow-next" data-carousel-next aria-label="Más productos">&#8250;</button>
         </div>
-        @endif
+        <?php endif; ?>
 
     </div>
 
 </main>
 
-@if ($esClienteRegistrado)
+<?php if($esClienteRegistrado): ?>
     <dialog id="purchase-modal" class="purchase-modal">
         <div class="purchase-content">
             <div class="purchase-header">
@@ -201,8 +201,8 @@
                 <p id="purchase-product-price"></p>
             </div>
 
-            <form method="POST" action="{{ route('carrito.add') }}" class="purchase-form">
-                @csrf
+            <form method="POST" action="<?php echo e(route('carrito.add')); ?>" class="purchase-form">
+                <?php echo csrf_field(); ?>
                 <input type="hidden" name="producto_id" id="purchase-product-id">
 
                 <label for="purchase-quantity">Cantidad</label>
@@ -212,7 +212,7 @@
             </form>
         </div>
     </dialog>
-@endif
+<?php endif; ?>
 
 <!-- Sección: pie de página con información de la empresa -->
 <footer>
@@ -260,7 +260,7 @@
     });
 </script>
 
-@if ($esClienteRegistrado)
+<?php if($esClienteRegistrado): ?>
     <script>
         const purchaseModal = document.getElementById('purchase-modal');
         const productIdInput = document.getElementById('purchase-product-id');
@@ -283,7 +283,7 @@
             if (event.target === purchaseModal) purchaseModal.close();
         });
     </script>
-@endif
+<?php endif; ?>
 
 </body>
-</html>
+</html><?php /**PATH /opt/lampp/htdocs/Proyecto_KRYMS_2026_UTU/resources/views/home.blade.php ENDPATH**/ ?>

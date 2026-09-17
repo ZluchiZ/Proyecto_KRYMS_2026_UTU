@@ -17,7 +17,7 @@ class AuthController extends Controller
             'correo' => [
                 'required',
                 'email',
-                Rule::unique('Usuario', 'Email'),
+                Rule::unique('usuario', 'Email'),
             ],
             'contrasena' => 'required|min:6',
         ]);

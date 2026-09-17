@@ -10,7 +10,7 @@ class PedidoController extends Controller
 {
     private function cartClientColumn(): string
     {
-        return Schema::hasColumn('Carrito', 'ID_Cliente') ? 'ID_Cliente' : 'CI_Cliente';
+        return Schema::hasColumn('carrito', 'ID_Cliente') ? 'ID_Cliente' : 'CI_Cliente';
     }
 
     private function cartClientValue(): string|int
@@ -19,7 +19,7 @@ class PedidoController extends Controller
             return session('usuario_id');
         }
 
-        return DB::table('Cliente')
+        return DB::table('cliente')
             ->where('CI', session('usuario_id'))
             ->value('id');
     }
@@ -34,11 +34,11 @@ class PedidoController extends Controller
         $this->requireClient();
 
         $validated = $request->validate([
-            'producto_id' => 'required|integer|exists:Producto,ID_Producto',
+            'producto_id' => 'required|integer|exists:producto,ID_Producto',
             'cantidad' => 'required|integer|min:1|max:999999',
         ]);
 
-        $producto = DB::table('Producto')
+        $producto = DB::table('producto')
             ->where('ID_Producto', $validated['producto_id'])
             ->where('Disponible', true)
             ->first(['ID_Producto']);
@@ -47,13 +47,13 @@ class PedidoController extends Controller
 
         $columnaCliente = $this->cartClientColumn();
         $valorCliente = $this->cartClientValue();
-        $carrito = DB::table('Carrito')
+        $carrito = DB::table('carrito')
             ->where($columnaCliente, $valorCliente)
             ->where('ID_Producto', $producto->ID_Producto)
             ->first();
         $cantidad = ($carrito->Cantidad ?? 0) + $validated['cantidad'];
 
-        DB::table('Carrito')->updateOrInsert(
+        DB::table('carrito')->updateOrInsert(
             [
                 $columnaCliente => $valorCliente,
                 'ID_Producto' => $producto->ID_Producto,
@@ -74,14 +74,14 @@ class PedidoController extends Controller
 
         $columnaCliente = $this->cartClientColumn();
         $valorCliente = $this->cartClientValue();
-        $items = DB::table('Carrito')
-            ->join('Producto', 'Carrito.ID_Producto', '=', 'Producto.ID_Producto')
-            ->leftJoin('Comercio', 'Producto.RUT_Comercio', '=', 'Comercio.RUT')
-            ->where("Carrito.{$columnaCliente}", $valorCliente)
-            ->select('Carrito.*', 'Producto.Nombre_Producto', 'Producto.Precio', 'Producto.Foto_Producto', 'Comercio.Nombre_Comercio')
-            ->orderBy('Carrito.ID_Carrito')
+        $items = DB::table('carrito')
+            ->join('producto', 'carrito.ID_Producto', '=', 'producto.ID_Producto')
+            ->leftJoin('comercio', 'producto.RUT_Comercio', '=', 'comercio.RUT')
+            ->where("carrito.{$columnaCliente}", $valorCliente)
+            ->select('carrito.*', 'producto.Nombre_Producto', 'producto.Precio', 'producto.Foto_Producto', 'comercio.Nombre_Comercio')
+            ->orderBy('carrito.ID_Carrito')
             ->get();
-        $cliente = DB::table('Cliente')->where('CI', session('usuario_id'))->first();
+        $cliente = DB::table('cliente')->where('CI', session('usuario_id'))->first();
 
         return view('Cliente.Carrito', [
             'items' => $items,
@@ -95,7 +95,7 @@ class PedidoController extends Controller
 
         $columnaCliente = $this->cartClientColumn();
         $valorCliente = $this->cartClientValue();
-        DB::table('Carrito')
+        DB::table('carrito')
             ->where('ID_Carrito', $item)
             ->where($columnaCliente, $valorCliente)
             ->delete();
@@ -117,7 +117,7 @@ class PedidoController extends Controller
         $pedidos = DB::transaction(function () use ($validated) {
             $columnaCliente = $this->cartClientColumn();
             $valorCliente = $this->cartClientValue();
-            $items = DB::table('Carrito')
+            $items = DB::table('carrito')
                 ->where($columnaCliente, $valorCliente)
                 ->lockForUpdate()
                 ->get();
@@ -126,7 +126,7 @@ class PedidoController extends Controller
             $ids = [];
 
             foreach ($items as $item) {
-                $producto = DB::table('Producto')
+                $producto = DB::table('producto')
                     ->where('ID_Producto', $item->ID_Producto)
                     ->where('Disponible', true)
                     ->lockForUpdate()
@@ -136,7 +136,7 @@ class PedidoController extends Controller
                 $ids[] = $this->insertOrder($producto, $item->Cantidad, $validated);
             }
 
-            DB::table('Carrito')->where($columnaCliente, $valorCliente)->delete();
+            DB::table('carrito')->where($columnaCliente, $valorCliente)->delete();
 
             return $ids;
         });
@@ -152,24 +152,24 @@ class PedidoController extends Controller
             'estado' => 'required|in:aceptado,rechazado',
         ]);
 
-        $rutComercio = DB::table('Comercio')
+        $rutComercio = DB::table('comercio')
             ->where('Email_Usuario', session('email'))
             ->value('RUT');
 
         abort_unless($rutComercio, 403);
 
-        $subpedido = DB::table('Subpedido')
+        $subpedido = DB::table('subpedido')
             ->where('N_Subpedido', $pedido)
             ->where('RUT_Comercio', $rutComercio)
             ->first(['N_Subpedido', 'N_Pedido']);
 
         abort_unless($subpedido, 404, 'El pedido no pertenece a este local.');
 
-        DB::table('Subpedido')
+        DB::table('subpedido')
             ->where('N_Subpedido', $subpedido->N_Subpedido)
             ->update(['Estado' => $validated['estado']]);
 
-        DB::table('Pedido')
+        DB::table('pedido')
             ->where('N_Pedido', $subpedido->N_Pedido)
             ->update([
                 'Confirmacion_entrega' => $validated['estado'] === 'aceptado',
@@ -183,17 +183,17 @@ class PedidoController extends Controller
     private function insertOrder(object $producto, int $cantidad, array $validated): int
     {
             $total = $producto->Precio * $cantidad;
-            $repartidor = DB::table('Repartidor')->value('CI');
+            $repartidor = DB::table('repartidor')->value('CI');
 
-            $tarjeta = DB::table('Tarjeta')
+            $tarjeta = DB::table('tarjeta')
                 ->where('CI_Cliente', session('usuario_id'))
                 ->value('ID');
-            $tarjeta ??= DB::table('Tarjeta')->insertGetId([
+            $tarjeta ??= DB::table('tarjeta')->insertGetId([
                 'CI_Cliente' => session('usuario_id'),
                 'Banco' => $validated['metodo_pago'],
             ]);
 
-            $pedido = DB::table('Pedido')->insertGetId([
+            $pedido = DB::table('pedido')->insertGetId([
                 'CI_Cliente' => session('usuario_id'),
                 'CI_Repartidor' => $repartidor,
                 'ID_Tarjeta' => $tarjeta,
@@ -205,7 +205,7 @@ class PedidoController extends Controller
                 'Metodo_de_pago' => $validated['metodo_pago'],
             ], 'N_Pedido');
 
-            $subpedido = DB::table('Subpedido')->insertGetId([
+            $subpedido = DB::table('subpedido')->insertGetId([
                 'N_Pedido' => $pedido,
                 'RUT_Comercio' => $producto->RUT_Comercio,
                 'Fecha' => now()->toDateString(),
@@ -214,7 +214,7 @@ class PedidoController extends Controller
                 'Estado' => 'pendiente',
             ], 'N_Subpedido');
 
-            DB::table('Detalle_de_pedido')->insert([
+            DB::table('detalle_de_pedido')->insert([
                 'N_Subpedido' => $subpedido,
                 'ID_Producto' => $producto->ID_Producto,
                 'Cantidad' => $cantidad,

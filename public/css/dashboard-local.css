@@ -42,7 +42,27 @@ dialog::backdrop { background: #0008; }
 .close { background: transparent; color: #34251f; padding: .25rem .5rem; font-size: 1.4rem; }
 main form { display: grid; gap: .8rem; }
 label { font-weight: bold; }
-input, textarea { width: 100%; box-sizing: border-box; padding: .7rem; border: 1px solid #ccc; border-radius: 5px; font: inherit; }
+input, select, textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: .7rem .8rem;
+    border: 1px solid #e6c99d;
+    border-radius: 7px;
+    background: #fffdf9;
+    color: #34251f;
+    font: inherit;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #e28000;
+    outline: 3px solid rgba(226, 128, 0, 0.16);
+}
+
+select {
+    cursor: pointer;
+}
 textarea { min-height: 90px; resize: vertical; }
 .quantity-control { display: grid; grid-template-columns: 42px 1fr 42px; gap: .5rem; align-items: center; }
 .quantity-control input { text-align: center; }

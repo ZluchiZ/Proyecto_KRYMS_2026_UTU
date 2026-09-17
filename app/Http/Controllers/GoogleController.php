@@ -19,7 +19,7 @@ class GoogleController extends Controller
         $googleUser = Socialite::driver('google')->stateless()->user();
         $email = $googleUser->getEmail();
 
-        $cliente = DB::table('Cliente')->where('Email_Usuario', $email)->first();
+        $cliente = DB::table('cliente')->where('Email_Usuario', $email)->first();
 
         if ($cliente) {
             session()->regenerate();
@@ -51,7 +51,7 @@ class GoogleController extends Controller
     public function completeRegister(Request $request)
     {
         $request->validate([
-            'cedula' => ['required', 'string', 'max:8', 'unique:Cliente,CI'],
+            'cedula' => ['required', 'string', 'max:8', 'unique:cliente,CI'],
             'nombre' => ['required', 'string', 'max:255'],
             'apellido' => ['required', 'string', 'max:255'],
             'telefono' => ['required', 'string', 'max:9'],
@@ -64,10 +64,10 @@ class GoogleController extends Controller
         $password = bcrypt(Str::random(24));
 
         DB::transaction(function () use ($request, $email, $password) {
-            $usuarioExiste = DB::table('Usuario')->where('Email', $email)->exists();
+            $usuarioExiste = DB::table('usuario')->where('Email', $email)->exists();
 
             if (! $usuarioExiste) {
-                DB::table('Usuario')->insert([
+                DB::table('usuario')->insert([
                     'Email' => $email,
                     'Nombre_de_Usuario' => $request->nombre,
                     'Contraseña' => $password,
@@ -75,10 +75,10 @@ class GoogleController extends Controller
                 ]);
             }
 
-            $clienteExiste = DB::table('Cliente')->where('Email_Usuario', $email)->exists();
+            $clienteExiste = DB::table('cliente')->where('Email_Usuario', $email)->exists();
 
             if (! $clienteExiste) {
-                DB::table('Cliente')->insert([
+                DB::table('cliente')->insert([
                     'CI' => $request->cedula,
                     'Email_Usuario' => $email,
                     'Contraseña' => $password,

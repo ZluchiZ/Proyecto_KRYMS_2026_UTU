@@ -15,13 +15,16 @@ class LocalController extends Controller
         $validated = $request->validate([
             'nombre' => 'required|string|max:255',
             'precio' => 'required|numeric|min:0|max:99999999.99',
-            'categoria' => 'required|string|max:100',
+            'categoria' => [
+                'required',
+                Rule::in(['Farmacia', 'Supermercado', 'Ferretería', 'Rotisería']),
+            ],
             'descripcion' => 'required|string|max:1000',
             'imagen_url' => 'required|url|max:2048',
             'disponible' => 'nullable|boolean',
         ]);
 
-        $comercio = DB::table('Comercio')
+        $comercio = DB::table('comercio')
             ->where('Email_Usuario', session('email'))
             ->first(['RUT', 'Email_Usuario', 'Nombre_Comercio']);
 
@@ -30,7 +33,7 @@ class LocalController extends Controller
         $identificadorComercio = $comercio->RUT ?? session('usuario_id');
         abort_unless($identificadorComercio, 403, 'Este comercio no tiene un RUT asociado.');
 
-        DB::table('Producto')->insert([
+        DB::table('producto')->insert([
                 'RUT_Comercio' => $identificadorComercio,
                 'Nombre_Producto' => $validated['nombre'],
                 'Precio' => $validated['precio'],
@@ -53,7 +56,7 @@ class LocalController extends Controller
             'disponible' => 'required|boolean',
         ]);
 
-        $comercio = DB::table('Comercio')
+        $comercio = DB::table('comercio')
             ->where('Email_Usuario', session('email'))
             ->first(['RUT']);
 
@@ -62,7 +65,7 @@ class LocalController extends Controller
         $identificadorComercio = $comercio->RUT ?? session('usuario_id');
         abort_unless($identificadorComercio, 403, 'Este comercio no tiene un RUT asociado.');
 
-        $productoQuery = DB::table('Producto')
+        $productoQuery = DB::table('producto')
             ->where('ID_Producto', $producto)
             ->where('RUT_Comercio', $identificadorComercio);
 
@@ -82,7 +85,7 @@ class LocalController extends Controller
     {
         abort_unless(session('tipo_usuario') === 'comercio' && session('usuario_id') && session('email'), 403);
 
-        $eliminado = DB::table('Producto')
+        $eliminado = DB::table('producto')
             ->where('ID_Producto', $producto)
             ->where('RUT_Comercio', session('usuario_id'))
             ->delete();
@@ -101,7 +104,7 @@ class LocalController extends Controller
                 'nullable',
                 'string',
                 'max:20',
-                Rule::unique('Comercio', 'RUT'),
+                Rule::unique('comercio', 'RUT'),
             ],
             'nombre' => 'required|string|max:150',
             'nombre_dueno' => 'required|string|max:100',
@@ -113,7 +116,7 @@ class LocalController extends Controller
                 'required',
                 'email',
                 'max:255',
-                Rule::unique('Usuario', 'Email'),
+                Rule::unique('usuario', 'Email'),
             ],
             'contrasena' => 'required|string|min:8|confirmed',
         ], [
@@ -125,14 +128,14 @@ class LocalController extends Controller
             $password = bcrypt($validated['contrasena']);
 
             DB::transaction(function () use ($validated, $password) {
-                DB::table('Usuario')->insert([
+                DB::table('usuario')->insert([
                     'Email' => $validated['correo'],
                     'Nombre_de_Usuario' => $validated['nombre'],
                     'Contraseña' => $password,
                     'Tipo_Usuario' => 'comercio',
                 ]);
 
-                DB::table('Comercio')->insert([
+                DB::table('comercio')->insert([
                     'Email_Usuario' => $validated['correo'],
                     'Contraseña' => $password,
                     'RUT' => $validated['rut'] ?? null,

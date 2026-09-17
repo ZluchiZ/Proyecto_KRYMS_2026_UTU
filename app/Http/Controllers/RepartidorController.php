@@ -16,7 +16,7 @@ class RepartidorController extends Controller
                 'required',
                 'email',
                 'max:255',
-                Rule::unique('Usuario', 'Email'),
+                Rule::unique('usuario', 'Email'),
             ],
             'nombre' => 'required|string|max:255',
             'apellido' => 'required|string|max:255',
@@ -31,14 +31,14 @@ class RepartidorController extends Controller
             $password = bcrypt($validated['contrasena']);
 
             DB::transaction(function () use ($validated, $password) {
-                DB::table('Usuario')->insert([
+                DB::table('usuario')->insert([
                     'Email' => $validated['correo'],
                     'Nombre_de_Usuario' => $validated['nombre'],
                     'Contraseña' => $password,
                     'Tipo_Usuario' => 'repartidor',
                 ]);
 
-                DB::table('Repartidor')->insert([
+                DB::table('repartidor')->insert([
                     'CI' => $validated['cedula'],
                     'Email_Usuario' => $validated['correo'],
                     'Contraseña' => $password,

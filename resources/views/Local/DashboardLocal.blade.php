@@ -147,7 +147,12 @@
                 <input id="precio" name="precio" type="number" value="{{ old('precio') }}" min="0" max="99999999.99" step="0.01" required>
 
                 <label for="categoria">Categoría</label>
-                <input id="categoria" name="categoria" type="text" value="{{ old('categoria') }}" required maxlength="100">
+                <select id="categoria" name="categoria" required>
+                    <option value="">Seleccionar categoría</option>
+                    @foreach (['Farmacia', 'Supermercado', 'Ferretería', 'Rotisería'] as $categoria)
+                        <option value="{{ $categoria }}" @selected(old('categoria') === $categoria)>{{ $categoria }}</option>
+                    @endforeach
+                </select>
 
                 <label for="descripcion">Descripción</label>
                 <textarea id="descripcion" name="descripcion" required maxlength="1000">{{ old('descripcion') }}</textarea>

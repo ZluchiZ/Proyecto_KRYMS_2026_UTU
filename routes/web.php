@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 
 Route::get('/test-cliente', function () {
-    return DB::table('Usuario')->get();
+    return DB::table('usuario')->get();
 });
 
 Route::get('/login', function () {
@@ -32,9 +32,9 @@ Route::get('/', function (Request $request) {
 
     if (session('tipo_usuario') && session('usuario_id')) {
         $tablas = [
-            'cliente' => ['tabla' => 'Cliente', 'clave' => 'CI'],
-            'comercio' => ['tabla' => 'Comercio', 'clave' => 'RUT'],
-            'repartidor' => ['tabla' => 'Repartidor', 'clave' => 'CI'],
+            'cliente' => ['tabla' => 'cliente', 'clave' => 'CI'],
+            'comercio' => ['tabla' => 'comercio', 'clave' => 'RUT'],
+            'repartidor' => ['tabla' => 'repartidor', 'clave' => 'CI'],
         ];
         $cuenta = $tablas[session('tipo_usuario')] ?? null;
 
@@ -64,9 +64,9 @@ Route::get('/', function (Request $request) {
         }
     }
 
-    $productos = DB::table('Producto')
-        ->leftJoin('Comercio', 'Producto.RUT_Comercio', '=', 'Comercio.RUT')
-        ->select('Producto.*', 'Comercio.Nombre_Comercio')
+    $productos = DB::table('producto')
+        ->leftJoin('comercio', 'producto.RUT_Comercio', '=', 'comercio.RUT')
+        ->select('producto.*', 'comercio.Nombre_Comercio')
         ->when($identificadorComercio, function ($query) use ($identificadorComercio) {
             $query->where('RUT_Comercio', $identificadorComercio);
         })
@@ -80,7 +80,7 @@ Route::get('/', function (Request $request) {
             $query->where(function ($query) use ($busqueda) {
                 $query->where('Nombre_Producto', 'like', "%{$busqueda}%")
                     ->orWhere('Categoria', 'like', "%{$busqueda}%")
-                    ->orWhere('Comercio.Nombre_Comercio', 'like', "%{$busqueda}%");
+                    ->orWhere('comercio.Nombre_Comercio', 'like', "%{$busqueda}%");
             });
         })
         ->orderByDesc('ID_Producto')
@@ -88,14 +88,14 @@ Route::get('/', function (Request $request) {
 
     $cantidadCarrito = 0;
     if (session('tipo_usuario') === 'cliente' && session('usuario_id')) {
-        $columnaClienteCarrito = Schema::hasColumn('Carrito', 'ID_Cliente')
+        $columnaClienteCarrito = Schema::hasColumn('carrito', 'ID_Cliente')
             ? 'ID_Cliente'
             : 'CI_Cliente';
         $idClienteCarrito = $columnaClienteCarrito === 'ID_Cliente'
-            ? DB::table('Cliente')->where('CI', session('usuario_id'))->value('id')
+            ? DB::table('cliente')->where('CI', session('usuario_id'))->value('id')
             : session('usuario_id');
 
-        $cantidadCarrito = DB::table('Carrito')
+        $cantidadCarrito = DB::table('carrito')
             ->where($columnaClienteCarrito, $idClienteCarrito)
             ->sum('Cantidad');
     }
@@ -114,7 +114,7 @@ Route::get('/', function (Request $request) {
 Route::get('/dashboard-local', function () {
     abort_unless(session('tipo_usuario') === 'comercio' && session('usuario_id'), 403);
 
-    $comercio = DB::table('Comercio')
+    $comercio = DB::table('comercio')
         ->where('Email_Usuario', session('email'))
         ->first(['Nombre_Comercio', 'Email_Usuario', 'RUT']);
 
@@ -126,32 +126,32 @@ Route::get('/dashboard-local', function () {
     // Products and orders reference Comercio.RUT, so a local without RUT has no
     // compatible rows to query until it registers one.
     if ($comercio->RUT) {
-        $productos = DB::table('Producto')
+        $productos = DB::table('producto')
             ->where('RUT_Comercio', $comercio->RUT)
             ->orderByDesc('ID_Producto')
             ->get();
 
-        $pedidos = DB::table('Pedido')
-            ->join('Subpedido', 'Pedido.N_Pedido', '=', 'Subpedido.N_Pedido')
-            ->join('Detalle_de_pedido', 'Subpedido.N_Subpedido', '=', 'Detalle_de_pedido.N_Subpedido')
-            ->join('Producto', 'Detalle_de_pedido.ID_Producto', '=', 'Producto.ID_Producto')
-            ->leftJoin('Cliente', 'Pedido.CI_Cliente', '=', 'Cliente.CI')
-            ->where('Subpedido.RUT_Comercio', $comercio->RUT)
-            ->where('Subpedido.Estado', '<>', 'rechazado')
+        $pedidos = DB::table('pedido')
+            ->join('subpedido', 'pedido.N_Pedido', '=', 'subpedido.N_Pedido')
+            ->join('detalle_de_pedido', 'subpedido.N_Subpedido', '=', 'detalle_de_pedido.N_Subpedido')
+            ->join('producto', 'detalle_de_pedido.ID_Producto', '=', 'producto.ID_Producto')
+            ->leftJoin('cliente', 'pedido.CI_Cliente', '=', 'cliente.CI')
+            ->where('subpedido.RUT_Comercio', $comercio->RUT)
+            ->where('subpedido.Estado', '<>', 'rechazado')
             ->select(
-                'Pedido.*',
-                'Subpedido.N_Subpedido',
-                'Subpedido.Estado as Estado_Subpedido',
-                'Producto.Nombre_Producto',
-                'Detalle_de_pedido.Cantidad',
-                'Cliente.Nombre as Nombre_Cliente',
-                'Cliente.Apellido as Apellido_Cliente',
-                'Cliente.Email_Usuario as Correo_Cliente',
-                'Cliente.Teléfono as Telefono_Cliente',
+                'pedido.*',
+                'subpedido.N_Subpedido',
+                'subpedido.Estado as Estado_Subpedido',
+                'producto.Nombre_Producto',
+                'detalle_de_pedido.Cantidad',
+                'cliente.Nombre as Nombre_Cliente',
+                'cliente.Apellido as Apellido_Cliente',
+                'cliente.Email_Usuario as Correo_Cliente',
+                'cliente.Teléfono as Telefono_Cliente',
                 DB::raw('NULL as Telefono_Contacto'),
                 DB::raw('NULL as Referencias')
             )
-            ->orderByDesc('Pedido.N_Pedido')
+            ->orderByDesc('pedido.N_Pedido')
             ->get();
     }
 

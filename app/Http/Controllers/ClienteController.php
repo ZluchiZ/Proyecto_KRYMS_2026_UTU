@@ -15,7 +15,7 @@ class ClienteController extends Controller
             'required',
             'string',
             'max:8',
-            Rule::unique('Cliente', 'CI'),
+            Rule::unique('cliente', 'CI'),
         ],
         'nombre' => 'required|string|max:255',
         'apellido' => 'required|string|max:255',
@@ -23,7 +23,7 @@ class ClienteController extends Controller
             'required',
             'email',
             'max:255',
-            Rule::unique('Usuario', 'Email'),
+            Rule::unique('usuario', 'Email'),
         ],
         'Numero' => 'required|string|max:9',
         'password' => 'required|string|min:8',
@@ -38,14 +38,14 @@ class ClienteController extends Controller
         $password = bcrypt($validated['password']);
 
         DB::transaction(function () use ($validated, $password) {
-            DB::table('Usuario')->insert([
+            DB::table('usuario')->insert([
                 'Email' => $validated['email'],
                 'Nombre_de_Usuario' => $validated['nombre'],
                 'Contraseña' => $password,
                 'Tipo_Usuario' => 'cliente',
             ]);
 
-            DB::table('Cliente')->insert([
+            DB::table('cliente')->insert([
                 'CI' => $validated['cedula'],
                 'Email_Usuario' => $validated['email'],
                 'Contraseña' => $password,
