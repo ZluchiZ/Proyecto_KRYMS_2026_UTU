@@ -4,10 +4,35 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 
 class PedidoController extends Controller
 {
+    private function geocode(?string $address): array
+    {
+        if (! $address) {
+            return ['latitud' => null, 'longitud' => null];
+        }
+
+        try {
+            $result = Http::withHeaders([
+                'User-Agent' => 'KRYMS Proyecto 2026 / Laravel',
+            ])->timeout(5)->get('https://nominatim.openstreetmap.org/search', [
+                'q' => $address.', Uruguay',
+                'format' => 'json',
+                'limit' => 1,
+            ])->json();
+
+            return [
+                'latitud' => isset($result[0]['lat']) ? (float) $result[0]['lat'] : null,
+                'longitud' => isset($result[0]['lon']) ? (float) $result[0]['lon'] : null,
+            ];
+        } catch (\Throwable) {
+            return ['latitud' => null, 'longitud' => null];
+        }
+    }
+
     private function cartClientColumn(): string
     {
         return Schema::hasColumn('carrito', 'ID_Cliente') ? 'ID_Cliente' : 'CI_Cliente';
@@ -29,6 +54,53 @@ class PedidoController extends Controller
         abort_unless(session('tipo_usuario') === 'cliente' && session('usuario_id'), 403);
     }
 
+    public function clientLocationForm()
+    {
+        $this->requireClient();
+
+        $locationColumns = ['Direccion_Entrega', 'latitud', 'longitud'];
+        if (Schema::hasColumn('cliente', 'direccion')) {
+            $locationColumns[] = 'direccion';
+        }
+
+        $cliente = DB::table('cliente')
+            ->where('CI', session('usuario_id'))
+            ->first($locationColumns);
+
+        return view('Cliente.Ubicacion', [
+            'direccionEntrega' => $cliente?->direccion ?? $cliente?->Direccion_Entrega,
+            'latitudUsuario' => $cliente?->latitud,
+            'longitudUsuario' => $cliente?->longitud,
+        ]);
+    }
+
+    public function updateClientLocation(Request $request)
+    {
+        $this->requireClient();
+
+        $validated = $request->validate([
+            'direccion' => 'required|string|max:500',
+            'latitud' => 'required|numeric|between:-90,90',
+            'longitud' => 'required|numeric|between:-180,180',
+        ]);
+
+        $locationUpdate = [
+            'Direccion_Entrega' => $validated['direccion'],
+            'latitud' => $validated['latitud'],
+            'longitud' => $validated['longitud'],
+        ];
+
+        if (Schema::hasColumn('cliente', 'direccion')) {
+            $locationUpdate['direccion'] = $validated['direccion'];
+        }
+
+        DB::table('cliente')
+            ->where('CI', session('usuario_id'))
+            ->update($locationUpdate);
+
+        return redirect()->route('home')->with('success', 'Dirección de entrega actualizada.');
+    }
+
     public function addToCart(Request $request)
     {
         $this->requireClient();
@@ -39,11 +111,13 @@ class PedidoController extends Controller
         ]);
 
         $producto = DB::table('producto')
+            ->join('comercio', 'producto.RUT_Comercio', '=', 'comercio.RUT')
             ->where('ID_Producto', $validated['producto_id'])
             ->where('Disponible', true)
-            ->first(['ID_Producto']);
+            ->where('comercio.Abierto', true)
+            ->first(['producto.ID_Producto']);
 
-        abort_unless($producto, 404, 'El producto ya no está disponible.');
+        abort_unless($producto, 404, 'El producto ya no está disponible o el local está cerrado.');
 
         $columnaCliente = $this->cartClientColumn();
         $valorCliente = $this->cartClientValue();
@@ -83,9 +157,12 @@ class PedidoController extends Controller
             ->get();
         $cliente = DB::table('cliente')->where('CI', session('usuario_id'))->first();
 
-        return view('Cliente.Carrito', [
+        return view('Cliente.CarritoNuevo', [
             'items' => $items,
             'telefonoUsuario' => $cliente?->{'Teléfono'},
+            'direccionEntrega' => $cliente?->direccion ?? $cliente?->Direccion_Entrega,
+            'latitudUsuario' => $cliente?->latitud,
+            'longitudUsuario' => $cliente?->longitud,
         ]);
     }
 
@@ -112,9 +189,29 @@ class PedidoController extends Controller
             'telefono_contacto' => 'nullable|string|max:30',
             'referencias' => 'nullable|string|max:1000',
             'metodo_pago' => 'required|in:efectivo,tarjeta',
+            'latitud' => 'nullable|numeric|between:-90,90',
+            'longitud' => 'nullable|numeric|between:-180,180',
         ]);
 
-        $pedidos = DB::transaction(function () use ($validated) {
+        $coordenadas = [
+            'latitud' => $validated['latitud'] ?? null,
+            'longitud' => $validated['longitud'] ?? null,
+        ];
+        if (! $coordenadas['latitud'] || ! $coordenadas['longitud']) {
+            $coordenadas = $this->geocode($validated['direccion_envio']);
+        }
+        abort_unless($coordenadas['latitud'] && $coordenadas['longitud'], 422, 'No pudimos ubicar la dirección. Selecciona un punto en el mapa.');
+
+        if (Schema::hasTable('cliente') && Schema::hasColumn('cliente', 'latitud') && Schema::hasColumn('cliente', 'longitud')) {
+            DB::table('cliente')
+                ->where('CI', session('usuario_id'))
+                ->update([
+                    'latitud' => $coordenadas['latitud'],
+                    'longitud' => $coordenadas['longitud'],
+                ]);
+        }
+
+        $pedidos = DB::transaction(function () use ($validated, $coordenadas) {
             $columnaCliente = $this->cartClientColumn();
             $valorCliente = $this->cartClientValue();
             $items = DB::table('carrito')
@@ -127,13 +224,15 @@ class PedidoController extends Controller
 
             foreach ($items as $item) {
                 $producto = DB::table('producto')
+                    ->join('comercio', 'producto.RUT_Comercio', '=', 'comercio.RUT')
                     ->where('ID_Producto', $item->ID_Producto)
                     ->where('Disponible', true)
+                    ->where('comercio.Abierto', true)
                     ->lockForUpdate()
-                    ->first(['ID_Producto', 'Precio', 'RUT_Comercio']);
+                    ->first(['producto.ID_Producto', 'producto.Precio', 'producto.RUT_Comercio']);
 
-                abort_unless($producto, 422, 'Uno de los productos ya no está disponible.');
-                $ids[] = $this->insertOrder($producto, $item->Cantidad, $validated);
+                abort_unless($producto, 422, 'Uno de los productos ya no está disponible o el local está cerrado.');
+                $ids[] = $this->insertOrder($producto, $item->Cantidad, $validated, $coordenadas);
             }
 
             DB::table('carrito')->where($columnaCliente, $valorCliente)->delete();
@@ -180,10 +279,20 @@ class PedidoController extends Controller
             ->with('success', 'Pedido '.($validated['estado'] === 'aceptado' ? 'aceptado' : 'rechazado').' correctamente.');
     }
 
-    private function insertOrder(object $producto, int $cantidad, array $validated): int
+    private function insertOrder(object $producto, int $cantidad, array $validated, array $coordenadas): int
     {
             $total = $producto->Precio * $cantidad;
             $repartidor = DB::table('repartidor')->value('CI');
+            $local = DB::table('comercio')
+                ->where('RUT', $producto->RUT_Comercio)
+                ->first(['latitud', 'longitud']);
+            $distancia = null;
+            if ($local?->latitud !== null && $local?->longitud !== null) {
+                $distancia = DB::selectOne(
+                    'SELECT 6371 * ACOS(LEAST(1, GREATEST(-1, COS(RADIANS(?)) * COS(RADIANS(latitud)) * COS(RADIANS(longitud) - RADIANS(?)) + SIN(RADIANS(?)) * SIN(RADIANS(latitud))))) AS distancia FROM comercio WHERE RUT = ? LIMIT 1',
+                    [$coordenadas['latitud'], $coordenadas['longitud'], $coordenadas['latitud'], $producto->RUT_Comercio]
+                )->distancia ?? null;
+            }
 
             $tarjeta = DB::table('tarjeta')
                 ->where('CI_Cliente', session('usuario_id'))
@@ -201,6 +310,9 @@ class PedidoController extends Controller
                 'Hora' => now()->toTimeString(),
                 'Estado' => 'pendiente',
                 'Ubicacion' => $validated['direccion_envio'],
+                'latitud' => $coordenadas['latitud'],
+                'longitud' => $coordenadas['longitud'],
+                'Distancia_Local_Km' => $distancia,
                 'Monto_Total' => $total,
                 'Metodo_de_pago' => $validated['metodo_pago'],
             ], 'N_Pedido');

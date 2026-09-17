@@ -1,0 +1,89 @@
+:root {
+    --google-ink: #513c40;
+    --google-muted: #8d7174;
+    --google-surface: rgba(255, 251, 248, 0.95);
+    --google-salmon: #e98272;
+    --google-salmon-dark: #c96358;
+    --google-border: #efc0b6;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    min-width: 320px;
+    margin: 0;
+    padding: 2rem 1rem;
+    background:
+        radial-gradient(circle at 10% 10%, rgba(255, 224, 208, 0.9), transparent 30%),
+        radial-gradient(circle at 90% 85%, rgba(247, 218, 221, 0.85), transparent 34%),
+        #fff6f0;
+    color: var(--google-ink);
+    font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    line-height: 1.5;
+}
+
+.google-register-card {
+    width: min(100%, 32rem);
+    margin: 0 auto;
+    padding: clamp(1.25rem, 4vw, 2rem);
+    border: 1px solid rgba(239, 192, 182, 0.75);
+    border-radius: 16px;
+    background: var(--google-surface);
+    box-shadow: 0 18px 45px rgba(184, 99, 87, 0.16);
+}
+
+.google-register-card h2 {
+    margin-top: 0;
+    color: var(--google-salmon-dark);
+}
+
+.google-register-card p {
+    color: var(--google-muted);
+}
+
+.google-register-card form {
+    display: grid;
+    gap: 0.55rem;
+}
+
+.google-register-card label {
+    margin-top: 0.45rem;
+    font-weight: bold;
+}
+
+.google-register-card input {
+    width: 100%;
+    padding: 0.8rem 0.9rem;
+    border: 1px solid var(--google-border);
+    border-radius: 9px;
+    background: #fff;
+    color: var(--google-ink);
+    font: inherit;
+}
+
+.google-register-card input:focus {
+    border-color: var(--google-salmon);
+    outline: 3px solid rgba(233, 130, 114, 0.18);
+}
+
+.google-register-card button {
+    min-height: 2.9rem;
+    margin-top: 0.75rem;
+    border: 0;
+    border-radius: 9px;
+    background: var(--google-salmon);
+    color: #fff;
+    cursor: pointer;
+    font: inherit;
+    font-weight: bold;
+}
+
+.google-register-card button:hover {
+    background: var(--google-salmon-dark);
+}
+
+.google-register-errors {
+    color: #b84d4b;
+}

@@ -1,5 +1,36 @@
 .form-errors,
 .session-error {
+    color: #b84d4b;
+    margin-bottom: 1rem;
+}
+
+body {
+    background:
+        radial-gradient(circle at 10% 10%, rgba(255, 224, 208, 0.9), transparent 30%),
+        radial-gradient(circle at 90% 85%, rgba(247, 218, 221, 0.85), transparent 34%),
+        #fff6f0;
+}
+
+body > form {
+    border: 1px solid rgba(239, 192, 182, 0.72);
+    background: rgba(255, 251, 248, 0.95);
+    box-shadow: 0 18px 45px rgba(184, 99, 87, 0.14);
+}
+
+body > form input:focus {
+    border-color: #e98272;
+    outline: 3px solid rgba(233, 130, 114, 0.18);
+}
+
+body > form button {
+    background: #e98272;
+}
+
+body > form button:hover {
+    background: #c96358;
+}
+.form-errors,
+.session-error {
     color: #ff3936;
     margin-bottom: 1rem;
 }

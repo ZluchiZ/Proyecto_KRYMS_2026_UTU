@@ -1,0 +1,18 @@
+.local-profile-page { min-height: 100vh; }
+.profile-back-link { color: var(--blue); font-size: .82rem; font-weight: 700; }
+.local-profile-main { width: min(100% - 2rem, 1100px); margin: 2.5rem auto 4rem; }
+.local-profile-hero { display: flex; align-items: center; gap: 1.5rem; padding: 2rem; border: 1px solid rgba(226,128,0,.12); border-radius: 22px; background: var(--white); box-shadow: 0 18px 42px rgba(18,38,77,.07); }
+.local-profile-logo-wrap { flex: 0 0 130px; width: 130px; height: 130px; overflow: hidden; border-radius: 18px; background: #fff1d6; }
+.local-profile-logo { width: 100%; height: 100%; object-fit: cover; }
+.local-profile-heading { display: grid; gap: .55rem; }
+.local-profile-heading h1 { font-size: clamp(1.8rem, 4vw, 3rem); }
+.profile-eyebrow { color: var(--blue); font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.profile-status { width: fit-content; padding: .3rem .6rem; border-radius: 999px; font-size: .72rem; font-weight: 700; }
+.profile-status.is-open { background: #dff7ef; color: #16835d; }
+.profile-status.is-closed { background: #ffebe9; color: #d92d20; }
+.local-profile-info { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; margin: 1.5rem 0 3rem; overflow: hidden; border: 1px solid var(--line); border-radius: 16px; background: var(--line); }
+.local-profile-info div { display: grid; gap: .35rem; min-height: 86px; padding: 1rem; background: var(--white); }
+.local-profile-info span { color: var(--muted); font-size: .7rem; font-weight: 700; text-transform: uppercase; }
+.local-profile-info strong { color: var(--navy); font-size: .88rem; font-weight: 600; }
+.local-products-section .section-heading { margin-bottom: 1rem; }
+@media (max-width: 600px) { .header-inner { gap: .65rem; }.profile-back-link { display: none; }.local-profile-main { width: min(100% - 1.25rem, 1100px); margin-top: 1.25rem; }.local-profile-hero { align-items: flex-start; flex-direction: column; padding: 1.25rem; }.local-profile-logo-wrap { width: 92px; height: 92px; }.local-profile-info { grid-template-columns: 1fr; }.local-profile-info div { min-height: auto; } }

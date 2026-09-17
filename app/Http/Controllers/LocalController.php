@@ -4,10 +4,54 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\Rule;
 
 class LocalController extends Controller
 {
+    private function geocode(?string $address): array
+    {
+        if (! $address) {
+            return ['latitud' => null, 'longitud' => null];
+        }
+
+        try {
+            $result = Http::withHeaders([
+                'User-Agent' => 'KRYMS Proyecto 2026 / Laravel',
+            ])->timeout(5)->get('https://nominatim.openstreetmap.org/search', [
+                'q' => $address.', Uruguay',
+                'format' => 'json',
+                'limit' => 1,
+            ])->json();
+
+            return [
+                'latitud' => isset($result[0]['lat']) ? (float) $result[0]['lat'] : null,
+                'longitud' => isset($result[0]['lon']) ? (float) $result[0]['lon'] : null,
+            ];
+        } catch (\Throwable) {
+            return ['latitud' => null, 'longitud' => null];
+        }
+    }
+
+    public function updateStatus(Request $request): \Illuminate\Http\RedirectResponse
+    {
+        abort_unless(session('tipo_usuario') === 'comercio' && session('usuario_id') && session('email'), 403);
+
+        $validated = $request->validate([
+            'abierto' => 'required|boolean',
+        ]);
+
+        $actualizado = DB::table('comercio')
+            ->where('Email_Usuario', session('email'))
+            ->update(['Abierto' => $request->boolean('abierto')]);
+
+        abort_unless($actualizado, 404);
+
+        return redirect()
+            ->route('dashboard.local')
+            ->with('success', $request->boolean('abierto') ? 'El local está abierto.' : 'El local está cerrado.');
+    }
+
     public function storeProducto(Request $request)
     {
         abort_unless(session('tipo_usuario') === 'comercio' && session('usuario_id'), 403);
@@ -17,7 +61,18 @@ class LocalController extends Controller
             'precio' => 'required|numeric|min:0|max:99999999.99',
             'categoria' => [
                 'required',
-                Rule::in(['Farmacia', 'Supermercado', 'Ferretería', 'Rotisería']),
+                Rule::in([
+                    'Restaurantes',
+                    'Supermercados',
+                    'Farmacia',
+                    'Kioscos',
+                    'Bebidas',
+                    'Mascotas',
+                    'Otros',
+                    'Supermercado',
+                    'Ferretería',
+                    'Rotisería',
+                ]),
             ],
             'descripcion' => 'required|string|max:1000',
             'imagen_url' => 'required|url|max:2048',
@@ -53,6 +108,7 @@ class LocalController extends Controller
 
         $validated = $request->validate([
             'precio' => 'required|numeric|min:0|max:99999999.99',
+            'descuento' => 'required|numeric|min:0|max:100',
             'disponible' => 'required|boolean',
         ]);
 
@@ -73,6 +129,7 @@ class LocalController extends Controller
 
         $productoQuery->update([
             'Precio' => $validated['precio'],
+            'Descuento_Porcentaje' => $validated['descuento'],
             'Disponible' => $request->boolean('disponible'),
         ]);
 
@@ -126,8 +183,9 @@ class LocalController extends Controller
 
         try {
             $password = bcrypt($validated['contrasena']);
+            $coordenadas = $this->geocode($validated['direccion'] ?? null);
 
-            DB::transaction(function () use ($validated, $password) {
+            DB::transaction(function () use ($validated, $password, $coordenadas) {
                 DB::table('usuario')->insert([
                     'Email' => $validated['correo'],
                     'Nombre_de_Usuario' => $validated['nombre'],
@@ -145,6 +203,8 @@ class LocalController extends Controller
                     'Horario' => $validated['horario'],
                     'Dirección' => $validated['direccion'] ?? null,
                     'Logo' => $validated['logo'] ?? null,
+                    'latitud' => $coordenadas['latitud'],
+                    'longitud' => $coordenadas['longitud'],
                 ]);
             });
 

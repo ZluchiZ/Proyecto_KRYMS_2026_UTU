@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ asset('css/dashboard-local.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/internal.css') }}">
     <title>Productos del local</title>
 </head>
-<body>
+<body class="internal-page internal-dashboard">
+    @include('partials.internal-header')
     <main>
         <section class="profile">
             <div class="profile-info">
@@ -149,7 +151,7 @@
                 <label for="categoria">Categoría</label>
                 <select id="categoria" name="categoria" required>
                     <option value="">Seleccionar categoría</option>
-                    @foreach (['Farmacia', 'Supermercado', 'Ferretería', 'Rotisería'] as $categoria)
+                    @foreach (['Restaurantes', 'Supermercados', 'Farmacia', 'Kioscos', 'Bebidas', 'Mascotas', 'Entrega rápida', 'Otros', 'Supermercado', 'Ferretería', 'Rotisería'] as $categoria)
                         <option value="{{ $categoria }}" @selected(old('categoria') === $categoria)>{{ $categoria }}</option>
                     @endforeach
                 </select>
@@ -180,6 +182,27 @@
         document.querySelectorAll('[data-edit-product]').forEach((button) => {
             button.addEventListener('click', () => {
                 const panel = document.querySelector(`[data-product-panel="${button.dataset.editProduct}"]`);
+
+                document.querySelectorAll('.product-edit-panel').forEach((item) => {
+                    if (item !== panel) {
+                        item.hidden = true;
+                        item.classList.remove('visible');
+                    }
+                });
+
+                const shouldShow = panel.hidden;
+                panel.hidden = !shouldShow;
+                panel.classList.toggle('visible', shouldShow);
+                button.textContent = shouldShow ? 'Cancelar edición' : 'Editar producto';
+            });
+        });
+
+        @if ($errors->any())
+            modal.showModal();
+        @endif
+    </script>
+</body>
+</html> = document.querySelector(`[data-product-panel="${button.dataset.editProduct}"]`);
 
                 document.querySelectorAll('.product-edit-panel').forEach((item) => {
                     if (item !== panel) {

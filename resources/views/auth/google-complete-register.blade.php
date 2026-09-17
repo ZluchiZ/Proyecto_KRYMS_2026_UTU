@@ -3,15 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ asset('css/google-register.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/internal.css') }}">
     <title>Completar registro</title>
 </head>
-<body>
-    <div style="max-width: 420px; margin: 60px auto; padding: 24px; border: 1px solid #ddd; border-radius: 12px; font-family: Arial, sans-serif;">
+<body class="internal-page internal-auth">
+@include('partials.internal-header')
+    <div class="google-register-card">
         <h2>Completa tu registro</h2>
         <p>Ingresaste con Google con el correo <strong>{{ $email }}</strong>.</p>
 
         @if ($errors->any())
-            <div style="color: #b00020; margin-bottom: 12px;">
+            <div class="google-register-errors">
                 <ul>
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>

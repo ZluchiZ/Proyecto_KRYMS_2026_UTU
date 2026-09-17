@@ -5,10 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
   <link rel="stylesheet" href="{{ asset('css/register-local.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/internal.css') }}">
     <title>Registro Local</title>
 </head>
-<body>
-    
+<body class="internal-page internal-auth register-page local-register-page">
+@include('partials.internal-header')
+<main class="register-shell">
+  <section class="register-intro">
+    <span class="register-eyebrow">EL GAUCHO VA PARA COMERCIOS</span>
+    <h1>Hacé crecer<br><span>tu local.</span></h1>
+    <p>Sumá tu comercio a El Gaucho Va y acercá tus productos a más personas.</p>
+  </section>
+
+  <div class="container register-content">
+    <section class="local-register-card">
+      <div class="register-form-heading">
+        <span class="register-option-kicker">Cuenta de comercio</span>
+        <h2>Registrá tu local</h2>
+        <p>Completá tus datos para empezar a recibir pedidos.</p>
+      </div>
+
 <form method="POST" action="{{ route('local.store') }}">
     @csrf
   @if ($errors->any())
@@ -37,8 +53,12 @@
     <input type="password" id="contrasena" name="contrasena" placeholder="Contraseña" required minlength="8">
     <input type="password" id="contrasena_confirmation" name="contrasena_confirmation" placeholder="Repetir Contraseña" required minlength="8">
 
-    <button type="submit">Registrar</button>
+    <button type="submit">Registrar local</button>
 </form>
+
+      </section>
+    </div>
+  </main>
 
 
 

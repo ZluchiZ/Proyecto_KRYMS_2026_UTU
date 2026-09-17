@@ -1,5 +1,99 @@
+:root {
+    --internal-ink: #513c40;
+    --internal-muted: #8d7174;
+    --internal-surface: rgba(255, 251, 248, 0.94);
+    --internal-salmon: #e98272;
+    --internal-salmon-dark: #c96358;
+    --internal-pink: #f7dadd;
+    --internal-peach: #ffe0d0;
+    --internal-border: #efc0b6;
+    --internal-shadow: 0 18px 45px rgba(184, 99, 87, 0.16);
+}
+
+body {
+    align-items: center;
+    background:
+        radial-gradient(circle at 8% 12%, rgba(255, 224, 208, 0.9), transparent 30%),
+        radial-gradient(circle at 92% 88%, rgba(247, 218, 221, 0.85), transparent 34%),
+        #fff6f0;
+    color: var(--internal-ink);
+}
+
+body > h2 {
+    margin: 2.5rem 1rem 1rem;
+    color: var(--internal-salmon-dark);
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    text-align: center;
+}
+
+.container {
+    width: min(100% - 2rem, 30rem);
+    padding: 1.75rem;
+    border: 1px solid rgba(239, 192, 182, 0.75);
+    border-radius: 18px;
+    background: var(--internal-surface);
+    box-shadow: var(--internal-shadow);
+}
+
+.container form {
+    display: grid;
+    gap: 0.8rem;
+}
+
+.container input {
+    width: 100%;
+    padding: 0.85rem 0.95rem;
+    border: 1px solid var(--internal-border);
+    border-radius: 9px;
+    background: #fff;
+    color: var(--internal-ink);
+}
+
+.container input:focus {
+    border-color: var(--internal-salmon);
+    outline: 3px solid rgba(233, 130, 114, 0.18);
+}
+
+.container button,
+.google-btn {
+    display: flex;
+    min-height: 2.9rem;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 9px;
+    background: var(--internal-salmon);
+    color: #fff;
+    cursor: pointer;
+    font-weight: bold;
+    text-decoration: none;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.container button:hover,
+.google-btn:hover {
+    background: var(--internal-salmon-dark);
+    transform: translateY(-1px);
+}
+
+.google-btn {
+    margin-top: 0.8rem;
+    background: #6b5458;
+}
+
+.container h3 {
+    margin: 1.25rem 0 0;
+    color: var(--internal-muted);
+    font-size: 0.95rem;
+    text-align: center;
+}
+
+.container a:not(.google-btn) {
+    color: var(--internal-salmon-dark);
+}
+
 .alert-danger {
-    color: #ff3936;
+    color: #b84d4b;
     margin-bottom: 15px;
 }
 

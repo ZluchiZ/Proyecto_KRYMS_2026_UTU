@@ -72,4 +72,19 @@ class ClienteController extends Controller
             ->route('login')
             ->with('error', 'La verificación por correo no está disponible con la configuración actual.');
     }
+
+    public function profile()
+    {
+        abort_unless(session('tipo_usuario') === 'cliente' && session('usuario_id'), 403);
+
+        $cliente = DB::table('cliente')
+            ->where('CI', session('usuario_id'))
+            ->first();
+
+        abort_unless($cliente, 404);
+
+        return view('Cliente.Perfil', [
+            'cliente' => $cliente,
+        ]);
+    }
 }

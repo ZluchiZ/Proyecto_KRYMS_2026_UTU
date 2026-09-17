@@ -29,6 +29,9 @@ Route::get('/', function (Request $request) {
     $tipoUsuario = null;
     $identificadorComercio = null;
     $telefonoUsuario = null;
+    $direccionEntrega = null;
+    $latitudUsuario = null;
+    $longitudUsuario = null;
 
     if (session('tipo_usuario') && session('usuario_id')) {
         $tablas = [
@@ -56,6 +59,9 @@ Route::get('/', function (Request $request) {
 
             if ($usuario && session('tipo_usuario') === 'cliente') {
                 $telefonoUsuario = $usuario->{'Teléfono'};
+                $direccionEntrega = $usuario->direccion ?? $usuario->Direccion_Entrega;
+                $latitudUsuario = $usuario->latitud;
+                $longitudUsuario = $usuario->longitud;
             }
 
             if ($usuario && session('tipo_usuario') === 'comercio') {
@@ -66,9 +72,12 @@ Route::get('/', function (Request $request) {
 
     $productos = DB::table('producto')
         ->leftJoin('comercio', 'producto.RUT_Comercio', '=', 'comercio.RUT')
-        ->select('producto.*', 'comercio.Nombre_Comercio')
+        ->select('producto.*', 'comercio.Nombre_Comercio', 'comercio.Logo', 'comercio.Dirección', 'comercio.Abierto')
         ->when($identificadorComercio, function ($query) use ($identificadorComercio) {
             $query->where('RUT_Comercio', $identificadorComercio);
+        })
+        ->when($request->filled('categoria'), function ($query) use ($request) {
+            $query->where('Categoria', $request->string('categoria')->toString());
         })
         ->when($request->filled('q'), function ($query) use ($request) {
             $busqueda = trim($request->string('q')->toString());
@@ -85,6 +94,11 @@ Route::get('/', function (Request $request) {
         })
         ->orderByDesc('ID_Producto')
         ->get();
+
+    $locales = DB::table('comercio')
+        ->whereNotNull('RUT')
+        ->orderBy('Nombre_Comercio')
+        ->get(['RUT', 'Nombre_Comercio', 'Logo', 'Dirección', 'Horario', 'Abierto']);
 
     $cantidadCarrito = 0;
     if (session('tipo_usuario') === 'cliente' && session('usuario_id')) {
@@ -105,18 +119,73 @@ Route::get('/', function (Request $request) {
         'correoUsuario' => $correoUsuario,
         'tipoUsuario' => $tipoUsuario,
         'telefonoUsuario' => $telefonoUsuario,
+        'direccionEntrega' => $direccionEntrega,
+        'latitudUsuario' => $latitudUsuario,
+        'longitudUsuario' => $longitudUsuario,
         'esClienteRegistrado' => session('tipo_usuario') === 'cliente' && session('usuario_id'),
         'productos' => $productos,
+        'locales' => $locales,
         'cantidadCarrito' => $cantidadCarrito,
     ]);
 })->name('home');
+
+Route::get('/restaurantes', function () {
+    $locales = DB::table('comercio')
+        ->whereNotNull('RUT')
+        ->orderBy('Nombre_Comercio')
+        ->get(['RUT', 'Nombre_Comercio', 'Logo', 'Dirección', 'Horario', 'Abierto']);
+
+    return view('restaurants', [
+        'locales' => $locales,
+        'esClienteRegistrado' => session('tipo_usuario') === 'cliente' && session('usuario_id'),
+    ]);
+})->name('restaurants');
+
+Route::get('/productos', function () {
+    $productos = DB::table('producto')
+        ->join('comercio', 'producto.RUT_Comercio', '=', 'comercio.RUT')
+        ->select('producto.*', 'comercio.Nombre_Comercio', 'comercio.Abierto')
+        ->orderByDesc('producto.Disponible')
+        ->orderByDesc('producto.ID_Producto')
+        ->get();
+
+    return view('products', [
+        'productos' => $productos,
+        'esClienteRegistrado' => session('tipo_usuario') === 'cliente' && session('usuario_id'),
+    ]);
+})->name('products');
+
+Route::get('/local/{rut}', function (string $rut) {
+    $comercio = DB::table('comercio')
+        ->where('RUT', $rut)
+        ->first(['RUT', 'Nombre_Comercio', 'Logo', 'Dirección', 'Horario', 'Abierto']);
+
+    abort_unless($comercio, 404);
+
+    $productos = DB::table('producto')
+        ->where('RUT_Comercio', $comercio->RUT)
+        ->orderByDesc('Disponible')
+        ->orderByDesc('ID_Producto')
+        ->get();
+
+    $productos->each(function ($producto) use ($comercio): void {
+        $producto->Nombre_Comercio = $comercio->Nombre_Comercio;
+        $producto->Abierto = $comercio->Abierto;
+    });
+
+    return view('local-profile', [
+        'comercio' => $comercio,
+        'productos' => $productos,
+        'esClienteRegistrado' => session('tipo_usuario') === 'cliente' && session('usuario_id'),
+    ]);
+})->name('local.profile');
 
 Route::get('/dashboard-local', function () {
     abort_unless(session('tipo_usuario') === 'comercio' && session('usuario_id'), 403);
 
     $comercio = DB::table('comercio')
         ->where('Email_Usuario', session('email'))
-        ->first(['Nombre_Comercio', 'Email_Usuario', 'RUT']);
+        ->first(['Nombre_Comercio', 'Email_Usuario', 'RUT', 'Abierto']);
 
     abort_unless($comercio, 403);
 
@@ -158,6 +227,7 @@ Route::get('/dashboard-local', function () {
     return view('Local.DashboardLocal', [
         'productos' => $productos,
         'pedidos' => $pedidos,
+        'comercioAbierto' => (bool) $comercio->Abierto,
         'nombreUsuario' => $comercio->Nombre_Comercio,
         'correoUsuario' => $comercio->Email_Usuario,
         'tipoUsuario' => 'Local',
@@ -182,10 +252,14 @@ Route::get('/registerRepartidor', function () {
 Route::post('/Cliente', [ClienteController::class, 'store'])->name('cliente.store');
 Route::post('/local', [LocalController::class, 'store'])->name('local.store');
 Route::post('/repartidor', [RepartidorController::class, 'store'])->name('repartidor.store');
+Route::get('/mi-cuenta', [ClienteController::class, 'profile'])->name('cliente.profile');
 Route::post('/productos', [LocalController::class, 'storeProducto'])->name('productos.store');
+Route::patch('/comercio/estado', [LocalController::class, 'updateStatus'])->name('comercio.status');
 Route::patch('/productos/{producto}', [LocalController::class, 'updateProducto'])->name('productos.update');
 Route::delete('/productos/{producto}', [LocalController::class, 'destroyProducto'])->name('productos.destroy');
 Route::post('/carrito/agregar', [PedidoController::class, 'addToCart'])->name('carrito.add');
+Route::get('/cliente/ubicacion', [PedidoController::class, 'clientLocationForm'])->name('cliente.location.form');
+Route::patch('/cliente/ubicacion', [PedidoController::class, 'updateClientLocation'])->name('cliente.location.update');
 Route::get('/carrito', [PedidoController::class, 'cart'])->name('carrito');
 Route::delete('/carrito/{item}', [PedidoController::class, 'removeFromCart'])->name('carrito.remove');
 Route::post('/carrito/confirmar', [PedidoController::class, 'confirmCart'])->name('carrito.confirm');
