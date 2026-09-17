@@ -1,0 +1,21 @@
+body {
+    display: grid;
+    min-height: 100vh;
+    margin: 0;
+    place-items: center;
+    background: linear-gradient(135deg, #f9d7a0, #f4f4f4 58%, #f3ecec);
+    color: #34251f;
+    font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+}
+
+h1 {
+    margin: 0;
+    padding: 2rem 3rem;
+    border: 1px solid rgba(226, 128, 0, 0.2);
+    border-radius: 14px;
+    background: #f4f4f4;
+    box-shadow: 0 12px 30px rgba(125, 76, 24, 0.12);
+    color: #7a3f1f;
+    font-size: clamp(2rem, 6vw, 4rem);
+    text-align: center;
+}

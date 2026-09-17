@@ -1,5 +1,5 @@
 .form-errors,
 .session-error {
-    color: red;
+    color: #ff3936;
     margin-bottom: 1rem;
 }

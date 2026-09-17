@@ -27,13 +27,8 @@ class LocalController extends Controller
 
         abort_unless($comercio, 403);
 
-<<<<<<< HEAD
         $identificadorComercio = $comercio->RUT ?? session('usuario_id');
         abort_unless($identificadorComercio, 403, 'Este comercio no tiene un RUT asociado.');
-=======
-        $identificadorComercio = $comercio->RUT;
-        abort_unless($identificadorComercio, 422, 'El local debe tener un RUT para publicar productos.');
->>>>>>> 5ff7287f2ca91edcc0597d36b7b2a973fb54a7d8
 
         DB::table('Producto')->insert([
                 'RUT_Comercio' => $identificadorComercio,

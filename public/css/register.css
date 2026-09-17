@@ -8,23 +8,23 @@ body {
 
 .form-errors,
 .session-error {
-    color: red;
+    color: #ff3936;
     margin-bottom: 1rem;
 }
 
 #mensajeError {
-    color: red;
+    color: #ff3936;
     display: none;
 }
 
 #errorCampo,
 #errorApellido {
-    color: red;
+    color: #ff3936;
     margin-top: 4px;
     margin-bottom: 10px;
 }
 
 #errorContrasena,
 #errorFecha {
-    color: red;
+    color: #ff3936;
 }

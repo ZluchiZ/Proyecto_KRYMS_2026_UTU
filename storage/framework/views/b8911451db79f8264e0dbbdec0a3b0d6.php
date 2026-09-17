@@ -41,8 +41,8 @@
         <?php endif; ?>
 
         <?php $__currentLoopData = [
-            ['titulo' => 'Pedidos pendientes', 'items' => $pedidos->where('Estado_Subpedido', 'pendiente'), 'acciones' => true],
-            ['titulo' => 'Pedidos aceptados', 'items' => $pedidos->where('Estado_Subpedido', 'aceptado'), 'acciones' => false],
+            ['titulo' => 'Pedidos pendientes', 'items' => $pedidos->where('Estado_Subpedido', 'pendiente')],
+            ['titulo' => 'Pedidos aceptados', 'items' => $pedidos->where('Estado_Subpedido', 'aceptado')],
         ]; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $seccion): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
             <section class="orders">
                 <h2><?php echo e($seccion['titulo']); ?></h2>
@@ -65,7 +65,7 @@
                             <?php if($pedido->Telefono_Cliente): ?>
                                 <p><strong>Teléfono:</strong> <?php echo e($pedido->Telefono_Cliente); ?></p>
                             <?php endif; ?>
-                            <?php if($seccion['acciones']): ?>
+                            <?php if(($pedido->Estado_Subpedido ?? 'pendiente') === 'pendiente'): ?>
                                 <div class="order-actions">
                                     <form method="POST" action="<?php echo e(route('pedidos.status', $pedido->N_Subpedido)); ?>" onsubmit="return confirm('¿Rechazar y eliminar este pedido?');">
                                         <?php echo csrf_field(); ?>

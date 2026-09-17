@@ -59,11 +59,7 @@ Route::get('/', function (Request $request) {
             }
 
             if ($usuario && session('tipo_usuario') === 'comercio') {
-<<<<<<< HEAD
                 $identificadorComercio = $usuario->{'RUT'} ?? session('usuario_id');
-=======
-                $identificadorComercio = $usuario->{'RUT'} ?: $usuario->{'id'};
->>>>>>> 5ff7287f2ca91edcc0597d36b7b2a973fb54a7d8
             }
         }
     }
@@ -75,12 +71,16 @@ Route::get('/', function (Request $request) {
             $query->where('RUT_Comercio', $identificadorComercio);
         })
         ->when($request->filled('q'), function ($query) use ($request) {
-            $busqueda = $request->string('q')->toString();
+            $busqueda = trim($request->string('q')->toString());
+
+            if ($busqueda === '') {
+                return;
+            }
 
             $query->where(function ($query) use ($busqueda) {
                 $query->where('Nombre_Producto', 'like', "%{$busqueda}%")
                     ->orWhere('Categoria', 'like', "%{$busqueda}%")
-                    ;
+                    ->orWhere('Comercio.Nombre_Comercio', 'like', "%{$busqueda}%");
             });
         })
         ->orderByDesc('ID_Producto')

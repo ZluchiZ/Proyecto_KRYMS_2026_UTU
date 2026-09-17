@@ -85,8 +85,4 @@
     <?php endif; ?>
 </body>
 </html>
-<<<<<<<< HEAD:storage/framework/views/cc5a854f136f39a932a4521d0b13209d.php
 <?php /**PATH C:\xampp\htdocs\Proyecto_KRYMS_2026_UTU-main\resources\views/Cliente/Carrito.blade.php ENDPATH**/ ?>
-========
-<?php /**PATH /opt/lampp/htdocs/Proyecto_KRYMS_2026_UTU/resources/views/Cliente/Carrito.blade.php ENDPATH**/ ?>
->>>>>>>> 5ff7287f2ca91edcc0597d36b7b2a973fb54a7d8:storage/framework/views/e113576225214d973e68d91ce7d73a7e.php

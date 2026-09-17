@@ -15,10 +15,16 @@
 @if (session('success'))
     <p class="alert success-message">{{ session('success') }}</p>
 @endif
-
-    <!-- Sección: botón de menú hamburguesa para abrir/cerrar el sidebar -->
-    <label for="sidebar-toggle" class="menu-btn">☰ Menú</label>
     <input type="checkbox" id="sidebar-toggle">
+    <header class="site-header">
+        <img src="{{ asset('img/Logo_Gaucho_Va.png') }}" alt="Logo de ElGauchoVa" class="logo">
+        <!-- Sección: botón de menú hamburguesa para abrir/cerrar el sidebar -->
+        <label for="sidebar-toggle" class="menu-btn" aria-label="Abrir o cerrar menú">
+            <span></span>
+            <span></span>
+            <span></span>
+        </label>
+    </header>
 
     <!-- Sección: barra superior con íconos de ubicación y perfil -->
     <div class="top-right-icons">
@@ -51,6 +57,8 @@
         </div>
     </div>
 
+    <label for="sidebar-toggle" class="menu-backdrop" aria-label="Cerrar menú"></label>
+
     <!-- Sección: menú lateral con enlaces a categorías -->
     <div class="sidebar">
         <a href="#">Farmacia</a>
@@ -65,9 +73,9 @@
         <h1>¡Bienvenidos a ElGauchoVa!</h1>
 
         <!-- Formulario de búsqueda para consultar productos o categorías -->
-        <form method="GET">
+        <form method="GET" action="{{ route('home') }}">
             <label for="campo-busqueda"></label>
-            <input type="search" id="campo-busqueda" name="q" placeholder="¿Qué estás buscando?">
+            <input type="search" id="campo-busqueda" name="q" value="{{ request('q') }}" placeholder="¿Qué estás buscando?">
             <button type="submit">Buscar</button>
         </form>
 
