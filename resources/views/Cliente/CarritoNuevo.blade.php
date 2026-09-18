@@ -45,8 +45,20 @@
                         <div class="item-details">
                             <span class="item-store">{{ $item->Nombre_Comercio ?? 'Local no disponible' }}</span>
                             <h2>{{ $item->Nombre_Producto }}</h2>
-                            <p>{{ $item->Cantidad }} x $U {{ number_format($item->Precio, 2, ',', '.') }}</p>
-                            <strong>$U {{ number_format($item->Cantidad * $item->Precio, 2, ',', '.') }}</strong>
+                            @php
+                                $descuentoItem = (float) ($item->Descuento_Porcentaje ?? 0);
+                            @endphp
+                            <p>
+                                {{ $item->Cantidad }} x
+                                @if ($descuentoItem > 0)
+                                    <span class="old-price">$U {{ number_format($item->Precio, 2, ',', '.') }}</span>
+                                    <span class="new-price">$U {{ number_format($item->Precio_Con_Descuento, 2, ',', '.') }}</span>
+                                    <span class="discount-tag">-{{ number_format($descuentoItem, 0) }}%</span>
+                                @else
+                                    <span>$U {{ number_format($item->Precio, 2, ',', '.') }}</span>
+                                @endif
+                            </p>
+                            <strong>$U {{ number_format($item->Subtotal, 2, ',', '.') }}</strong>
                         </div>
                         <form method="POST" action="{{ route('carrito.remove', $item->ID_Carrito) }}">
                             @csrf
@@ -57,6 +69,10 @@
                 @endforeach
             </section>
             <section class="checkout">
+                <div class="cart-total-box">
+                    <span>Total del carrito</span>
+                    <strong>$U {{ number_format($totalCarrito, 2, ',', '.') }}</strong>
+                </div>
                 <div class="checkout-heading">
                     <span class="cart-eyebrow">Ultimo paso</span>
                     <h2>Confirmar pedido</h2>

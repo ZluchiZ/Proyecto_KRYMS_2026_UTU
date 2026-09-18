@@ -16,6 +16,17 @@
                 <span>{{ $tipoUsuario }}</span>
                 <small>{{ $correoUsuario }}</small>
             </div>
+            <div class="status-toggle">
+                <span class="status-badge {{ $comercioAbierto ? 'open' : 'closed' }}">
+                    {{ $comercioAbierto ? 'Abierto' : 'Cerrado' }}
+                </span>
+                <form method="POST" action="{{ route('comercio.status') }}">
+                    @csrf
+                    @method('PATCH')
+                    <input type="hidden" name="abierto" value="{{ $comercioAbierto ? 0 : 1 }}">
+                    <button type="submit">{{ $comercioAbierto ? 'Cerrar local' : 'Abrir local' }}</button>
+                </form>
+            </div>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit">Cerrar sesión</button>
@@ -82,6 +93,15 @@
                                         <button type="submit" class="reject">Rechazar pedido</button>
                                     </form>
                                 </div>
+                            @elseif (($pedido->Estado_Subpedido ?? '') === 'aceptado')
+                                <div class="order-actions">
+                                    <form method="POST" action="{{ route('pedidos.status', $pedido->N_Subpedido) }}">
+                                        @csrf
+                                        @method('PATCH')
+                                        <input type="hidden" name="estado" value="listo">
+                                        <button type="submit">Pedido listo</button>
+                                    </form>
+                                </div>
                             @endif
                         </article>
                     @endforeach
@@ -119,6 +139,10 @@
                                     @method('PATCH')
                                     <label for="precio-{{ $producto->ID_Producto }}">Precio en $UYU</label>
                                     <input id="precio-{{ $producto->ID_Producto }}" name="precio" type="number" value="{{ $producto->Precio }}" min="0" max="99999999.99" step="0.01" required>
+
+                                    <label for="descuento-{{ $producto->ID_Producto }}">Porcentaje de descuento</label>
+                                    <input id="descuento-{{ $producto->ID_Producto }}" name="descuento" type="number" value="{{ (float) ($producto->Descuento_Porcentaje ?? 0) }}" min="0" max="100" step="0.01" required>
+
                                     <label class="checkbox">
                                         <input name="disponible" type="hidden" value="0">
                                         <input name="disponible" type="checkbox" value="1" {{ $producto->Disponible ? 'checked' : '' }}>
@@ -190,26 +214,7 @@
                     }
                 });
 
-                const shouldShow = panel.hidden;
-                panel.hidden = !shouldShow;
-                panel.classList.toggle('visible', shouldShow);
-                button.textContent = shouldShow ? 'Cancelar edición' : 'Editar producto';
-            });
-        });
-
-        @if ($errors->any())
-            modal.showModal();
-        @endif
-    </script>
-</body>
-</html> = document.querySelector(`[data-product-panel="${button.dataset.editProduct}"]`);
-
-                document.querySelectorAll('.product-edit-panel').forEach((item) => {
-                    if (item !== panel) {
-                        item.hidden = true;
-                        item.classList.remove('visible');
-                    }
-                });
+                if (!panel) return;
 
                 const shouldShow = panel.hidden;
                 panel.hidden = !shouldShow;

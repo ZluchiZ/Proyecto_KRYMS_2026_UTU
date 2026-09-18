@@ -49,6 +49,14 @@ class PedidoController extends Controller
             ->value('id');
     }
 
+    private function productUnitPriceWithDiscount(float|int $precio, float|int $descuentoPorcentaje): float
+    {
+        $precio = (float) $precio;
+        $descuento = max(0, min(100, (float) $descuentoPorcentaje));
+
+        return round($precio * (1 - ($descuento / 100)), 2);
+    }
+
     private function requireClient(): void
     {
         abort_unless(session('tipo_usuario') === 'cliente' && session('usuario_id'), 403);
@@ -152,13 +160,23 @@ class PedidoController extends Controller
             ->join('producto', 'carrito.ID_Producto', '=', 'producto.ID_Producto')
             ->leftJoin('comercio', 'producto.RUT_Comercio', '=', 'comercio.RUT')
             ->where("carrito.{$columnaCliente}", $valorCliente)
-            ->select('carrito.*', 'producto.Nombre_Producto', 'producto.Precio', 'producto.Foto_Producto', 'comercio.Nombre_Comercio')
+            ->select('carrito.*', 'producto.Nombre_Producto', 'producto.Precio', 'producto.Descuento_Porcentaje', 'producto.Foto_Producto', 'comercio.Nombre_Comercio')
             ->orderBy('carrito.ID_Carrito')
             ->get();
+
+        $items->each(function ($item): void {
+            $item->Precio_Con_Descuento = $this->productUnitPriceWithDiscount(
+                $item->Precio,
+                $item->Descuento_Porcentaje ?? 0,
+            );
+            $item->Subtotal = round(($item->Precio_Con_Descuento * ($item->Cantidad ?? 0)), 2);
+        });
+
         $cliente = DB::table('cliente')->where('CI', session('usuario_id'))->first();
 
         return view('Cliente.CarritoNuevo', [
             'items' => $items,
+            'totalCarrito' => round($items->sum('Subtotal'), 2),
             'telefonoUsuario' => $cliente?->{'Teléfono'},
             'direccionEntrega' => $cliente?->direccion ?? $cliente?->Direccion_Entrega,
             'latitudUsuario' => $cliente?->latitud,
@@ -248,7 +266,7 @@ class PedidoController extends Controller
         abort_unless(session('tipo_usuario') === 'comercio' && session('usuario_id'), 403);
 
         $validated = $request->validate([
-            'estado' => 'required|in:aceptado,rechazado',
+            'estado' => 'required|in:aceptado,rechazado,listo',
         ]);
 
         $rutComercio = DB::table('comercio')
@@ -271,18 +289,28 @@ class PedidoController extends Controller
         DB::table('pedido')
             ->where('N_Pedido', $subpedido->N_Pedido)
             ->update([
-                'Confirmacion_entrega' => $validated['estado'] === 'aceptado',
+                'Estado' => $validated['estado'],
+                'Confirmacion_entrega' => in_array($validated['estado'], ['aceptado', 'listo'], true),
             ]);
+
+        $mensaje = match ($validated['estado']) {
+            'aceptado' => 'Pedido aceptado correctamente.',
+            'rechazado' => 'Pedido rechazado correctamente.',
+            'listo' => 'Pedido marcado como listo.',
+        };
 
         return redirect()
             ->route('dashboard.local')
-            ->with('success', 'Pedido '.($validated['estado'] === 'aceptado' ? 'aceptado' : 'rechazado').' correctamente.');
+            ->with('success', $mensaje);
     }
 
     private function insertOrder(object $producto, int $cantidad, array $validated, array $coordenadas): int
     {
-            $total = $producto->Precio * $cantidad;
-            $repartidor = DB::table('repartidor')->value('CI');
+            $precioFinal = $this->productUnitPriceWithDiscount(
+                $producto->Precio,
+                $producto->Descuento_Porcentaje ?? 0,
+            );
+            $total = round($precioFinal * $cantidad, 2);
             $local = DB::table('comercio')
                 ->where('RUT', $producto->RUT_Comercio)
                 ->first(['latitud', 'longitud']);
@@ -304,7 +332,7 @@ class PedidoController extends Controller
 
             $pedido = DB::table('pedido')->insertGetId([
                 'CI_Cliente' => session('usuario_id'),
-                'CI_Repartidor' => $repartidor,
+                'CI_Repartidor' => null,
                 'ID_Tarjeta' => $tarjeta,
                 'Fecha' => now()->toDateString(),
                 'Hora' => now()->toTimeString(),

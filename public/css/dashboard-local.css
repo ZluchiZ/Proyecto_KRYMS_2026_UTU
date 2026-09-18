@@ -74,6 +74,11 @@ textarea { min-height: 90px; resize: vertical; }
 .profile { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; padding: 1rem; background: rgba(255, 251, 248, .96); border: 1px solid #f0d2cb; border-radius: 12px; box-shadow: 0 10px 25px rgba(184, 99, 87, .1); }
 .profile-info { display: grid; gap: .2rem; }
 .profile-info small { color: #666; }
+.status-toggle { display: flex; align-items: center; gap: .75rem; }
+.status-toggle form { margin: 0; }
+.status-badge { display: inline-flex; align-items: center; justify-content: center; padding: .35rem .7rem; border-radius: 999px; font-size: .75rem; font-weight: bold; letter-spacing: .03em; }
+.status-badge.open { background: #e4f6e8; color: #2f7a4a; }
+.status-badge.closed { background: #fbe0df; color: #9a4343; }
 .profile form { margin: 0; }
 .orders { margin-bottom: 2rem; }
 .orders h2 { margin-bottom: 1rem; }

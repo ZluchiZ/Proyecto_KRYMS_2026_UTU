@@ -1,1 +1,0 @@
-<?php /**PATH /opt/lampp/htdocs/Proyecto_KRYMS_2026_UTU/resources/views/Cliente/Carrito.blade.php ENDPATH**/ ?>

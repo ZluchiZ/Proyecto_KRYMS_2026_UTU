@@ -45,8 +45,20 @@
                         <div class="item-details">
                             <span class="item-store"><?php echo e($item->Nombre_Comercio ?? 'Local no disponible'); ?></span>
                             <h2><?php echo e($item->Nombre_Producto); ?></h2>
-                            <p><?php echo e($item->Cantidad); ?> x $U <?php echo e(number_format($item->Precio, 2, ',', '.')); ?></p>
-                            <strong>$U <?php echo e(number_format($item->Cantidad * $item->Precio, 2, ',', '.')); ?></strong>
+                            <?php
+                                $descuentoItem = (float) ($item->Descuento_Porcentaje ?? 0);
+                            ?>
+                            <p>
+                                <?php echo e($item->Cantidad); ?> x
+                                <?php if($descuentoItem > 0): ?>
+                                    <span class="old-price">$U <?php echo e(number_format($item->Precio, 2, ',', '.')); ?></span>
+                                    <span class="new-price">$U <?php echo e(number_format($item->Precio_Con_Descuento, 2, ',', '.')); ?></span>
+                                    <span class="discount-tag">-<?php echo e(number_format($descuentoItem, 0)); ?>%</span>
+                                <?php else: ?>
+                                    <span>$U <?php echo e(number_format($item->Precio, 2, ',', '.')); ?></span>
+                                <?php endif; ?>
+                            </p>
+                            <strong>$U <?php echo e(number_format($item->Subtotal, 2, ',', '.')); ?></strong>
                         </div>
                         <form method="POST" action="<?php echo e(route('carrito.remove', $item->ID_Carrito)); ?>">
                             <?php echo csrf_field(); ?>
@@ -57,6 +69,10 @@
                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             </section>
             <section class="checkout">
+                <div class="cart-total-box">
+                    <span>Total del carrito</span>
+                    <strong>$U <?php echo e(number_format($totalCarrito, 2, ',', '.')); ?></strong>
+                </div>
                 <div class="checkout-heading">
                     <span class="cart-eyebrow">Ultimo paso</span>
                     <h2>Confirmar pedido</h2>
