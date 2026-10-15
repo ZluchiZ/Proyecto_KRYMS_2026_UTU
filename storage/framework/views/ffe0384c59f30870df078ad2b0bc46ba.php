@@ -4,15 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="<?php echo e(asset('css/dashboard-local.css')); ?>">
+    <link rel="stylesheet" href="<?php echo e(asset('css/internal.css')); ?>">
     <title>Productos del local</title>
 </head>
-<body>
+<body class="internal-page internal-dashboard">
+    <?php echo $__env->make('partials.internal-header', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
     <main>
         <section class="profile">
             <div class="profile-info">
                 <strong><?php echo e($nombreUsuario); ?></strong>
                 <span><?php echo e($tipoUsuario); ?></span>
                 <small><?php echo e($correoUsuario); ?></small>
+            </div>
+            <div class="status-toggle">
+                <span class="status-badge <?php echo e($comercioAbierto ? 'open' : 'closed'); ?>">
+                    <?php echo e($comercioAbierto ? 'Abierto' : 'Cerrado'); ?>
+
+                </span>
+                <form method="POST" action="<?php echo e(route('comercio.status')); ?>">
+                    <?php echo csrf_field(); ?>
+                    <?php echo method_field('PATCH'); ?>
+                    <input type="hidden" name="abierto" value="<?php echo e($comercioAbierto ? 0 : 1); ?>">
+                    <button type="submit"><?php echo e($comercioAbierto ? 'Cerrar local' : 'Abrir local'); ?></button>
+                </form>
             </div>
             <form method="POST" action="<?php echo e(route('logout')); ?>">
                 <?php echo csrf_field(); ?>
@@ -50,17 +64,19 @@
                     <div class="empty">No hay pedidos en esta sección.</div>
                 <?php else: ?>
                     <div class="order-list">
-                    <?php $__currentLoopData = $seccion['items']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $pedido): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <?php $__currentLoopData = $seccion['items']->groupBy('N_Subpedido'); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $lineasPedido): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <?php ($pedido = $lineasPedido->first()); ?>
                         <article class="order">
                             <div class="order-title">
                                 <span>Pedido #<?php echo e($pedido->ID_Pedido ?? $pedido->N_Pedido); ?></span>
                                 <span class="order-status <?php echo e(($pedido->Estado_Subpedido ?? '') === 'rechazado' ? 'rejected' : ''); ?>"><?php echo e($pedido->Estado_Subpedido ?? 'pendiente'); ?></span>
                             </div>
-                            <p><strong>Producto:</strong> <?php echo e($pedido->Nombre_Producto); ?></p>
                             <p><strong>Cliente:</strong> <?php echo e(trim(($pedido->Nombre_Cliente ?? '').' '.($pedido->Apellido_Cliente ?? '')) ?: ($pedido->Correo_Cliente ?? 'Cliente')); ?></p>
-                            <p><strong>Cantidad:</strong> <?php echo e($pedido->Cantidad); ?></p>
+                            <?php $__currentLoopData = $lineasPedido; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $linea): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <p><strong>Producto:</strong> <?php echo e($linea->Nombre_Producto); ?> · <strong>Cantidad:</strong> <?php echo e($linea->Cantidad); ?></p>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             <p><strong>Envío:</strong> <?php echo e($pedido->Direccion_Envio ?? $pedido->Ubicacion); ?></p>
-                            <p><strong>Total:</strong> $U <?php echo e(number_format($pedido->Total ?? $pedido->Monto_Total, 2, ',', '.')); ?></p>
+                            <p><strong>Total:</strong> $U <?php echo e(number_format($pedido->Total_Local ?? $pedido->Monto_Total, 2, ',', '.')); ?></p>
                             <p><strong>Pago:</strong> <?php echo e(ucfirst($pedido->Metodo_Pago ?? $pedido->Metodo_de_pago ?? 'No indicado')); ?></p>
                             <?php if($pedido->Telefono_Cliente): ?>
                                 <p><strong>Teléfono:</strong> <?php echo e($pedido->Telefono_Cliente); ?></p>
@@ -78,6 +94,15 @@
                                         <?php echo method_field('PATCH'); ?>
                                         <input type="hidden" name="estado" value="rechazado">
                                         <button type="submit" class="reject">Rechazar pedido</button>
+                                    </form>
+                                </div>
+                            <?php elseif(($pedido->Estado_Subpedido ?? '') === 'aceptado'): ?>
+                                <div class="order-actions">
+                                    <form method="POST" action="<?php echo e(route('pedidos.status', $pedido->N_Subpedido)); ?>">
+                                        <?php echo csrf_field(); ?>
+                                        <?php echo method_field('PATCH'); ?>
+                                        <input type="hidden" name="estado" value="listo">
+                                        <button type="submit">Pedido listo</button>
                                     </form>
                                 </div>
                             <?php endif; ?>
@@ -118,6 +143,10 @@
                                     <?php echo method_field('PATCH'); ?>
                                     <label for="precio-<?php echo e($producto->ID_Producto); ?>">Precio en $UYU</label>
                                     <input id="precio-<?php echo e($producto->ID_Producto); ?>" name="precio" type="number" value="<?php echo e($producto->Precio); ?>" min="0" max="99999999.99" step="0.01" required>
+
+                                    <label for="descuento-<?php echo e($producto->ID_Producto); ?>">Porcentaje de descuento</label>
+                                    <input id="descuento-<?php echo e($producto->ID_Producto); ?>" name="descuento" type="number" value="<?php echo e((float) ($producto->Descuento_Porcentaje ?? 0)); ?>" min="0" max="100" step="0.01" required>
+
                                     <label class="checkbox">
                                         <input name="disponible" type="hidden" value="0">
                                         <input name="disponible" type="checkbox" value="1" <?php echo e($producto->Disponible ? 'checked' : ''); ?>>
@@ -139,7 +168,7 @@
                 <h2>Añadir producto</h2>
                 <button type="button" class="close" id="close-product-modal" aria-label="Cerrar">&times;</button>
             </div>
-            <form method="POST" action="<?php echo e(route('productos.store')); ?>">
+            <form method="POST" action="<?php echo e(route('productos.store')); ?>" enctype="multipart/form-data">
                 <?php echo csrf_field(); ?>
                 <label for="nombre">Nombre</label>
                 <input id="nombre" name="nombre" type="text" value="<?php echo e(old('nombre')); ?>" required maxlength="255">
@@ -148,13 +177,18 @@
                 <input id="precio" name="precio" type="number" value="<?php echo e(old('precio')); ?>" min="0" max="99999999.99" step="0.01" required>
 
                 <label for="categoria">Categoría</label>
-                <input id="categoria" name="categoria" type="text" value="<?php echo e(old('categoria')); ?>" required maxlength="100">
+                <select id="categoria" name="categoria" required>
+                    <option value="">Seleccionar categoría</option>
+                    <?php $__currentLoopData = ['Restaurantes', 'Supermercados', 'Farmacia', 'Kioscos', 'Bebidas', 'Mascotas', 'Entrega rápida', 'Otros', 'Supermercado', 'Ferretería', 'Rotisería']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $categoria): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <option value="<?php echo e($categoria); ?>" <?php if(old('categoria') === $categoria): echo 'selected'; endif; ?>><?php echo e($categoria); ?></option>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                </select>
 
                 <label for="descripcion">Descripción</label>
                 <textarea id="descripcion" name="descripcion" required maxlength="1000"><?php echo e(old('descripcion')); ?></textarea>
 
-                <label for="imagen_url">Imagen URL</label>
-                <input id="imagen_url" name="imagen_url" type="url" value="<?php echo e(old('imagen_url')); ?>" required maxlength="2048">
+                <label for="imagen">Imagen del producto</label>
+                <input id="imagen" name="imagen" type="file" accept="image/*" required>
 
                 <label class="checkbox">
                     <input name="disponible" type="checkbox" value="1" <?php echo e(old('disponible', '1') ? 'checked' : ''); ?>>
@@ -183,6 +217,8 @@
                         item.classList.remove('visible');
                     }
                 });
+
+                if (!panel) return;
 
                 const shouldShow = panel.hidden;
                 panel.hidden = !shouldShow;

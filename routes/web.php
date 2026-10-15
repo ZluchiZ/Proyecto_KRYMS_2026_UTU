@@ -21,6 +21,10 @@ Route::get('/login', function () {
 })->name('login');
 
 Route::get('/', function (Request $request) {
+    if (session('tipo_usuario') === 'administrador' && session('usuario_id')) {
+        return redirect()->route('dashboard.admin');
+    }
+
     if (session('tipo_usuario') === 'comercio' && session('usuario_id')) {
         return redirect()->route('dashboard.local');
     }
@@ -209,16 +213,16 @@ Route::get('/dashboard-local', function () {
             ->where('subpedido.RUT_Comercio', $comercio->RUT)
             ->where('subpedido.Estado', '<>', 'rechazado')
             ->select(
-                'pedido.*',
-                'subpedido.N_Subpedido',
-                'subpedido.Monto_Total as Total_Local',
-                'subpedido.Estado as Estado_Subpedido',
-                'producto.Nombre_Producto',
-                'detalle_de_pedido.Cantidad',
-                'cliente.Nombre as Nombre_Cliente',
-                'cliente.Apellido as Apellido_Cliente',
-                'cliente.Email_Usuario as Correo_Cliente',
-                'cliente.Teléfono as Telefono_Cliente',
+                'Pedido.*',
+                'Subpedido.N_Subpedido',
+                'Subpedido.Monto_Total as Total_Local',
+                'Subpedido.Estado as Estado_Subpedido',
+                'Producto.Nombre_Producto',
+                'Detalle_de_pedido.Cantidad',
+                'Cliente.Nombre as Nombre_Cliente',
+                'Cliente.Apellido as Apellido_Cliente',
+                'Cliente.Email_Usuario as Correo_Cliente',
+                'Cliente.Teléfono as Telefono_Cliente',
                 DB::raw('NULL as Telefono_Contacto'),
                 DB::raw('NULL as Referencias')
             )
@@ -265,8 +269,7 @@ Route::get('/dashboard-admin', function (Request $request) {
     }
 
     $totalUsuarios = $usuarios->count();
-    $usuariosActivos = $usuarios->filter(fn ($usuario) => str_contains(mb_strtolower($usuario->estado ?? ''), 'activa'))->count();
-
+    $usuariosActivos = $usuarios->filter(fn ($usuario) => strtolower($usuario->estado) === 'activa')->count();
     $busqueda = trim($request->query('q', ''));
     if ($busqueda !== '') {
         $usuarios = $usuarios->filter(fn ($usuario) => str_contains(mb_strtolower($usuario->nombre.' '.$usuario->email.' '.$usuario->identificador), mb_strtolower($busqueda)));
@@ -294,7 +297,7 @@ Route::get('/dashboard-admin', function (Request $request) {
 
     $reportes = Schema::hasTable('reporte') ? DB::table('reporte')->orderByDesc('ID_Reporte')->get() : collect();
     $resenas = Schema::hasTable('reseña') ? DB::table('reseña')->orderByDesc('ID')->get() : collect();
-    $resenasPublicadas = $resenas->filter(fn ($resena) => ! in_array(strtoupper((string) ($resena->Estado_Moderacion ?? 'Visible')), ['RETIRADA'], true))->count();
+    $resenasPublicadas = $resenas->filter(fn ($resena) => strtoupper((string) ($resena->Estado_Moderacion ?? 'Visible')) !== 'RETIRADA')->count();
     $notificaciones = [
         'adhesiones' => $solicitudes->count(),
         'usuarios' => $usuariosActivos,
@@ -328,26 +331,19 @@ Route::get('/dashboard-repartidor', function () {
     $ciRepartidor = session('usuario_id');
 
     if (! $ciRepartidor && $email) {
-        $ciRepartidor = DB::table('repartidor')
-            ->where('Email_Usuario', $email)
-            ->value('CI');
+        $ciRepartidor = DB::table('repartidor')->where('Email_Usuario', $email)->value('CI');
     }
 
     if (session('tipo_usuario') !== 'repartidor' && $email) {
-        $esRepartidor = DB::table('repartidor')
-            ->where('Email_Usuario', $email)
-            ->exists();
-
+        $esRepartidor = DB::table('repartidor')->where('Email_Usuario', $email)->exists();
         if ($esRepartidor) {
-            session(['tipo_usuario' => 'repartidor', 'usuario_id' => $ciRepartidor ?: DB::table('repartidor')->where('Email_Usuario', $email)->value('CI')]);
-            $ciRepartidor = session('usuario_id');
+            $ciRepartidor = $ciRepartidor ?: DB::table('repartidor')->where('Email_Usuario', $email)->value('CI');
+            session(['tipo_usuario' => 'repartidor', 'usuario_id' => $ciRepartidor]);
         }
     }
 
     abort_unless(session('tipo_usuario') === 'repartidor' || ($email && $ciRepartidor), 403, 'No tienes permisos para acceder al dashboard del repartidor.');
     abort_unless($ciRepartidor, 403, 'El repartidor no está registrado.');
-
-    $tieneTablaDecisiones = Schema::hasTable('pedido_repartidor_estado');
 
     $pedidosListosQuery = DB::table('subpedido')
         ->join('pedido', 'subpedido.N_Pedido', '=', 'pedido.N_Pedido')
@@ -365,11 +361,10 @@ Route::get('/dashboard-repartidor', function () {
                 });
         })
         ->where(function ($query) {
-            $query->whereNull('pedido.CI_Repartidor')
-                ->orWhere('pedido.CI_Repartidor', '');
+            $query->whereNull('pedido.CI_Repartidor')->orWhere('pedido.CI_Repartidor', '');
         });
 
-    if ($tieneTablaDecisiones) {
+    if (Schema::hasTable('pedido_repartidor_estado')) {
         $pedidosListosQuery->whereNotExists(function ($subQuery) {
             $subQuery->from('pedido_repartidor_estado')
                 ->whereColumn('pedido_repartidor_estado.N_Pedido', 'pedido.N_Pedido')
@@ -377,30 +372,16 @@ Route::get('/dashboard-repartidor', function () {
         });
     }
 
-    $pedidosListos = $pedidosListosQuery
-        ->select(
-            'pedido.N_Pedido',
-            'pedido.CI_Cliente',
-            'pedido.Metodo_de_pago',
-            'pedido.Monto_Total as Total',
-            'pedido.Ubicacion as Direccion_Envio',
-            'pedido.Fecha',
-            'pedido.Hora',
-            'subpedido.N_Subpedido',
-            'subpedido.RUT_Comercio',
-            'subpedido.Estado as Estado_Subpedido',
-            'producto.Nombre_Producto',
-            'producto.Precio',
-            'detalle_de_pedido.Cantidad',
-            'comercio.Nombre_Comercio',
-            'cliente.Nombre as Nombre_Cliente',
-            'cliente.Apellido as Apellido_Cliente',
-            'cliente.Email_Usuario as Correo_Cliente',
-            'cliente.Teléfono as Telefono_Cliente'
-        )
-        ->distinct()
-        ->orderByDesc('pedido.N_Pedido')
-        ->get();
+    $columnasEntrega = [
+        'pedido.N_Pedido', 'pedido.CI_Cliente', 'pedido.Metodo_de_pago',
+        'pedido.Monto_Total as Total', 'pedido.Ubicacion as Direccion_Envio',
+        'pedido.Fecha', 'pedido.Hora', 'subpedido.N_Subpedido', 'subpedido.RUT_Comercio',
+        'subpedido.Estado as Estado_Subpedido', 'producto.Nombre_Producto', 'producto.Precio',
+        'detalle_de_pedido.Cantidad', 'comercio.Nombre_Comercio',
+        'cliente.Nombre as Nombre_Cliente', 'cliente.Apellido as Apellido_Cliente',
+        'cliente.Email_Usuario as Correo_Cliente', 'cliente.Teléfono as Telefono_Cliente',
+    ];
+
     $agruparPedidos = static function ($lineas) {
         return $lineas->groupBy('N_Pedido')->map(function ($productos) {
             $pedido = $productos->first();
@@ -414,9 +395,14 @@ Route::get('/dashboard-repartidor', function () {
             return $pedido;
         })->values();
     };
-    $pedidosListos = $agruparPedidos($pedidosListos);
 
-    $miEntrega = DB::table('subpedido')
+    $pedidosListos = $agruparPedidos($pedidosListosQuery
+        ->select($columnasEntrega)
+        ->distinct()
+        ->orderByDesc('pedido.N_Pedido')
+        ->get());
+
+    $miEntrega = $agruparPedidos(DB::table('subpedido')
         ->join('pedido', 'subpedido.N_Pedido', '=', 'pedido.N_Pedido')
         ->join('detalle_de_pedido', 'subpedido.N_Subpedido', '=', 'detalle_de_pedido.N_Subpedido')
         ->join('producto', 'detalle_de_pedido.ID_Producto', '=', 'producto.ID_Producto')
@@ -424,30 +410,10 @@ Route::get('/dashboard-repartidor', function () {
         ->leftJoin('cliente', 'pedido.CI_Cliente', '=', 'cliente.CI')
         ->where('pedido.CI_Repartidor', $ciRepartidor)
         ->where('subpedido.Estado', 'en_reparto')
-        ->select(
-            'pedido.N_Pedido',
-            'pedido.CI_Cliente',
-            'pedido.Metodo_de_pago',
-            'pedido.Monto_Total as Total',
-            'pedido.Ubicacion as Direccion_Envio',
-            'pedido.Fecha',
-            'pedido.Hora',
-            'subpedido.N_Subpedido',
-            'subpedido.RUT_Comercio',
-            'subpedido.Estado as Estado_Subpedido',
-            'producto.Nombre_Producto',
-            'producto.Precio',
-            'detalle_de_pedido.Cantidad',
-            'comercio.Nombre_Comercio',
-            'cliente.Nombre as Nombre_Cliente',
-            'cliente.Apellido as Apellido_Cliente',
-            'cliente.Email_Usuario as Correo_Cliente',
-            'cliente.Teléfono as Telefono_Cliente'
-        )
+        ->select($columnasEntrega)
         ->distinct()
         ->orderByDesc('pedido.N_Pedido')
-        ->get();
-    $miEntrega = $agruparPedidos($miEntrega);
+        ->get());
 
     return view('Repartidor.DashboardRepartidor', [
         'pedidosListos' => $pedidosListos,
@@ -482,6 +448,7 @@ Route::post('/carrito/agregar', [PedidoController::class, 'addToCart'])->name('c
 Route::get('/cliente/ubicacion', [PedidoController::class, 'clientLocationForm'])->name('cliente.location.form');
 Route::patch('/cliente/ubicacion', [PedidoController::class, 'updateClientLocation'])->name('cliente.location.update');
 Route::get('/carrito', [PedidoController::class, 'cart'])->name('carrito');
+Route::get('/mis-pedidos', [PedidoController::class, 'orderHistory'])->name('cliente.pedidos');
 Route::delete('/carrito/{item}', [PedidoController::class, 'removeFromCart'])->name('carrito.remove');
 Route::post('/carrito/confirmar', [PedidoController::class, 'confirmCart'])->name('carrito.confirm');
 Route::patch('/pedidos/{pedido}/estado', [PedidoController::class, 'updateStatus'])->name('pedidos.status');

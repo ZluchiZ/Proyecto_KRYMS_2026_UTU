@@ -90,7 +90,6 @@ class LocalController extends Controller
         abort_unless($identificadorComercio, 403, 'Este comercio no tiene un RUT asociado.');
 
         $rutaImagen = $request->file('imagen')->store('productos', 'public');
-
         DB::table('producto')->insert([
                 'RUT_Comercio' => $identificadorComercio,
                 'Nombre_Producto' => $validated['nombre'],
@@ -208,12 +207,14 @@ class LocalController extends Controller
                     'Logo' => $validated['logo'] ?? null,
                     'latitud' => $coordenadas['latitud'],
                     'longitud' => $coordenadas['longitud'],
+                    'Estado_Adhesion' => 'Pendiente',
+                    'Motivo_Rechazo' => null,
                 ]);
             });
 
             return redirect()
                 ->route('login')
-                ->with('success', 'Registro exitoso. Ya puedes iniciar sesión.');
+                ->with('success', 'Solicitud enviada. Podrás iniciar sesión cuando el administrador apruebe tu adhesión.');
         } catch (\Throwable $e) {
             return back()
                 ->withInput()

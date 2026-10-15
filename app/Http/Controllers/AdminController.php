@@ -98,7 +98,10 @@ class AdminController extends Controller
         $actualizada = DB::table($tabla)
             ->where('Email_Usuario', $email)
             ->where('Estado_Adhesion', 'Pendiente')
-            ->update(['Estado_Adhesion' => $estado, 'Motivo_Rechazo' => $motivo]);
+            ->update([
+                'Estado_Adhesion' => $estado,
+                'Motivo_Rechazo' => $motivo,
+            ]);
 
         abort_unless($actualizada === 1, 409, 'La solicitud ya fue gestionada o no existe.');
 

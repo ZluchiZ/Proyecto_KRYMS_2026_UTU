@@ -70,9 +70,15 @@
                         @endif
                     </div>
 
-                    @if (session('success'))<div class="feedback success">{{ session('success') }}</div>@endif
-                    @if (session('warning'))<div class="feedback warning">{{ session('warning') }}</div>@endif
-                    @if ($errors->any())<div class="feedback warning">{{ $errors->first() }}</div>@endif
+                    @if (session('success'))
+                        <div class="feedback success">{{ session('success') }}</div>
+                    @endif
+                    @if (session('warning'))
+                        <div class="feedback warning">{{ session('warning') }}</div>
+                    @endif
+                    @if ($errors->any())
+                        <div class="feedback warning">{{ $errors->first() }}</div>
+                    @endif
 
                     @if ($seccion === 'adhesiones')
                         @if ($solicitudes->isEmpty())
@@ -80,10 +86,31 @@
                         @else
                             <div class="table-scroll"><table><thead><tr><th>Solicitante</th><th>Tipo</th><th>Documento</th><th>Correo</th><th>Decisión</th></tr></thead><tbody>
                                 @foreach ($solicitudes as $solicitud)
-                                    <tr><td>{{ $solicitud->nombre }}</td><td><span class="type-label">{{ $solicitud->nombre_tipo }}</span></td><td>{{ $solicitud->identificador }}</td><td>{{ $solicitud->email }}</td><td class="decision-cell">
-                                        <form method="POST" action="{{ route('admin.adhesiones.update', [$solicitud->tipo, $solicitud->email]) }}">@csrf @method('PATCH')<input type="hidden" name="decision" value="aceptar"><button class="decision-accept" type="submit">Aceptar</button></form>
-                                        <details class="reject-details"><summary>Rechazar</summary><form method="POST" action="{{ route('admin.adhesiones.update', [$solicitud->tipo, $solicitud->email]) }}">@csrf @method('PATCH')<input type="hidden" name="decision" value="rechazar"><label class="sr-only" for="motivo-{{ $loop->index }}">Motivo del rechazo</label><textarea id="motivo-{{ $loop->index }}" name="motivo" placeholder="Indica el motivo" required maxlength="1000"></textarea><button class="decision-reject" type="submit">Confirmar rechazo</button></form></details>
-                                    </td></tr>
+                                    <tr>
+                                        <td>{{ $solicitud->nombre }}</td>
+                                        <td><span class="type-label">{{ $solicitud->nombre_tipo }}</span></td>
+                                        <td>{{ $solicitud->identificador }}</td>
+                                        <td>{{ $solicitud->email }}</td>
+                                        <td class="decision-cell">
+                                            <form method="POST" action="{{ route('admin.adhesiones.update', [$solicitud->tipo, $solicitud->email]) }}">
+                                                @csrf
+                                                @method('PATCH')
+                                                <input type="hidden" name="decision" value="aceptar">
+                                                <button class="decision-accept" type="submit">Aceptar</button>
+                                            </form>
+                                            <details class="reject-details">
+                                                <summary>Rechazar</summary>
+                                                <form method="POST" action="{{ route('admin.adhesiones.update', [$solicitud->tipo, $solicitud->email]) }}">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <input type="hidden" name="decision" value="rechazar">
+                                                    <label class="sr-only" for="motivo-{{ $loop->index }}">Motivo del rechazo</label>
+                                                    <textarea id="motivo-{{ $loop->index }}" name="motivo" placeholder="Indica el motivo" required maxlength="1000"></textarea>
+                                                    <button class="decision-reject" type="submit">Confirmar rechazo</button>
+                                                </form>
+                                            </details>
+                                        </td>
+                                    </tr>
                                 @endforeach
                             </tbody></table></div>
                         @endif
@@ -93,9 +120,21 @@
                         @else
                             <div class="table-scroll"><table><thead><tr><th>Usuario</th><th>Tipo de cuenta</th><th>Identificador</th><th>Correo</th><th>Estado</th><th>Acción</th></tr></thead><tbody>
                                 @foreach ($usuarios as $usuario)
-                                    <tr><td class="user-cell"><span class="table-avatar">{{ strtoupper(substr($usuario->nombre, 0, 1)) }}</span>{{ $usuario->nombre }}</td><td><span class="type-label">{{ $usuario->tipo }}</span></td><td>{{ $usuario->identificador }}</td><td>{{ $usuario->email }}</td><td><span class="status {{ strtolower($usuario->estado) === 'activa' ? 'active' : 'suspended' }}">{{ $usuario->estado }}</span></td><td>
-                                        <form method="POST" action="{{ route('admin.usuarios.estado', [$usuario->tipo_ruta, $usuario->email]) }}" onsubmit="return confirm('¿Confirmas el cambio de estado de esta cuenta?')">@csrf @method('PATCH')<input type="hidden" name="accion" value="{{ strtolower($usuario->estado) === 'activa' ? 'suspender' : 'activar' }}"><button class="account-action {{ strtolower($usuario->estado) === 'activa' ? 'suspend' : 'reactivate' }}" type="submit">{{ strtolower($usuario->estado) === 'activa' ? 'Suspender' : 'Reactivar' }}</button></form>
-                                    </td></tr>
+                                    <tr>
+                                        <td class="user-cell"><span class="table-avatar">{{ strtoupper(substr($usuario->nombre, 0, 1)) }}</span>{{ $usuario->nombre }}</td>
+                                        <td><span class="type-label">{{ $usuario->tipo }}</span></td>
+                                        <td>{{ $usuario->identificador }}</td>
+                                        <td>{{ $usuario->email }}</td>
+                                        <td><span class="status {{ strtolower($usuario->estado) === 'activa' ? 'active' : 'suspended' }}">{{ $usuario->estado }}</span></td>
+                                        <td>
+                                            <form method="POST" action="{{ route('admin.usuarios.estado', [$usuario->tipo_ruta, $usuario->email]) }}" onsubmit="return confirm('¿Confirmas el cambio de estado de esta cuenta?')">
+                                                @csrf
+                                                @method('PATCH')
+                                                <input type="hidden" name="accion" value="{{ strtolower($usuario->estado) === 'activa' ? 'suspender' : 'activar' }}">
+                                                <button class="account-action {{ strtolower($usuario->estado) === 'activa' ? 'suspend' : 'reactivate' }}" type="submit">{{ strtolower($usuario->estado) === 'activa' ? 'Suspender' : 'Reactivar' }}</button>
+                                            </form>
+                                        </td>
+                                    </tr>
                                 @endforeach
                             </tbody></table></div>
                         @endif
@@ -105,11 +144,31 @@
                         @else
                             <div class="table-scroll"><table><thead><tr><th>Reporte</th><th>Cliente</th><th>Comercio</th><th>Detalle</th><th>Estado</th><th>Gestión</th></tr></thead><tbody>
                                 @foreach ($reportes as $reporte)
-                                    <tr><td>#{{ $reporte->ID_Reporte }}</td><td>{{ $reporte->CI_Cliente }}</td><td>{{ $reporte->RUT_Comercio }}</td><td class="detail-cell">{{ $reporte->Comentario ?: 'Sin comentario' }}</td><td><span class="status {{ $reporte->Estado_Gestion === 'Resuelto' ? 'active' : 'pending' }}">{{ $reporte->Estado_Gestion ?? 'Pendiente' }}</span>@if ($reporte->Resolucion)<small class="resolution-note">{{ $reporte->Resolucion }}</small>@endif</td><td class="management-cell">
-                                        <form method="POST" action="{{ route('admin.reportes.update', $reporte->ID_Reporte) }}">@csrf @method('PATCH')<label class="sr-only" for="estado-reporte-{{ $reporte->ID_Reporte }}">Estado del reporte</label><select id="estado-reporte-{{ $reporte->ID_Reporte }}" name="estado">@foreach (['pendiente' => 'Pendiente', 'en_revision' => 'En revisión', 'informacion_solicitada' => 'Solicitar información', 'resuelto' => 'Resuelto'] as $valor => $etiqueta)<option value="{{ $valor }}" @selected(($reporte->Estado_Gestion ?? 'Pendiente') === $etiqueta)>{{ $etiqueta }}</option>@endforeach</select><label class="sr-only" for="resolucion-{{ $reporte->ID_Reporte }}">Nota de gestión</label><textarea id="resolucion-{{ $reporte->ID_Reporte }}" name="resolucion" placeholder="Nota o resolución">{{ $reporte->Resolucion }}</textarea><button class="account-action" type="submit">Guardar</button></form>
-                                    </td></tr>
+                                    <tr>
+                                        <td>#{{ $reporte->ID_Reporte }}</td>
+                                        <td>{{ $reporte->CI_Cliente }}</td>
+                                        <td>{{ $reporte->RUT_Comercio }}</td>
+                                        <td class="detail-cell">{{ $reporte->Comentario ?: 'Sin comentario' }}</td>
+                                        <td><span class="status {{ $reporte->Estado_Gestion === 'Resuelto' ? 'active' : 'pending' }}">{{ $reporte->Estado_Gestion ?? 'Pendiente' }}</span>@if ($reporte->Resolucion)<small class="resolution-note">{{ $reporte->Resolucion }}</small>@endif</td>
+                                        <td class="management-cell">
+                                            <form method="POST" action="{{ route('admin.reportes.update', $reporte->ID_Reporte) }}">
+                                                @csrf
+                                                @method('PATCH')
+                                                <label class="sr-only" for="estado-reporte-{{ $reporte->ID_Reporte }}">Estado del reporte</label>
+                                                <select id="estado-reporte-{{ $reporte->ID_Reporte }}" name="estado">
+                                                    @foreach (['pendiente' => 'Pendiente', 'en_revision' => 'En revisión', 'informacion_solicitada' => 'Solicitar información', 'resuelto' => 'Resuelto'] as $valor => $etiqueta)
+                                                        <option value="{{ $valor }}" @selected(($reporte->Estado_Gestion ?? 'Pendiente') === $etiqueta)>{{ $etiqueta }}</option>
+                                                    @endforeach
+                                                </select>
+                                                <label class="sr-only" for="resolucion-{{ $reporte->ID_Reporte }}">Nota de gestión</label>
+                                                <textarea id="resolucion-{{ $reporte->ID_Reporte }}" name="resolucion" placeholder="Nota o resolución">{{ $reporte->Resolucion }}</textarea>
+                                                <button class="account-action" type="submit">Guardar</button>
+                                            </form>
+                                        </td>
+                                    </tr>
                                 @endforeach
-                            </tbody></table></div><p class="table-note">Solicitar información o resolver un reporte requiere agregar una nota de gestión.</p>
+                            </tbody></table></div>
+                            <p class="table-note">Solicitar información o resolver un reporte requiere agregar una nota de gestión.</p>
                         @endif
                     @else
                         @if ($resenas->isEmpty())
@@ -117,11 +176,32 @@
                         @else
                             <div class="table-scroll"><table><thead><tr><th>Reseña</th><th>Cliente</th><th>Destinatario</th><th>Puntuación</th><th>Comentario</th><th>Estado</th><th>Moderación</th></tr></thead><tbody>
                                 @foreach ($resenas as $resena)
-                                    <tr><td>#{{ $resena->ID }}</td><td>{{ $resena->CI_Cliente }}</td><td>{{ $resena->RUT_Comercio ?: ($resena->CI_Repartidor ? 'Repartidor '.$resena->CI_Repartidor : 'Sin destinatario') }}</td><td><span class="rating">{{ $resena->Puntuacion ?? '—' }} <span aria-hidden="true">★</span></span></td><td class="detail-cell">{{ $resena->Comentario ?: 'Sin comentario' }}@if ($resena->Motivo_Retiro)<small class="resolution-note">{{ $resena->Motivo_Retiro }}</small>@endif</td><td><span class="status {{ $resena->Estado_Moderacion === 'Retirada' ? 'suspended' : 'active' }}">{{ $resena->Estado_Moderacion ?? 'Visible' }}</span></td><td class="management-cell">
-                                        <form method="POST" action="{{ route('admin.resenas.moderate', $resena->ID) }}">@csrf @method('PATCH')@if ($resena->Estado_Moderacion === 'Retirada')<input type="hidden" name="decision" value="mantener"><button class="account-action" type="submit">Restaurar</button>@else<label class="sr-only" for="motivo-resena-{{ $resena->ID }}">Motivo para retirar la reseña</label><textarea id="motivo-resena-{{ $resena->ID }}" name="motivo" placeholder="Motivo (si se retira)"></textarea><button class="account-action suspend" name="decision" value="retirar" type="submit">Retirar</button><button class="account-action" name="decision" value="mantener" type="submit">Mantener</button>@endif</form>
-                                    </td></tr>
+                                    <tr>
+                                        <td>#{{ $resena->ID }}</td>
+                                        <td>{{ $resena->CI_Cliente }}</td>
+                                        <td>{{ $resena->RUT_Comercio ?: ($resena->CI_Repartidor ? 'Repartidor '.$resena->CI_Repartidor : 'Sin destinatario') }}</td>
+                                        <td><span class="rating">{{ $resena->Puntuacion ?? '—' }} <span aria-hidden="true">★</span></span></td>
+                                        <td class="detail-cell">{{ $resena->Comentario ?: 'Sin comentario' }}@if ($resena->Motivo_Retiro)<small class="resolution-note">{{ $resena->Motivo_Retiro }}</small>@endif</td>
+                                        <td><span class="status {{ $resena->Estado_Moderacion === 'Retirada' ? 'suspended' : 'active' }}">{{ $resena->Estado_Moderacion ?? 'Visible' }}</span></td>
+                                        <td class="management-cell">
+                                            <form method="POST" action="{{ route('admin.resenas.moderate', $resena->ID) }}">
+                                                @csrf
+                                                @method('PATCH')
+                                                @if ($resena->Estado_Moderacion === 'Retirada')
+                                                    <input type="hidden" name="decision" value="mantener">
+                                                    <button class="account-action" type="submit">Restaurar</button>
+                                                @else
+                                                    <label class="sr-only" for="motivo-resena-{{ $resena->ID }}">Motivo para retirar la reseña</label>
+                                                    <textarea id="motivo-resena-{{ $resena->ID }}" name="motivo" placeholder="Motivo (si se retira)"></textarea>
+                                                    <button class="account-action suspend" name="decision" value="retirar" type="submit">Retirar</button>
+                                                    <button class="account-action" name="decision" value="mantener" type="submit">Mantener</button>
+                                                @endif
+                                            </form>
+                                        </td>
+                                    </tr>
                                 @endforeach
-                            </tbody></table></div><p class="table-note">Las reseñas retiradas dejan de estar disponibles y pueden restaurarse desde aquí.</p>
+                            </tbody></table></div>
+                            <p class="table-note">Las reseñas retiradas dejan de estar disponibles y pueden restaurarse desde aquí.</p>
                         @endif
                     @endif
                 </section>

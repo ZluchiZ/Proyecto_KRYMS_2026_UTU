@@ -46,12 +46,14 @@ class RepartidorController extends Controller
                     'Nombre' => $validated['nombre'],
                     'Apellido' => $validated['apellido'],
                     'Teléfono' => $validated['telefono'],
+                    'Estado_Adhesion' => 'Pendiente',
+                    'Motivo_Rechazo' => null,
                 ]);
             });
 
             return redirect()
                 ->route('login')
-                ->with('success', 'Registro exitoso. Ya puedes iniciar sesión.');
+                ->with('success', 'Solicitud enviada. Podrás iniciar sesión cuando el administrador apruebe tu adhesión.');
         } catch (\Throwable $e) {
             return back()
                 ->withInput()
@@ -130,7 +132,6 @@ class RepartidorController extends Controller
             409,
             'El pedido solo se puede gestionar cuando todos los locales lo hayan finalizado.'
         );
-
         $decidido = false;
 
         if (Schema::hasTable('pedido_repartidor_estado')) {

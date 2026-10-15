@@ -184,6 +184,62 @@ class PedidoController extends Controller
         ]);
     }
 
+    public function orderHistory()
+    {
+        $this->requireClient();
+
+        $pedidos = DB::table('pedido')
+            ->where('CI_Cliente', session('usuario_id'))
+            ->select('N_Pedido', 'Fecha', 'Hora', 'Estado', 'Ubicacion', 'Monto_Total', 'Costo_de_envio', 'Metodo_de_pago')
+            ->orderByDesc('N_Pedido')
+            ->paginate(10);
+
+        $idsPedido = $pedidos->getCollection()->pluck('N_Pedido');
+        $localesPorPedido = collect();
+
+        if ($idsPedido->isNotEmpty()) {
+            $localesPorPedido = DB::table('subpedido')
+                ->leftJoin('comercio', 'subpedido.RUT_Comercio', '=', 'comercio.RUT')
+                ->leftJoin('detalle_de_pedido', 'subpedido.N_Subpedido', '=', 'detalle_de_pedido.N_Subpedido')
+                ->leftJoin('producto', 'detalle_de_pedido.ID_Producto', '=', 'producto.ID_Producto')
+                ->whereIn('subpedido.N_Pedido', $idsPedido)
+                ->select(
+                    'subpedido.N_Pedido',
+                    'subpedido.N_Subpedido',
+                    'subpedido.Estado as Estado_Subpedido',
+                    'subpedido.Monto_Total as Total_Local',
+                    'comercio.Nombre_Comercio',
+                    'producto.Nombre_Producto',
+                    'detalle_de_pedido.Cantidad'
+                )
+                ->orderBy('subpedido.N_Subpedido')
+                ->get()
+                ->groupBy('N_Pedido');
+        }
+
+        $pedidos->getCollection()->transform(function ($pedido) use ($localesPorPedido) {
+            $pedido->locales = $localesPorPedido->get($pedido->N_Pedido, collect())
+                ->groupBy('N_Subpedido')
+                ->map(function ($lineas) {
+                    $local = $lineas->first();
+
+                    return (object) [
+                        'nombre' => $local->Nombre_Comercio ?? 'Local',
+                        'estado' => $local->Estado_Subpedido ?? 'pendiente',
+                        'total' => $local->Total_Local,
+                        'productos' => $lineas
+                            ->filter(fn ($linea) => $linea->Nombre_Producto !== null)
+                            ->values(),
+                    ];
+                })
+                ->values();
+
+            return $pedido;
+        });
+
+        return view('Cliente.HistorialPedidos', ['pedidos' => $pedidos]);
+    }
+
     public function removeFromCart(int $item)
     {
         $this->requireClient();
@@ -381,7 +437,6 @@ class PedidoController extends Controller
                 );
                 $totalLocal += round($precioFinal * $item['cantidad'], 2);
             }
-
             $subpedido = DB::table('subpedido')->insertGetId([
                 'N_Pedido' => $pedido,
                 'RUT_Comercio' => $rutLocal,

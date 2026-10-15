@@ -97,7 +97,7 @@
         @endif
     </main>
     @if (session('order_sent'))
-        <div class="toast" role="status" aria-live="polite">Pedido enviado a {{ session('order_sent') }} local(es). Cuando todos lo finalicen, aparecerá para el repartidor como una sola entrega.</div>
+    <div class="toast" role="status" aria-live="polite">Pedido enviado a {{ session('order_sent') }} local(es). Cuando todos lo finalicen, aparecerá para el repartidor como una sola entrega. <a href="{{ route('cliente.pedidos') }}">Ver historial</a></div>
     @endif
 </body>
 </html>
