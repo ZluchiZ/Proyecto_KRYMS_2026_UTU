@@ -22,6 +22,12 @@ class GoogleController extends Controller
         $cliente = DB::table('cliente')->where('Email_Usuario', $email)->first();
 
         if ($cliente) {
+            if (strtolower($cliente->Estado_Cuenta ?? 'activa') !== 'activa') {
+                return redirect()
+                    ->route('login')
+                    ->with('error', 'Esta cuenta está suspendida. Contacta al administrador.');
+            }
+
             session()->regenerate();
             session([
                 'email' => $email,

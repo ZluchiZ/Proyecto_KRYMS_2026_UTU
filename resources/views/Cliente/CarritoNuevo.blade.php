@@ -97,7 +97,7 @@
         @endif
     </main>
     @if (session('order_sent'))
-        <div class="toast" role="status" aria-live="polite">Pedido enviado correctamente ({{ session('order_sent') }} producto(s)).</div>
+        <div class="toast" role="status" aria-live="polite">Pedido enviado correctamente ({{ session('order_sent') }} producto(s)). <a href="{{ route('cliente.pedidos') }}">Ver historial</a></div>
     @endif
 </body>
 </html>

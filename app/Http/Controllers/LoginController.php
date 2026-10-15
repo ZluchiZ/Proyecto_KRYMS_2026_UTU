@@ -15,6 +15,23 @@ class LoginController extends Controller
             'password' => 'required'
         ]);
 
+        $usuarioAdministrador = DB::table('usuario')
+            ->where('Email', $request->email)
+            ->first();
+
+        if ($usuarioAdministrador
+            && in_array(strtolower($usuarioAdministrador->Tipo_Usuario), ['admin', 'administrador'], true)
+            && Hash::check($request->password, $usuarioAdministrador->{'Contraseña'})) {
+            $request->session()->regenerate();
+            session([
+                'email' => $usuarioAdministrador->Email,
+                'tipo_usuario' => 'administrador',
+                'usuario_id' => $usuarioAdministrador->Email,
+            ]);
+
+            return redirect()->route('dashboard.admin');
+        }
+
         $cuentas = [
             ['tabla' => 'cliente', 'tipo' => 'cliente', 'id' => 'CI'],
             ['tabla' => 'comercio', 'tipo' => 'comercio', 'id' => 'RUT'],
@@ -27,10 +44,40 @@ class LoginController extends Controller
                 ->first();
 
             if ($usuario && Hash::check($request->password, $usuario->{'Contraseña'})) {
+                if (strtolower($usuario->Estado_Cuenta ?? 'activa') !== 'activa') {
+                    return back()
+                        ->withInput($request->only('email'))
+                        ->with('error', 'Esta cuenta está suspendida. Contacta al administrador.');
+                }
+
+                if ($cuenta['tipo'] !== 'cliente') {
+                    $estadoAdhesion = strtolower($usuario->Estado_Adhesion ?? 'aceptada');
+
+                    if ($estadoAdhesion !== 'aceptada') {
+                        $mensaje = $estadoAdhesion === 'rechazada'
+                            ? 'La solicitud de adhesión fue rechazada.'
+                            : 'La solicitud de adhesión está pendiente de aprobación.';
+
+                        if ($estadoAdhesion === 'rechazada' && $usuario->Motivo_Rechazo) {
+                            $mensaje .= ' Motivo: '.$usuario->Motivo_Rechazo;
+                        }
+
+                        return back()
+                            ->withInput($request->only('email'))
+                            ->with('error', $mensaje);
+                    }
+                }
+
                 $identificador = $usuario->{$cuenta['id']} ?? null;
 
                 if ($cuenta['tipo'] === 'comercio' && ! $identificador) {
-                    $identificador = $usuario->id;
+                    $identificador = $usuario->id ?? null;
+                }
+
+                if ($cuenta['tipo'] === 'comercio' && ! $identificador) {
+                    return back()
+                        ->withInput($request->only('email'))
+                        ->with('error', 'Este comercio no tiene un RUT o identificador asociado.');
                 }
 
                 $request->session()->regenerate();

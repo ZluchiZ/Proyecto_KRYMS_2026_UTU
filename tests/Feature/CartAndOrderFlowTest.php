@@ -64,7 +64,11 @@ class CartAndOrderFlowTest extends TestCase
             $table->id('N_Pedido');
             $table->string('CI_Cliente')->nullable();
             $table->string('CI_Repartidor')->nullable();
+            $table->date('Fecha')->nullable();
+            $table->time('Hora')->nullable();
+            $table->string('Estado')->nullable();
             $table->decimal('Monto_Total', 10, 2)->nullable();
+            $table->decimal('Costo_de_envio', 10, 2)->nullable();
             $table->string('Metodo_de_pago')->nullable();
             $table->string('Ubicacion')->nullable();
             $table->boolean('Confirmacion_entrega')->nullable();
@@ -129,6 +133,76 @@ class CartAndOrderFlowTest extends TestCase
         $response->assertOk();
         $response->assertSee('Total del carrito');
         $response->assertSee('U$ 360,00');
+    }
+
+    public function test_client_can_view_only_their_own_order_history(): void
+    {
+        $this->get(route('cliente.pedidos'))->assertForbidden();
+
+        DB::table('cliente')->insert([
+            'id' => 9,
+            'CI' => '12345678',
+            'Email_Usuario' => 'cliente@example.com',
+        ]);
+        DB::table('comercio')->insert([
+            'RUT' => '111111111111',
+            'Email_Usuario' => 'local@example.com',
+            'Nombre_Comercio' => 'La Picantería',
+        ]);
+        DB::table('producto')->insert([
+            'ID_Producto' => 10,
+            'RUT_Comercio' => '111111111111',
+            'Nombre_Producto' => 'Milanesa',
+            'Precio' => 125,
+        ]);
+        DB::table('pedido')->insert([
+            [
+                'N_Pedido' => 5,
+                'CI_Cliente' => '12345678',
+                'Fecha' => '2026-10-14',
+                'Hora' => '12:30:00',
+                'Estado' => 'pendiente',
+                'Monto_Total' => 250,
+                'Metodo_de_pago' => 'efectivo',
+                'Ubicacion' => 'Calle 1',
+            ],
+            [
+                'N_Pedido' => 6,
+                'CI_Cliente' => '87654321',
+                'Fecha' => '2026-10-13',
+                'Hora' => '13:00:00',
+                'Estado' => 'entregado',
+                'Monto_Total' => 100,
+                'Metodo_de_pago' => 'efectivo',
+                'Ubicacion' => 'Calle 2',
+            ],
+        ]);
+        DB::table('subpedido')->insert([
+            'N_Subpedido' => 11,
+            'N_Pedido' => 5,
+            'RUT_Comercio' => '111111111111',
+            'Estado' => 'pendiente',
+            'Monto_Total' => 250,
+        ]);
+        DB::table('detalle_de_pedido')->insert([
+            'N_Subpedido' => 11,
+            'ID_Producto' => 10,
+            'Cantidad' => 2,
+        ]);
+
+        $this->withSession([
+            'tipo_usuario' => 'cliente',
+            'usuario_id' => '12345678',
+        ])->get(route('cliente.pedidos'))
+            ->assertOk()
+            ->assertSee('Pedido #5')
+            ->assertSee('La Picantería')
+            ->assertSee('Milanesa')
+            ->assertSee('Calle 1')
+            ->assertSee('$U 250,00')
+            ->assertSee('× 2')
+            ->assertDontSee('Pedido #6')
+            ->assertDontSee('Calle 2');
     }
 
     public function test_local_can_accept_and_mark_orders_as_ready(): void

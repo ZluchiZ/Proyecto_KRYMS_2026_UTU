@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\LocalController;
@@ -20,6 +21,10 @@ Route::get('/login', function () {
 })->name('login');
 
 Route::get('/', function (Request $request) {
+    if (session('tipo_usuario') === 'administrador' && session('usuario_id')) {
+        return redirect()->route('dashboard.admin');
+    }
+
     if (session('tipo_usuario') === 'comercio' && session('usuario_id')) {
         return redirect()->route('dashboard.local');
     }
@@ -234,6 +239,83 @@ Route::get('/dashboard-local', function () {
     ]);
 })->name('dashboard.local');
 
+Route::get('/dashboard-admin', function (Request $request) {
+    abort_unless(session('tipo_usuario') === 'administrador' && session('usuario_id'), 403);
+
+    $seccion = $request->query('seccion', 'adhesiones');
+    abort_unless(in_array($seccion, ['adhesiones', 'usuarios', 'reportes', 'resenas'], true), 404);
+
+    $usuarios = collect();
+    foreach ([
+        ['tabla' => 'cliente', 'tipo' => 'Cliente', 'tipo_ruta' => 'cliente', 'clave' => 'CI', 'nombre' => 'Nombre'],
+        ['tabla' => 'comercio', 'tipo' => 'Local', 'tipo_ruta' => 'local', 'clave' => 'RUT', 'nombre' => 'Nombre_Comercio'],
+        ['tabla' => 'repartidor', 'tipo' => 'Repartidor', 'tipo_ruta' => 'repartidor', 'clave' => 'CI', 'nombre' => 'Nombre'],
+    ] as $cuenta) {
+        if (! Schema::hasTable($cuenta['tabla'])) {
+            continue;
+        }
+
+        $registros = DB::table($cuenta['tabla'])->get();
+        foreach ($registros as $registro) {
+            $usuarios->push((object) [
+                'tipo' => $cuenta['tipo'],
+                'identificador' => $registro->{$cuenta['clave']} ?? 'Sin asignar',
+                'nombre' => trim(($registro->{$cuenta['nombre']} ?? '') . ' ' . ($registro->Apellido ?? '')) ?: 'Sin nombre',
+                'email' => $registro->Email_Usuario ?? 'Sin correo',
+                'tipo_ruta' => $cuenta['tipo_ruta'],
+                'estado' => $registro->Estado_Cuenta ?? 'Activa',
+            ]);
+        }
+    }
+
+    $totalUsuarios = $usuarios->count();
+    $busqueda = trim($request->query('q', ''));
+    if ($busqueda !== '') {
+        $usuarios = $usuarios->filter(fn ($usuario) => str_contains(mb_strtolower($usuario->nombre . ' ' . $usuario->email . ' ' . $usuario->identificador), mb_strtolower($busqueda)));
+    }
+
+    $solicitudes = collect();
+    foreach ([
+        'local' => ['tabla' => 'comercio', 'nombre' => 'Nombre_Comercio', 'identificador' => 'RUT'],
+        'repartidor' => ['tabla' => 'repartidor', 'nombre' => 'Nombre', 'identificador' => 'CI'],
+    ] as $tipo => $cuenta) {
+        if (! Schema::hasTable($cuenta['tabla']) || ! Schema::hasColumn($cuenta['tabla'], 'Estado_Adhesion')) {
+            continue;
+        }
+
+        foreach (DB::table($cuenta['tabla'])->where('Estado_Adhesion', 'Pendiente')->get() as $solicitud) {
+            $solicitudes->push((object) [
+                'tipo' => $tipo,
+                'nombre_tipo' => $tipo === 'local' ? 'Local' : 'Repartidor',
+                'nombre' => trim(($solicitud->{$cuenta['nombre']} ?? '') . ' ' . ($solicitud->Apellido ?? '')) ?: $cuenta['nombre'],
+                'identificador' => $solicitud->{$cuenta['identificador']} ?? 'Sin asignar',
+                'email' => $solicitud->Email_Usuario,
+            ]);
+        }
+    }
+    $reportes = Schema::hasTable('reporte') ? DB::table('reporte')->orderByDesc('ID_Reporte')->get() : collect();
+    $resenas = Schema::hasTable('reseña') ? DB::table('reseña')->orderByDesc('ID')->get() : collect();
+
+    return view('Administrador.DashboardAdministrador', [
+        'seccion' => $seccion,
+        'usuarios' => $usuarios,
+        'busqueda' => $busqueda,
+        'solicitudes' => $solicitudes,
+        'reportes' => $reportes,
+        'resenas' => $resenas,
+        'totalUsuarios' => $totalUsuarios,
+    ]);
+})->name('dashboard.admin');
+
+Route::patch('/admin/adhesiones/{tipo}/{email}', [AdminController::class, 'updateAdhesion'])
+    ->name('admin.adhesiones.update');
+Route::patch('/admin/usuarios/{tipo}/{email}', [AdminController::class, 'updateUserStatus'])
+    ->name('admin.usuarios.estado');
+Route::patch('/admin/reportes/{report}', [AdminController::class, 'updateReport'])
+    ->name('admin.reportes.update');
+Route::patch('/admin/resenas/{review}', [AdminController::class, 'moderateReview'])
+    ->name('admin.resenas.moderate');
+
 Route::get('/dashboard-repartidor', function () {
     $email = session('email');
     $ciRepartidor = session('usuario_id');
@@ -368,6 +450,7 @@ Route::post('/carrito/agregar', [PedidoController::class, 'addToCart'])->name('c
 Route::get('/cliente/ubicacion', [PedidoController::class, 'clientLocationForm'])->name('cliente.location.form');
 Route::patch('/cliente/ubicacion', [PedidoController::class, 'updateClientLocation'])->name('cliente.location.update');
 Route::get('/carrito', [PedidoController::class, 'cart'])->name('carrito');
+Route::get('/mis-pedidos', [PedidoController::class, 'orderHistory'])->name('cliente.pedidos');
 Route::delete('/carrito/{item}', [PedidoController::class, 'removeFromCart'])->name('carrito.remove');
 Route::post('/carrito/confirmar', [PedidoController::class, 'confirmCart'])->name('carrito.confirm');
 Route::patch('/pedidos/{pedido}/estado', [PedidoController::class, 'updateStatus'])->name('pedidos.status');
