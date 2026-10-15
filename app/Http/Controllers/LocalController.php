@@ -4,10 +4,55 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class LocalController extends Controller
 {
+    private function geocode(?string $address): array
+    {
+        if (! $address) {
+            return ['latitud' => null, 'longitud' => null];
+        }
+
+        try {
+            $result = Http::withHeaders([
+                'User-Agent' => 'KRYMS Proyecto 2026 / Laravel',
+            ])->timeout(5)->get('https://nominatim.openstreetmap.org/search', [
+                'q' => $address.', Uruguay',
+                'format' => 'json',
+                'limit' => 1,
+            ])->json();
+
+            return [
+                'latitud' => isset($result[0]['lat']) ? (float) $result[0]['lat'] : null,
+                'longitud' => isset($result[0]['lon']) ? (float) $result[0]['lon'] : null,
+            ];
+        } catch (\Throwable) {
+            return ['latitud' => null, 'longitud' => null];
+        }
+    }
+
+    public function updateStatus(Request $request): \Illuminate\Http\RedirectResponse
+    {
+        abort_unless(session('tipo_usuario') === 'comercio' && session('usuario_id') && session('email'), 403);
+
+        $validated = $request->validate([
+            'abierto' => 'required|boolean',
+        ]);
+
+        $actualizado = DB::table('comercio')
+            ->where('Email_Usuario', session('email'))
+            ->update(['Abierto' => $request->boolean('abierto')]);
+
+        abort_unless($actualizado, 404);
+
+        return redirect()
+            ->route('dashboard.local')
+            ->with('success', $request->boolean('abierto') ? 'El local está abierto.' : 'El local está cerrado.');
+    }
+
     public function storeProducto(Request $request)
     {
         abort_unless(session('tipo_usuario') === 'comercio' && session('usuario_id'), 403);
@@ -15,13 +60,27 @@ class LocalController extends Controller
         $validated = $request->validate([
             'nombre' => 'required|string|max:255',
             'precio' => 'required|numeric|min:0|max:99999999.99',
-            'categoria' => 'required|string|max:100',
+            'categoria' => [
+                'required',
+                Rule::in([
+                    'Restaurantes',
+                    'Supermercados',
+                    'Farmacia',
+                    'Kioscos',
+                    'Bebidas',
+                    'Mascotas',
+                    'Otros',
+                    'Supermercado',
+                    'Ferretería',
+                    'Rotisería',
+                ]),
+            ],
             'descripcion' => 'required|string|max:1000',
-            'imagen_url' => 'required|url|max:2048',
+            'imagen' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
             'disponible' => 'nullable|boolean',
         ]);
 
-        $comercio = DB::table('Comercio')
+        $comercio = DB::table('comercio')
             ->where('Email_Usuario', session('email'))
             ->first(['RUT', 'Email_Usuario', 'Nombre_Comercio']);
 
@@ -30,12 +89,14 @@ class LocalController extends Controller
         $identificadorComercio = $comercio->RUT ?? session('usuario_id');
         abort_unless($identificadorComercio, 403, 'Este comercio no tiene un RUT asociado.');
 
-        DB::table('Producto')->insert([
+        $rutaImagen = $request->file('imagen')->store('productos', 'public');
+
+        DB::table('producto')->insert([
                 'RUT_Comercio' => $identificadorComercio,
                 'Nombre_Producto' => $validated['nombre'],
                 'Precio' => $validated['precio'],
                 'Categoria' => $validated['categoria'],
-                'Foto_Producto' => $validated['imagen_url'],
+                'Foto_Producto' => Storage::url($rutaImagen),
                 'Disponible' => $request->boolean('disponible'),
         ]);
 
@@ -50,10 +111,11 @@ class LocalController extends Controller
 
         $validated = $request->validate([
             'precio' => 'required|numeric|min:0|max:99999999.99',
+            'descuento' => 'required|numeric|min:0|max:100',
             'disponible' => 'required|boolean',
         ]);
 
-        $comercio = DB::table('Comercio')
+        $comercio = DB::table('comercio')
             ->where('Email_Usuario', session('email'))
             ->first(['RUT']);
 
@@ -62,7 +124,7 @@ class LocalController extends Controller
         $identificadorComercio = $comercio->RUT ?? session('usuario_id');
         abort_unless($identificadorComercio, 403, 'Este comercio no tiene un RUT asociado.');
 
-        $productoQuery = DB::table('Producto')
+        $productoQuery = DB::table('producto')
             ->where('ID_Producto', $producto)
             ->where('RUT_Comercio', $identificadorComercio);
 
@@ -70,6 +132,7 @@ class LocalController extends Controller
 
         $productoQuery->update([
             'Precio' => $validated['precio'],
+            'Descuento_Porcentaje' => $validated['descuento'],
             'Disponible' => $request->boolean('disponible'),
         ]);
 
@@ -82,7 +145,7 @@ class LocalController extends Controller
     {
         abort_unless(session('tipo_usuario') === 'comercio' && session('usuario_id') && session('email'), 403);
 
-        $eliminado = DB::table('Producto')
+        $eliminado = DB::table('producto')
             ->where('ID_Producto', $producto)
             ->where('RUT_Comercio', session('usuario_id'))
             ->delete();
@@ -101,7 +164,7 @@ class LocalController extends Controller
                 'nullable',
                 'string',
                 'max:20',
-                Rule::unique('Comercio', 'RUT'),
+                Rule::unique('comercio', 'RUT'),
             ],
             'nombre' => 'required|string|max:150',
             'nombre_dueno' => 'required|string|max:100',
@@ -113,7 +176,7 @@ class LocalController extends Controller
                 'required',
                 'email',
                 'max:255',
-                Rule::unique('Usuario', 'Email'),
+                Rule::unique('usuario', 'Email'),
             ],
             'contrasena' => 'required|string|min:8|confirmed',
         ], [
@@ -123,16 +186,17 @@ class LocalController extends Controller
 
         try {
             $password = bcrypt($validated['contrasena']);
+            $coordenadas = $this->geocode($validated['direccion'] ?? null);
 
-            DB::transaction(function () use ($validated, $password) {
-                DB::table('Usuario')->insert([
+            DB::transaction(function () use ($validated, $password, $coordenadas) {
+                DB::table('usuario')->insert([
                     'Email' => $validated['correo'],
                     'Nombre_de_Usuario' => $validated['nombre'],
                     'Contraseña' => $password,
                     'Tipo_Usuario' => 'comercio',
                 ]);
 
-                DB::table('Comercio')->insert([
+                DB::table('comercio')->insert([
                     'Email_Usuario' => $validated['correo'],
                     'Contraseña' => $password,
                     'RUT' => $validated['rut'] ?? null,
@@ -142,6 +206,8 @@ class LocalController extends Controller
                     'Horario' => $validated['horario'],
                     'Dirección' => $validated['direccion'] ?? null,
                     'Logo' => $validated['logo'] ?? null,
+                    'latitud' => $coordenadas['latitud'],
+                    'longitud' => $coordenadas['longitud'],
                 ]);
             });
 

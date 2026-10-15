@@ -5,13 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
     <link rel="stylesheet" href="{{ asset('css/login.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/internal.css') }}">
     <title>Inicio de sesión</title>
 </head>
-<body>
+<body class="internal-page internal-auth login-page">
+@include('partials.internal-header')
+<main class="login-shell">
+    <section class="login-intro">
+        <span class="login-eyebrow">EL GAUCHO VA</span>
+        <h1>Pedí cerca,<br><span>recibí fácil.</span></h1>
+        <p>Entrá para seguir tus pedidos y descubrir productos de tus locales favoritos.</p>
+    </section>
 
-<h2>Iniciar sesión</h2>
-
-<div class="container">
+    <section class="container login-card">
+        <div class="login-heading">
+            <span class="login-kicker">Tu cuenta</span>
+            <h2>Iniciar sesión</h2>
+            <p>Usá tus datos para continuar.</p>
+        </div>
 
 @if (session('error'))
     <div class="alert alert-danger">
@@ -29,21 +40,24 @@
     </div>
 @endif
 
-<form method="POST" action="/login">
-    @csrf
-    <input type="email" name="email" placeholder="Correo Electrónico" value="{{ old('email') }}" required>
-    <input type="password" name="password" placeholder="Contraseña" required>
-    <button type="submit">Entrar</button>
-</form>
+        <form method="POST" action="/login">
+            @csrf
+            <label for="login-email">Correo electrónico</label>
+            <input id="login-email" type="email" name="email" placeholder="tu@correo.com" value="{{ old('email') }}" required>
+            <label for="login-password">Contraseña</label>
+            <input id="login-password" type="password" name="password" placeholder="Tu contraseña" required>
+            <button type="submit">Entrar a mi cuenta</button>
+        </form>
 
-<a href="{{ route('google.login') }}" class="google-btn">Continuar con Google</a>
+        <div class="login-divider"><span>o continuá con</span></div>
+        <a href="{{ route('google.login') }}" class="google-btn">Continuar con Google</a>
 
-<h3>
-    No tienes cuenta,
-    <a href="{{ route('register') }}">¡Regístrate!</a>
-</h3>
-
-</div>
+        <p class="login-register">
+            ¿Todavía no tenés cuenta?
+            <a href="{{ route('register') }}">Crear cuenta</a>
+        </p>
+    </section>
+</main>
 
 </body>
 </html>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 
 class LoginController extends Controller
 {
@@ -15,10 +16,27 @@ class LoginController extends Controller
             'password' => 'required'
         ]);
 
+        if (Schema::hasTable('administrador')) {
+            $administrador = DB::table('administrador')
+                ->where('Email_Usuario', $request->email)
+                ->first();
+
+            if ($administrador && Hash::check($request->password, $administrador->{'Contraseña'})) {
+                $request->session()->regenerate();
+                session([
+                    'email' => $administrador->Email_Usuario,
+                    'tipo_usuario' => 'administrador',
+                    'usuario_id' => $administrador->Email_Usuario,
+                ]);
+
+                return redirect()->route('dashboard.admin');
+            }
+        }
+
         $cuentas = [
-            ['tabla' => 'Cliente', 'tipo' => 'cliente', 'id' => 'CI'],
-            ['tabla' => 'Comercio', 'tipo' => 'comercio', 'id' => 'RUT'],
-            ['tabla' => 'Repartidor', 'tipo' => 'repartidor', 'id' => 'CI'],
+            ['tabla' => 'cliente', 'tipo' => 'cliente', 'id' => 'CI'],
+            ['tabla' => 'comercio', 'tipo' => 'comercio', 'id' => 'RUT'],
+            ['tabla' => 'repartidor', 'tipo' => 'repartidor', 'id' => 'CI'],
         ];
 
         foreach ($cuentas as $cuenta) {

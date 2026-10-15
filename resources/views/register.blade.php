@@ -5,11 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
     <link rel="stylesheet" href="{{ asset('css/register.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/internal.css') }}">
     <title>Registro</title>
 </head>
-<body>
+<body class="internal-page internal-auth register-page">
+@include('partials.internal-header')
+<main class="register-shell">
+    <section class="register-intro">
+        <span class="register-eyebrow">EL GAUCHO VA</span>
+        <h1>Tu próxima<br><span>entrega empieza acá.</span></h1>
+        <p>Creá tu cuenta y pedí lo que necesitás en tus locales favoritos.</p>
+    </section>
 
-<div class="container">
+    <div class="container register-content">
 
 <div class="formularioregistro">
     <h2>Registro Cliente</h2> 
@@ -47,20 +55,23 @@
     <p id="errorContrasena" role="alert"></p>
     <p id="errorFecha" role="alert"></p>
   </div>
-</div> 
+    <div class="register-options">
+        <section class="FormarParteLocal">
+            <span class="register-option-kicker">Para comercios</span>
+            <h2>¿Eres un local?</h2>
+            <p>Mostrá tus productos y recibí pedidos.</p>
+            <a href="{{ route('registerLocal') }}" class="btn-registrar-local">Registrarme como local</a>
+        </section>
 
-
-<div class="FormarParteLocal">
-    <h2>¿Eres un local?</h2>
-    <p>Si eres un local y deseas registrarte, haz clic en el siguiente botón:</p>
-    <a href="{{ route('registerLocal') }}" class="btn-registrar-local">Registrarse como Local</a>
-</div>
-
-<div class="FormarParteRepartidor">
-    <h2>¿Eres un repartidor?</h2>
-    <p>Si eres un repartidor y deseas registrarte, haz clic en el siguiente botón:</p>
-    <a href="{{ route('registerRepartidor') }}" class="btn-registrar-repartidor">Registrarse como Repartidor</a>
-</div>
+        <section class="FormarParteRepartidor">
+            <span class="register-option-kicker">Para repartidores</span>
+            <h2>¿Eres repartidor?</h2>
+            <p>Sumate y llevá pedidos a toda la ciudad.</p>
+            <a href="{{ route('registerRepartidor') }}" class="btn-registrar-repartidor">Registrarme como repartidor</a>
+        </section>
+    </div>
+    </div>
+</main>
 
 <script src="{{ asset('js/ValidacionRegistro.js') }}"></script>
 
