@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<<<<<<< HEAD
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+=======
+>>>>>>> 257ac9a826534da679c9479e1421dfc202ec3056
     <link rel="stylesheet" href="{{ asset('css/dashboard-repartidor.css') }}">
     <link rel="stylesheet" href="{{ asset('css/internal.css') }}">
     <title>Dashboard repartidor</title>
@@ -27,6 +30,7 @@
         @endif
 
         <section class="dashboard-panel">
+<<<<<<< HEAD
             <div class="panel-header location-header">
                 <div>
                     <p class="eyebrow">Ubicación</p>
@@ -48,6 +52,8 @@
         </section>
 
         <section class="dashboard-panel">
+=======
+>>>>>>> 257ac9a826534da679c9479e1421dfc202ec3056
             <div class="panel-header">
                 <div>
                     <p class="eyebrow">Entrega</p>
@@ -148,6 +154,7 @@
             @endif
         </section>
     </main>
+<<<<<<< HEAD
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
@@ -240,5 +247,7 @@
             if (hasInitialLocation) statusElement.textContent = 'Se muestra la última ubicación guardada.';
         })();
     </script>
+=======
+>>>>>>> 257ac9a826534da679c9479e1421dfc202ec3056
 </body>
 </html>

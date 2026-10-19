@@ -68,6 +68,7 @@ class RepartidorController extends Controller
             ->with('error', 'La verificación por correo no está disponible con la configuración actual.');
     }
 
+<<<<<<< HEAD
     public function updateLocation(Request $request)
     {
         $repartidorId = session('usuario_id');
@@ -110,6 +111,8 @@ class RepartidorController extends Controller
         ]);
     }
 
+=======
+>>>>>>> 257ac9a826534da679c9479e1421dfc202ec3056
     public function updatePedidoStatus(Request $request, int $pedido)
     {
         $email = session('email');
