@@ -76,7 +76,6 @@ button.secondary:hover {
     margin-bottom: 1rem;
 }
 
-<<<<<<< HEAD
 .location-header {
     display: flex;
     align-items: center;
@@ -110,8 +109,6 @@ button.secondary:hover {
     background: #e8eee7;
 }
 
-=======
->>>>>>> 257ac9a826534da679c9479e1421dfc202ec3056
 .eyebrow {
     margin: 0 0 .3rem;
     color: #c96358;
@@ -214,7 +211,6 @@ h1, h2 {
         align-items: stretch;
     }
 
-<<<<<<< HEAD
     .location-header {
         flex-direction: column;
         align-items: stretch;
@@ -232,8 +228,6 @@ h1, h2 {
         height: 300px;
     }
 
-=======
->>>>>>> 257ac9a826534da679c9479e1421dfc202ec3056
     .order-header,
     .order-actions {
         flex-direction: column;

@@ -2,75 +2,63 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\RegistrationMailDeliveryException;
+use App\Services\RegistrationVerificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
 class ClienteController extends Controller
 {
-    public function store(Request $request)
-{
-    $validated = $request->validate([
-        'cedula' => [
-            'required',
-            'string',
-            'max:8',
-            Rule::unique('cliente', 'CI'),
-        ],
-        'nombre' => 'required|string|max:255',
-        'apellido' => 'required|string|max:255',
-        'email' => [
-            'required',
-            'email',
-            'max:255',
-            Rule::unique('usuario', 'Email'),
-        ],
-        'Numero' => 'required|string|max:9',
-        'password' => 'required|string|min:8',
-        'password2' => 'required|string|same:password',
-        'nacimiento' => 'required|date',
-    ], [
-        'cedula.unique' => 'Esta cédula ya está registrada.',
-        'email.unique' => 'Este correo ya está registrado.',
-    ]);
-
-    try {
-        $password = bcrypt($validated['password']);
-
-        DB::transaction(function () use ($validated, $password) {
-            DB::table('usuario')->insert([
-                'Email' => $validated['email'],
-                'Nombre_de_Usuario' => $validated['nombre'],
-                'Contraseña' => $password,
-                'Tipo_Usuario' => 'cliente',
-            ]);
-
-            DB::table('cliente')->insert([
-                'CI' => $validated['cedula'],
-                'Email_Usuario' => $validated['email'],
-                'Contraseña' => $password,
-                'Fecha_nacimiento' => $validated['nacimiento'],
-                'Nombre' => $validated['nombre'],
-                'Apellido' => $validated['apellido'],
-                'Teléfono' => $validated['Numero'],
-            ]);
-        });
-
-        return redirect()
-            ->route('login')
-            ->with('success', 'Registro exitoso. Ya puedes iniciar sesión.');
-    } catch (\Throwable $e) {
-        return back()
-            ->withInput()
-            ->with('error', 'No se pudo guardar el cliente: '.$e->getMessage());
-    }
-}
-
-    public function verificar($token)
+    public function store(Request $request, RegistrationVerificationService $verification)
     {
+        $validated = $request->validate([
+            'cedula' => [
+                'required',
+                'string',
+                'max:8',
+                Rule::unique('cliente', 'CI'),
+            ],
+            'nombre' => 'required|string|max:255',
+            'apellido' => 'required|string|max:255',
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('usuario', 'Email'),
+            ],
+            'Numero' => 'required|string|max:9',
+            'password' => 'required|string|min:8',
+            'password2' => 'required|string|same:password',
+            'nacimiento' => 'required|date',
+        ], [
+            'cedula.unique' => 'Esta cédula ya está registrada.',
+            'email.unique' => 'Este correo ya está registrado.',
+        ]);
+
+        try {
+            $sent = $verification->start('cliente', $validated['email'], [
+                'cedula' => $validated['cedula'],
+                'name' => $validated['nombre'],
+                'apellido' => $validated['apellido'],
+                'telefono' => $validated['Numero'],
+                'nacimiento' => $validated['nacimiento'],
+                'password' => Hash::make($validated['password']),
+            ]);
+        } catch (RegistrationMailDeliveryException $exception) {
+            report($exception);
+
+            return back()
+                ->withInput($request->except(['password', 'password2']))
+                ->with('error', 'No se pudo enviar el código. Revisá la configuración del correo e intentá nuevamente.');
+        }
+
         return redirect()
-            ->route('login')
-            ->with('error', 'La verificación por correo no está disponible con la configuración actual.');
+            ->route('registration.verify.form', ['email' => $validated['email']])
+            ->with('success', $sent
+                ? 'Te enviamos un código de verificación. Ingresalo para completar el registro.'
+                : 'Ya hay un registro pendiente para ese correo. Ingresá el código recibido o solicitá uno nuevo.');
     }
 
     public function profile()

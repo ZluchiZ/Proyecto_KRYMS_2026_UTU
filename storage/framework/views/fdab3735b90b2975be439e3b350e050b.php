@@ -22,6 +22,9 @@
                 </ul>
             </div>
         <?php endif; ?>
+        <?php if(session('error')): ?>
+            <p class="error" role="alert"><?php echo e(session('error')); ?></p>
+        <?php endif; ?>
 
         <form method="POST" action="<?php echo e(route('google.complete.register')); ?>">
             <?php echo csrf_field(); ?>

@@ -2,38 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\RegistrationMailDeliveryException;
+use App\Services\RegistrationVerificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
 class LocalController extends Controller
 {
-    private function geocode(?string $address): array
-    {
-        if (! $address) {
-            return ['latitud' => null, 'longitud' => null];
-        }
-
-        try {
-            $result = Http::withHeaders([
-                'User-Agent' => 'KRYMS Proyecto 2026 / Laravel',
-            ])->timeout(5)->get('https://nominatim.openstreetmap.org/search', [
-                'q' => $address.', Uruguay',
-                'format' => 'json',
-                'limit' => 1,
-            ])->json();
-
-            return [
-                'latitud' => isset($result[0]['lat']) ? (float) $result[0]['lat'] : null,
-                'longitud' => isset($result[0]['lon']) ? (float) $result[0]['lon'] : null,
-            ];
-        } catch (\Throwable) {
-            return ['latitud' => null, 'longitud' => null];
-        }
-    }
-
     public function updateStatus(Request $request): \Illuminate\Http\RedirectResponse
     {
         abort_unless(session('tipo_usuario') === 'comercio' && session('usuario_id') && session('email'), 403);
@@ -156,7 +134,7 @@ class LocalController extends Controller
             ->with('success', 'Producto eliminado correctamente.');
     }
 
-    public function store(Request $request)
+    public function store(Request $request, RegistrationVerificationService $verification)
     {
         $validated = $request->validate([
             'rut' => [
@@ -184,48 +162,29 @@ class LocalController extends Controller
         ]);
 
         try {
-            $password = bcrypt($validated['contrasena']);
-            $coordenadas = $this->geocode($validated['direccion'] ?? null);
+            $sent = $verification->start('comercio', $validated['correo'], [
+                'rut' => $validated['rut'] ?? null,
+                'name' => $validated['nombre'],
+                'nombre_dueno' => $validated['nombre_dueno'],
+                'cedula_dueno' => $validated['cedula_dueno'],
+                'horario' => $validated['horario'],
+                'direccion' => $validated['direccion'] ?? null,
+                'logo' => $validated['logo'] ?? null,
+                'password' => Hash::make($validated['contrasena']),
+            ]);
+        } catch (RegistrationMailDeliveryException $exception) {
+            report($exception);
 
-            DB::transaction(function () use ($validated, $password, $coordenadas) {
-                DB::table('usuario')->insert([
-                    'Email' => $validated['correo'],
-                    'Nombre_de_Usuario' => $validated['nombre'],
-                    'Contraseña' => $password,
-                    'Tipo_Usuario' => 'comercio',
-                ]);
-
-                DB::table('comercio')->insert([
-                    'Email_Usuario' => $validated['correo'],
-                    'Contraseña' => $password,
-                    'RUT' => $validated['rut'] ?? null,
-                    'Nombre_Comercio' => $validated['nombre'],
-                    'Nombre_dueño' => $validated['nombre_dueno'],
-                    'CI_Dueño' => $validated['cedula_dueno'],
-                    'Horario' => $validated['horario'],
-                    'Dirección' => $validated['direccion'] ?? null,
-                    'Logo' => $validated['logo'] ?? null,
-                    'latitud' => $coordenadas['latitud'],
-                    'longitud' => $coordenadas['longitud'],
-                    'Estado_Adhesion' => 'Pendiente',
-                    'Motivo_Rechazo' => null,
-                ]);
-            });
-
-            return redirect()
-                ->route('login')
-                ->with('success', 'Solicitud enviada. Podrás iniciar sesión cuando el administrador apruebe tu adhesión.');
-        } catch (\Throwable $e) {
             return back()
-                ->withInput()
-                ->with('error', 'No se pudo guardar el local: '.$e->getMessage());
+                ->withInput($request->except(['contrasena', 'contrasena_confirmation']))
+                ->with('error', 'No se pudo enviar el código. Revisá la configuración del correo e intentá nuevamente.');
         }
+
+        return redirect()
+            ->route('registration.verify.form', ['email' => $validated['correo']])
+            ->with('success', $sent
+                ? 'Te enviamos un código de verificación. Ingresalo para completar el registro.'
+                : 'Ya hay un registro pendiente para ese correo. Ingresá el código recibido o solicitá uno nuevo.');
     }
 
-    public function verificar($token)
-    {
-        return redirect()
-            ->route('login')
-            ->with('error', 'La verificación por correo no está disponible con la configuración actual.');
-    }
 }

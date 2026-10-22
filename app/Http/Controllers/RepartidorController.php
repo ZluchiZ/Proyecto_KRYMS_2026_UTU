@@ -2,17 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\RegistrationMailDeliveryException;
+use App\Services\RegistrationVerificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 
 class RepartidorController extends Controller
 {
-    public function store(Request $request)
+    public function store(Request $request, RegistrationVerificationService $verification)
     {
         $validated = $request->validate([
-            'cedula' => 'required|string|max:8',
+            'cedula' => ['required', 'string', 'max:8', Rule::unique('repartidor', 'CI')],
             'correo' => [
                 'required',
                 'email',
@@ -29,46 +32,29 @@ class RepartidorController extends Controller
         ]);
 
         try {
-            $password = bcrypt($validated['contrasena']);
+            $sent = $verification->start('repartidor', $validated['correo'], [
+                'cedula' => $validated['cedula'],
+                'name' => $validated['nombre'],
+                'apellido' => $validated['apellido'],
+                'telefono' => $validated['telefono'],
+                'nacimiento' => $validated['fecha_nacimiento'],
+                'password' => Hash::make($validated['contrasena']),
+            ]);
+        } catch (RegistrationMailDeliveryException $exception) {
+            report($exception);
 
-            DB::transaction(function () use ($validated, $password) {
-                DB::table('usuario')->insert([
-                    'Email' => $validated['correo'],
-                    'Nombre_de_Usuario' => $validated['nombre'],
-                    'Contraseña' => $password,
-                    'Tipo_Usuario' => 'repartidor',
-                ]);
-
-                DB::table('repartidor')->insert([
-                    'CI' => $validated['cedula'],
-                    'Email_Usuario' => $validated['correo'],
-                    'Contraseña' => $password,
-                    'Nombre' => $validated['nombre'],
-                    'Apellido' => $validated['apellido'],
-                    'Teléfono' => $validated['telefono'],
-                    'Estado_Adhesion' => 'Pendiente',
-                    'Motivo_Rechazo' => null,
-                ]);
-            });
-
-            return redirect()
-                ->route('login')
-                ->with('success', 'Solicitud enviada. Podrás iniciar sesión cuando el administrador apruebe tu adhesión.');
-        } catch (\Throwable $e) {
             return back()
-                ->withInput()
-                ->with('error', 'No se pudo guardar el repartidor: '.$e->getMessage());
+                ->withInput($request->except(['contrasena', 'contrasena_confirmation']))
+                ->with('error', 'No se pudo enviar el código. Revisá la configuración del correo e intentá nuevamente.');
         }
-    }
 
-    public function verificar($token)
-    {
         return redirect()
-            ->route('login')
-            ->with('error', 'La verificación por correo no está disponible con la configuración actual.');
+            ->route('registration.verify.form', ['email' => $validated['correo']])
+            ->with('success', $sent
+                ? 'Te enviamos un código de verificación. Ingresalo para completar el registro.'
+                : 'Ya hay un registro pendiente para ese correo. Ingresá el código recibido o solicitá uno nuevo.');
     }
 
-<<<<<<< HEAD
     public function updateLocation(Request $request)
     {
         $repartidorId = session('usuario_id');
@@ -111,8 +97,6 @@ class RepartidorController extends Controller
         ]);
     }
 
-=======
->>>>>>> 257ac9a826534da679c9479e1421dfc202ec3056
     public function updatePedidoStatus(Request $request, int $pedido)
     {
         $email = session('email');

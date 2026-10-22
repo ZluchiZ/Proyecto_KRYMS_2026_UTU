@@ -19,11 +19,46 @@
                     <p><?php echo e($cliente->Email_Usuario ?? 'Cliente de El Gaucho Va'); ?></p>
                 </div>
             </div>
-            <div class="customer-profile-grid">
-                <div class="profile-info-block"><span>Correo electrónico</span><strong><?php echo e($cliente->Email_Usuario ?? 'No informado'); ?></strong></div>
-                <div class="profile-info-block"><span>Teléfono</span><strong><?php echo e($cliente->{'Teléfono'} ?? 'No informado'); ?></strong></div>
-                <div class="profile-info-block profile-info-wide"><span>Dirección guardada</span><strong><?php echo e($cliente->direccion ?? $cliente->Direccion_Entrega ?? 'Todavía no agregaste una dirección'); ?></strong></div>
-            </div>
+            <?php if(session('success')): ?>
+                <p class="profile-form-message success" role="status"><?php echo e(session('success')); ?></p>
+            <?php endif; ?>
+
+            <?php if($errors->any()): ?>
+                <div class="profile-form-message error" role="alert">
+                    <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <p><?php echo e($error); ?></p>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                </div>
+            <?php endif; ?>
+
+            <form class="profile-edit-form" method="POST" action="<?php echo e(route('profile.update')); ?>">
+                <?php echo csrf_field(); ?>
+                <?php echo method_field('PATCH'); ?>
+                <div class="profile-edit-field">
+                    <label for="nombre">Nombre</label>
+                    <input id="nombre" name="nombre" type="text" value="<?php echo e(old('nombre', $cliente->Nombre ?? '')); ?>" required>
+                </div>
+                <div class="profile-edit-field">
+                    <label for="apellido">Apellido</label>
+                    <input id="apellido" name="apellido" type="text" value="<?php echo e(old('apellido', $cliente->Apellido ?? '')); ?>" required>
+                </div>
+                <div class="profile-edit-field">
+                    <label for="telefono">Teléfono</label>
+                    <input id="telefono" name="telefono" type="text" value="<?php echo e(old('telefono', $cliente->{'Teléfono'} ?? '')); ?>" required>
+                </div>
+                <div class="profile-edit-field">
+                    <label for="correo">Correo electrónico</label>
+                    <input id="correo" type="email" value="<?php echo e($cliente->Email_Usuario ?? ''); ?>" disabled>
+                </div>
+                <div class="profile-edit-field profile-edit-field-wide">
+                    <label for="direccion">Dirección de entrega</label>
+                    <textarea id="direccion" name="direccion" rows="3"><?php echo e(old('direccion', $cliente->direccion ?? $cliente->Direccion_Entrega ?? '')); ?></textarea>
+                </div>
+                <p class="profile-edit-note">El correo de acceso y la cédula no se pueden modificar.</p>
+                <div class="profile-edit-actions">
+                    <button type="submit">Guardar cambios</button>
+                </div>
+            </form>
             <div class="customer-profile-actions">
                 <a class="profile-primary-action" href="<?php echo e(route('cliente.location.form')); ?>">Editar ubicación</a>
                 <a class="profile-secondary-action" href="<?php echo e(route('carrito')); ?>">Ver mi carrito</a>

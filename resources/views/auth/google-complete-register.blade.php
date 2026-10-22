@@ -22,6 +22,9 @@
                 </ul>
             </div>
         @endif
+        @if (session('error'))
+            <p class="error" role="alert">{{ session('error') }}</p>
+        @endif
 
         <form method="POST" action="{{ route('google.complete.register') }}">
             @csrf

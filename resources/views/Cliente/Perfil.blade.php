@@ -19,11 +19,46 @@
                     <p>{{ $cliente->Email_Usuario ?? 'Cliente de El Gaucho Va' }}</p>
                 </div>
             </div>
-            <div class="customer-profile-grid">
-                <div class="profile-info-block"><span>Correo electrónico</span><strong>{{ $cliente->Email_Usuario ?? 'No informado' }}</strong></div>
-                <div class="profile-info-block"><span>Teléfono</span><strong>{{ $cliente->{'Teléfono'} ?? 'No informado' }}</strong></div>
-                <div class="profile-info-block profile-info-wide"><span>Dirección guardada</span><strong>{{ $cliente->direccion ?? $cliente->Direccion_Entrega ?? 'Todavía no agregaste una dirección' }}</strong></div>
-            </div>
+            @if (session('success'))
+                <p class="profile-form-message success" role="status">{{ session('success') }}</p>
+            @endif
+
+            @if ($errors->any())
+                <div class="profile-form-message error" role="alert">
+                    @foreach ($errors->all() as $error)
+                        <p>{{ $error }}</p>
+                    @endforeach
+                </div>
+            @endif
+
+            <form class="profile-edit-form" method="POST" action="{{ route('profile.update') }}">
+                @csrf
+                @method('PATCH')
+                <div class="profile-edit-field">
+                    <label for="nombre">Nombre</label>
+                    <input id="nombre" name="nombre" type="text" value="{{ old('nombre', $cliente->Nombre ?? '') }}" required>
+                </div>
+                <div class="profile-edit-field">
+                    <label for="apellido">Apellido</label>
+                    <input id="apellido" name="apellido" type="text" value="{{ old('apellido', $cliente->Apellido ?? '') }}" required>
+                </div>
+                <div class="profile-edit-field">
+                    <label for="telefono">Teléfono</label>
+                    <input id="telefono" name="telefono" type="text" value="{{ old('telefono', $cliente->{'Teléfono'} ?? '') }}" required>
+                </div>
+                <div class="profile-edit-field">
+                    <label for="correo">Correo electrónico</label>
+                    <input id="correo" type="email" value="{{ $cliente->Email_Usuario ?? '' }}" disabled>
+                </div>
+                <div class="profile-edit-field profile-edit-field-wide">
+                    <label for="direccion">Dirección de entrega</label>
+                    <textarea id="direccion" name="direccion" rows="3">{{ old('direccion', $cliente->direccion ?? $cliente->Direccion_Entrega ?? '') }}</textarea>
+                </div>
+                <p class="profile-edit-note">El correo de acceso y la cédula no se pueden modificar.</p>
+                <div class="profile-edit-actions">
+                    <button type="submit">Guardar cambios</button>
+                </div>
+            </form>
             <div class="customer-profile-actions">
                 <a class="profile-primary-action" href="{{ route('cliente.location.form') }}">Editar ubicación</a>
                 <a class="profile-secondary-action" href="{{ route('carrito') }}">Ver mi carrito</a>

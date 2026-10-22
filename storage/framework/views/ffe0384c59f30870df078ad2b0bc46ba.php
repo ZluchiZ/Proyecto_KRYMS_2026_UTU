@@ -15,6 +15,7 @@
                 <strong><?php echo e($nombreUsuario); ?></strong>
                 <span><?php echo e($tipoUsuario); ?></span>
                 <small><?php echo e($correoUsuario); ?></small>
+                <a class="dashboard-profile-link" href="<?php echo e(route('profile.edit')); ?>">Mi perfil</a>
             </div>
             <div class="status-toggle">
                 <span class="status-badge <?php echo e($comercioAbierto ? 'open' : 'closed'); ?>">

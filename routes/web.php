@@ -6,6 +6,8 @@ use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\LocalController;
 use App\Http\Controllers\PedidoController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RegistrationVerificationController;
 use App\Http\Controllers\RepartidorController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -213,7 +215,6 @@ Route::get('/dashboard-local', function () {
             ->where('subpedido.RUT_Comercio', $comercio->RUT)
             ->where('subpedido.Estado', '<>', 'rechazado')
             ->select(
-<<<<<<< HEAD
                 'pedido.*',
                 'subpedido.N_Subpedido',
                 'subpedido.Monto_Total as Total_Local',
@@ -224,18 +225,6 @@ Route::get('/dashboard-local', function () {
                 'cliente.Apellido as Apellido_Cliente',
                 'cliente.Email_Usuario as Correo_Cliente',
                 'cliente.Teléfono as Telefono_Cliente',
-=======
-                'Pedido.*',
-                'Subpedido.N_Subpedido',
-                'Subpedido.Monto_Total as Total_Local',
-                'Subpedido.Estado as Estado_Subpedido',
-                'Producto.Nombre_Producto',
-                'Detalle_de_pedido.Cantidad',
-                'Cliente.Nombre as Nombre_Cliente',
-                'Cliente.Apellido as Apellido_Cliente',
-                'Cliente.Email_Usuario as Correo_Cliente',
-                'Cliente.Teléfono as Telefono_Cliente',
->>>>>>> 257ac9a826534da679c9479e1421dfc202ec3056
                 DB::raw('NULL as Telefono_Contacto'),
                 DB::raw('NULL as Referencias')
             )
@@ -357,15 +346,12 @@ Route::get('/dashboard-repartidor', function () {
 
     abort_unless(session('tipo_usuario') === 'repartidor' || ($email && $ciRepartidor), 403, 'No tienes permisos para acceder al dashboard del repartidor.');
     abort_unless($ciRepartidor, 403, 'El repartidor no está registrado.');
-<<<<<<< HEAD
     $ubicacionRepartidor = Schema::hasColumn('repartidor', 'latitud')
         && Schema::hasColumn('repartidor', 'longitud')
         ? DB::table('repartidor')
             ->where('CI', $ciRepartidor)
             ->first(['latitud', 'longitud'])
         : null;
-=======
->>>>>>> 257ac9a826534da679c9479e1421dfc202ec3056
 
     $pedidosListosQuery = DB::table('subpedido')
         ->join('pedido', 'subpedido.N_Pedido', '=', 'pedido.N_Pedido')
@@ -442,18 +428,12 @@ Route::get('/dashboard-repartidor', function () {
         'miEntrega' => $miEntrega,
         'nombreUsuario' => session('email'),
         'tipoUsuario' => 'Repartidor',
-<<<<<<< HEAD
         'latitudRepartidor' => $ubicacionRepartidor?->latitud,
         'longitudRepartidor' => $ubicacionRepartidor?->longitud,
     ]);
 })->name('dashboard.repartidor');
 
-    Route::patch('/repartidor/ubicacion', [RepartidorController::class, 'updateLocation'])->name('repartidor.ubicacion');
-=======
-    ]);
-})->name('dashboard.repartidor');
-
->>>>>>> 257ac9a826534da679c9479e1421dfc202ec3056
+Route::patch('/repartidor/ubicacion', [RepartidorController::class, 'updateLocation'])->name('repartidor.ubicacion');
 Route::patch('/repartidor/pedidos/{pedido}/estado', [RepartidorController::class, 'updatePedidoStatus'])->name('repartidor.pedidos.estado');
 
 Route::get('/register', function () {
@@ -470,7 +450,12 @@ Route::get('/registerRepartidor', function () {
 Route::post('/Cliente', [ClienteController::class, 'store'])->name('cliente.store');
 Route::post('/local', [LocalController::class, 'store'])->name('local.store');
 Route::post('/repartidor', [RepartidorController::class, 'store'])->name('repartidor.store');
+Route::get('/registro/verificar', [RegistrationVerificationController::class, 'show'])->name('registration.verify.form');
+Route::post('/registro/verificar', [RegistrationVerificationController::class, 'verify'])->middleware('throttle:10,10')->name('registration.verify');
+Route::post('/registro/verificar/reenviar', [RegistrationVerificationController::class, 'resend'])->middleware('throttle:3,10')->name('registration.verify.resend');
 Route::get('/mi-cuenta', [ClienteController::class, 'profile'])->name('cliente.profile');
+Route::get('/mi-perfil/editar', [ProfileController::class, 'edit'])->name('profile.edit');
+Route::patch('/mi-perfil', [ProfileController::class, 'update'])->name('profile.update');
 Route::post('/productos', [LocalController::class, 'storeProducto'])->name('productos.store');
 Route::patch('/comercio/estado', [LocalController::class, 'updateStatus'])->name('comercio.status');
 Route::patch('/productos/{producto}', [LocalController::class, 'updateProducto'])->name('productos.update');
@@ -490,5 +475,3 @@ Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name
 Route::get('/auth/google/complete-register', [GoogleController::class, 'completeRegisterForm'])->name('google.complete.form');
 Route::post('/auth/google/complete-register', [GoogleController::class, 'completeRegister'])->name('google.complete.register');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
-
-Route::get('/verificar/{token}', [ClienteController::class, 'verificar']);
