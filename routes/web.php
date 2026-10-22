@@ -1,12 +1,20 @@
 <?php
 
 use App\Http\Controllers\ClienteController;
+<<<<<<< HEAD
 use App\Http\Controllers\EmailVerificationController;
+=======
+>>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\LocalController;
 use App\Http\Controllers\PedidoController;
+<<<<<<< HEAD
+=======
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RegistrationVerificationController;
+>>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f
 use App\Http\Controllers\RepartidorController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -432,7 +440,11 @@ Route::get('/dashboard-repartidor', function () {
     ]);
 })->name('dashboard.repartidor');
 
+<<<<<<< HEAD
     Route::patch('/repartidor/ubicacion', [RepartidorController::class, 'updateLocation'])->name('repartidor.ubicacion');
+=======
+Route::patch('/repartidor/ubicacion', [RepartidorController::class, 'updateLocation'])->name('repartidor.ubicacion');
+>>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f
 Route::patch('/repartidor/pedidos/{pedido}/estado', [RepartidorController::class, 'updatePedidoStatus'])->name('repartidor.pedidos.estado');
 
 Route::get('/register', function () {
@@ -449,10 +461,19 @@ Route::get('/registerRepartidor', function () {
 Route::post('/Cliente', [ClienteController::class, 'store'])->name('cliente.store');
 Route::post('/local', [LocalController::class, 'store'])->name('local.store');
 Route::post('/repartidor', [RepartidorController::class, 'store'])->name('repartidor.store');
+<<<<<<< HEAD
 Route::get('/verificar-correo', [EmailVerificationController::class, 'show'])->name('email-verification.show');
 Route::post('/verificar-correo', [EmailVerificationController::class, 'verify'])->name('email-verification.verify');
 Route::post('/verificar-correo/reenviar', [EmailVerificationController::class, 'resend'])->name('email-verification.resend');
 Route::get('/mi-cuenta', [ClienteController::class, 'profile'])->name('cliente.profile');
+=======
+Route::get('/registro/verificar', [RegistrationVerificationController::class, 'show'])->name('registration.verify.form');
+Route::post('/registro/verificar', [RegistrationVerificationController::class, 'verify'])->middleware('throttle:10,10')->name('registration.verify');
+Route::post('/registro/verificar/reenviar', [RegistrationVerificationController::class, 'resend'])->middleware('throttle:3,10')->name('registration.verify.resend');
+Route::get('/mi-cuenta', [ClienteController::class, 'profile'])->name('cliente.profile');
+Route::get('/mi-perfil/editar', [ProfileController::class, 'edit'])->name('profile.edit');
+Route::patch('/mi-perfil', [ProfileController::class, 'update'])->name('profile.update');
+>>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f
 Route::post('/productos', [LocalController::class, 'storeProducto'])->name('productos.store');
 Route::patch('/comercio/estado', [LocalController::class, 'updateStatus'])->name('comercio.status');
 Route::patch('/productos/{producto}', [LocalController::class, 'updateProducto'])->name('productos.update');

@@ -2,15 +2,25 @@
 
 namespace App\Http\Controllers;
 
+<<<<<<< HEAD
 use App\Services\EmailVerificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+=======
+use App\Exceptions\RegistrationMailDeliveryException;
+use App\Services\RegistrationVerificationService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Hash;
+>>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f
 use Illuminate\Validation\Rule;
 
 class LocalController extends Controller
 {
+<<<<<<< HEAD
     private function geocode(?string $address): array
     {
         if (! $address) {
@@ -35,6 +45,8 @@ class LocalController extends Controller
         }
     }
 
+=======
+>>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f
     public function updateStatus(Request $request): \Illuminate\Http\RedirectResponse
     {
         abort_unless(session('tipo_usuario') === 'comercio' && session('usuario_id') && session('email'), 403);
@@ -157,7 +169,11 @@ class LocalController extends Controller
             ->with('success', 'Producto eliminado correctamente.');
     }
 
+<<<<<<< HEAD
     public function store(Request $request)
+=======
+    public function store(Request $request, RegistrationVerificationService $verification)
+>>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f
     {
         $validated = $request->validate([
             'rut' => [
@@ -185,6 +201,7 @@ class LocalController extends Controller
         ]);
 
         try {
+<<<<<<< HEAD
             $password = bcrypt($validated['contrasena']);
             $coordenadas = $this->geocode($validated['direccion'] ?? null);
 
@@ -227,4 +244,31 @@ class LocalController extends Controller
     }
 
 
+=======
+            $sent = $verification->start('comercio', $validated['correo'], [
+                'rut' => $validated['rut'] ?? null,
+                'name' => $validated['nombre'],
+                'nombre_dueno' => $validated['nombre_dueno'],
+                'cedula_dueno' => $validated['cedula_dueno'],
+                'horario' => $validated['horario'],
+                'direccion' => $validated['direccion'] ?? null,
+                'logo' => $validated['logo'] ?? null,
+                'password' => Hash::make($validated['contrasena']),
+            ]);
+        } catch (RegistrationMailDeliveryException $exception) {
+            report($exception);
+
+            return back()
+                ->withInput($request->except(['contrasena', 'contrasena_confirmation']))
+                ->with('error', 'No se pudo enviar el código. Revisá la configuración del correo e intentá nuevamente.');
+        }
+
+        return redirect()
+            ->route('registration.verify.form', ['email' => $validated['correo']])
+            ->with('success', $sent
+                ? 'Te enviamos un código de verificación. Ingresalo para completar el registro.'
+                : 'Ya hay un registro pendiente para ese correo. Ingresá el código recibido o solicitá uno nuevo.');
+    }
+
+>>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f
 }

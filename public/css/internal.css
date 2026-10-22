@@ -564,6 +564,137 @@ body.internal-cart {
     color: var(--internal-coral);
 }
 
+<<<<<<< HEAD
+=======
+.profile-form-message {
+    margin: 1rem 1.5rem 0;
+}
+
+.profile-form-message p {
+    margin: .25rem 0;
+}
+
+.profile-edit-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    padding: 1.5rem;
+}
+
+.profile-edit-field {
+    display: grid;
+    gap: .4rem;
+}
+
+.profile-edit-field label {
+    color: var(--internal-muted);
+    font-size: .78rem;
+    font-weight: 700;
+}
+
+.profile-edit-field input,
+.profile-edit-field textarea {
+    width: 100%;
+    min-height: 2.75rem;
+    padding: .7rem .8rem;
+}
+
+.profile-edit-field textarea {
+    resize: vertical;
+}
+
+.profile-edit-field-wide,
+.profile-edit-note,
+.profile-edit-actions {
+    grid-column: 1 / -1;
+}
+
+.profile-edit-note {
+    margin: 0;
+    color: var(--internal-muted);
+    font-size: .78rem;
+}
+
+.profile-edit-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .75rem;
+}
+
+.profile-edit-actions button {
+    padding: .65rem 1rem;
+}
+
+.profile-edit-actions a {
+    padding: .65rem .8rem;
+    color: var(--internal-navy);
+    font-size: .85rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.dashboard-profile-link {
+    display: inline-block;
+    margin-top: .35rem;
+    font-size: .8rem;
+    font-weight: 700;
+}
+
+.registration-verification-card {
+    width: min(100%, 460px);
+    margin: auto;
+    padding: 2rem;
+    border: 1px solid var(--internal-line);
+    border-radius: 18px;
+    background: var(--internal-white);
+    box-shadow: var(--internal-shadow);
+}
+
+.registration-verification-card h1 {
+    margin: .4rem 0;
+    font-size: 1.8rem;
+}
+
+.registration-verification-card > p {
+    color: var(--internal-muted);
+}
+
+.registration-verification-card form {
+    display: grid;
+    gap: .75rem;
+}
+
+.registration-verification-card label {
+    font-size: .85rem;
+    font-weight: 700;
+}
+
+.registration-verification-card input {
+    min-height: 2.8rem;
+    padding: .7rem;
+}
+
+.registration-verification-card input[name="code"] {
+    font-size: 1.35rem;
+    letter-spacing: .3rem;
+    text-align: center;
+}
+
+.registration-verification-card button {
+    padding: .65rem 1rem;
+}
+
+.registration-verification-card .registration-resend-form {
+    margin-top: 1rem;
+}
+
+.registration-verification-card .registration-resend-form button {
+    background: var(--internal-pink);
+    color: var(--internal-navy);
+}
+
+>>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f
 @media (max-width: 640px) {
     .customer-profile-page {
         padding: 5.75rem .75rem 1rem;
@@ -591,6 +722,24 @@ body.internal-cart {
         width: 100%;
         margin-left: 0;
     }
+<<<<<<< HEAD
+=======
+
+    .profile-edit-form {
+        grid-template-columns: 1fr;
+        padding: 1rem;
+    }
+
+    .profile-edit-field-wide,
+    .profile-edit-note,
+    .profile-edit-actions {
+        grid-column: auto;
+    }
+
+    .registration-verification-card {
+        padding: 1.25rem;
+    }
+>>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f
 }
 
 .location-page {

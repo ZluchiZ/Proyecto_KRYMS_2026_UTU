@@ -56,3 +56,14 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+<<<<<<< HEAD
+=======
+
+## Verificación por correo
+
+Los registros de Cliente, Local y Repartidor se completan luego de introducir el código de seis dígitos enviado por correo. El código vence a los 15 minutos; se puede solicitar otro desde el formulario de verificación. Los Locales y Repartidores mantienen además la aprobación administrativa antes de poder iniciar sesión.
+
+Configurá un proveedor SMTP en el archivo `.env` (`MAIL_MAILER`, `MAIL_SCHEME`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD` y `MAIL_FROM_ADDRESS`) antes de registrar usuarios. Los valores de `.env.example` son marcadores de posición y deben reemplazarse por los datos del proveedor.
+
+Después de copiar `.env.example` a `.env`, ejecutá `php artisan migrate` para crear la tabla que conserva temporalmente los registros pendientes.
+>>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f

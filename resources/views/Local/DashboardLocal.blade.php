@@ -15,6 +15,10 @@
                 <strong>{{ $nombreUsuario }}</strong>
                 <span>{{ $tipoUsuario }}</span>
                 <small>{{ $correoUsuario }}</small>
+<<<<<<< HEAD
+=======
+                <a class="dashboard-profile-link" href="{{ route('profile.edit') }}">Mi perfil</a>
+>>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f
             </div>
             <div class="status-toggle">
                 <span class="status-badge {{ $comercioAbierto ? 'open' : 'closed' }}">

@@ -22,6 +22,12 @@
                 </ul>
             </div>
         <?php endif; ?>
+<<<<<<< HEAD
+=======
+        <?php if(session('error')): ?>
+            <p class="error" role="alert"><?php echo e(session('error')); ?></p>
+        <?php endif; ?>
+>>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f
 
         <form method="POST" action="<?php echo e(route('google.complete.register')); ?>">
             <?php echo csrf_field(); ?>

@@ -2,18 +2,33 @@
 
 namespace App\Http\Controllers;
 
+<<<<<<< HEAD
 use App\Services\EmailVerificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+=======
+use App\Exceptions\RegistrationMailDeliveryException;
+use App\Services\RegistrationVerificationService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+>>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 
 class RepartidorController extends Controller
 {
+<<<<<<< HEAD
     public function store(Request $request)
     {
         $validated = $request->validate([
             'cedula' => 'required|string|max:8',
+=======
+    public function store(Request $request, RegistrationVerificationService $verification)
+    {
+        $validated = $request->validate([
+            'cedula' => ['required', 'string', 'max:8', Rule::unique('repartidor', 'CI')],
+>>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f
             'correo' => [
                 'required',
                 'email',
@@ -30,6 +45,7 @@ class RepartidorController extends Controller
         ]);
 
         try {
+<<<<<<< HEAD
             $password = bcrypt($validated['contrasena']);
             $request->session()->put('pending_email_verification', $validated['correo']);
 
@@ -62,6 +78,29 @@ class RepartidorController extends Controller
                 ->withInput()
                 ->with('error', 'No se pudo iniciar el registro. Intentá nuevamente.');
         }
+=======
+            $sent = $verification->start('repartidor', $validated['correo'], [
+                'cedula' => $validated['cedula'],
+                'name' => $validated['nombre'],
+                'apellido' => $validated['apellido'],
+                'telefono' => $validated['telefono'],
+                'nacimiento' => $validated['fecha_nacimiento'],
+                'password' => Hash::make($validated['contrasena']),
+            ]);
+        } catch (RegistrationMailDeliveryException $exception) {
+            report($exception);
+
+            return back()
+                ->withInput($request->except(['contrasena', 'contrasena_confirmation']))
+                ->with('error', 'No se pudo enviar el código. Revisá la configuración del correo e intentá nuevamente.');
+        }
+
+        return redirect()
+            ->route('registration.verify.form', ['email' => $validated['correo']])
+            ->with('success', $sent
+                ? 'Te enviamos un código de verificación. Ingresalo para completar el registro.'
+                : 'Ya hay un registro pendiente para ese correo. Ingresá el código recibido o solicitá uno nuevo.');
+>>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f
     }
 
     public function updateLocation(Request $request)
