@@ -24,6 +24,12 @@
             <p>Usá tus datos para continuar.</p>
         </div>
 
+@if (session('success'))
+    <div class="alert alert-success" role="status">
+        {{ session('success') }}
+    </div>
+@endif
+
 @if (session('error'))
     <div class="alert alert-danger">
         {{ session('error') }}
@@ -48,6 +54,7 @@
             <input id="login-password" type="password" name="password" placeholder="Tu contraseña" required>
             <button type="submit">Entrar a mi cuenta</button>
         </form>
+        <a class="password-recovery-link" href="{{ route('password-recovery.request') }}">¿Olvidaste tu contraseña?</a>
 
         <div class="login-divider"><span>o continuá con</span></div>
         <a href="{{ route('google.login') }}" class="google-btn">Continuar con Google</a>

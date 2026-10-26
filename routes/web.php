@@ -1,20 +1,15 @@
 <?php
 
 use App\Http\Controllers\ClienteController;
-<<<<<<< HEAD
 use App\Http\Controllers\EmailVerificationController;
-=======
->>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\LocalController;
+use App\Http\Controllers\PasswordRecoveryController;
 use App\Http\Controllers\PedidoController;
-<<<<<<< HEAD
-=======
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegistrationVerificationController;
->>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f
 use App\Http\Controllers\RepartidorController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -28,6 +23,19 @@ Route::get('/test-cliente', function () {
 Route::get('/login', function () {
     return view('Login');
 })->name('login');
+
+Route::get('/recuperar-contrasena', [PasswordRecoveryController::class, 'create'])
+    ->name('password-recovery.request');
+Route::post('/recuperar-contrasena', [PasswordRecoveryController::class, 'store'])
+    ->middleware('throttle:3,10')
+    ->name('password-recovery.submit');
+Route::get('/restablecer-contrasena/{recovery}/{token}', [PasswordRecoveryController::class, 'resetForm'])
+    ->whereNumber('recovery')
+    ->name('password-recovery.reset.form');
+Route::post('/restablecer-contrasena/{recovery}/{token}', [PasswordRecoveryController::class, 'reset'])
+    ->whereNumber('recovery')
+    ->middleware('throttle:5,10')
+    ->name('password-recovery.reset');
 
 Route::get('/', function (Request $request) {
     if (session('tipo_usuario') === 'administrador' && session('usuario_id')) {
@@ -253,7 +261,7 @@ Route::get('/dashboard-admin', function (Request $request) {
     abort_unless(session('tipo_usuario') === 'administrador' && session('usuario_id'), 403);
 
     $seccion = $request->query('seccion', 'adhesiones');
-    abort_unless(in_array($seccion, ['adhesiones', 'usuarios', 'reportes', 'resenas'], true), 404);
+    abort_unless(in_array($seccion, ['adhesiones', 'usuarios', 'reportes', 'resenas', 'recuperaciones'], true), 404);
 
     $usuarios = collect();
     foreach ([
@@ -306,12 +314,16 @@ Route::get('/dashboard-admin', function (Request $request) {
 
     $reportes = Schema::hasTable('reporte') ? DB::table('reporte')->orderByDesc('ID_Reporte')->get() : collect();
     $resenas = Schema::hasTable('reseña') ? DB::table('reseña')->orderByDesc('ID')->get() : collect();
+    $recuperaciones = Schema::hasTable('password_recovery_requests')
+        ? DB::table('password_recovery_requests')->where('status', 'pending')->orderBy('created_at')->get()
+        : collect();
     $resenasPublicadas = $resenas->filter(fn ($resena) => strtoupper((string) ($resena->Estado_Moderacion ?? 'Visible')) !== 'RETIRADA')->count();
     $notificaciones = [
         'adhesiones' => $solicitudes->count(),
         'usuarios' => $usuariosActivos,
         'reportes' => $reportes->count(),
         'resenas' => $resenasPublicadas,
+        'recuperaciones' => $recuperaciones->count(),
     ];
 
     return view('Administrador.DashboardAdministrador', [
@@ -321,6 +333,7 @@ Route::get('/dashboard-admin', function (Request $request) {
         'solicitudes' => $solicitudes,
         'reportes' => $reportes,
         'resenas' => $resenas,
+        'recuperaciones' => $recuperaciones,
         'totalUsuarios' => $totalUsuarios,
         'notificaciones' => $notificaciones,
     ]);
@@ -334,6 +347,12 @@ Route::patch('/admin/reportes/{report}', [AdminController::class, 'updateReport'
     ->name('admin.reportes.update');
 Route::patch('/admin/resenas/{review}', [AdminController::class, 'moderateReview'])
     ->name('admin.resenas.moderate');
+Route::post('/admin/recuperaciones/{recovery}/aprobar', [AdminController::class, 'approvePasswordRecovery'])
+    ->whereNumber('recovery')
+    ->name('admin.recuperaciones.approve');
+Route::post('/admin/recuperaciones/{recovery}/rechazar', [AdminController::class, 'rejectPasswordRecovery'])
+    ->whereNumber('recovery')
+    ->name('admin.recuperaciones.reject');
 
 Route::get('/dashboard-repartidor', function () {
     $email = session('email');
@@ -440,11 +459,7 @@ Route::get('/dashboard-repartidor', function () {
     ]);
 })->name('dashboard.repartidor');
 
-<<<<<<< HEAD
-    Route::patch('/repartidor/ubicacion', [RepartidorController::class, 'updateLocation'])->name('repartidor.ubicacion');
-=======
 Route::patch('/repartidor/ubicacion', [RepartidorController::class, 'updateLocation'])->name('repartidor.ubicacion');
->>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f
 Route::patch('/repartidor/pedidos/{pedido}/estado', [RepartidorController::class, 'updatePedidoStatus'])->name('repartidor.pedidos.estado');
 
 Route::get('/register', function () {
@@ -461,19 +476,15 @@ Route::get('/registerRepartidor', function () {
 Route::post('/Cliente', [ClienteController::class, 'store'])->name('cliente.store');
 Route::post('/local', [LocalController::class, 'store'])->name('local.store');
 Route::post('/repartidor', [RepartidorController::class, 'store'])->name('repartidor.store');
-<<<<<<< HEAD
 Route::get('/verificar-correo', [EmailVerificationController::class, 'show'])->name('email-verification.show');
 Route::post('/verificar-correo', [EmailVerificationController::class, 'verify'])->name('email-verification.verify');
 Route::post('/verificar-correo/reenviar', [EmailVerificationController::class, 'resend'])->name('email-verification.resend');
-Route::get('/mi-cuenta', [ClienteController::class, 'profile'])->name('cliente.profile');
-=======
 Route::get('/registro/verificar', [RegistrationVerificationController::class, 'show'])->name('registration.verify.form');
 Route::post('/registro/verificar', [RegistrationVerificationController::class, 'verify'])->middleware('throttle:10,10')->name('registration.verify');
 Route::post('/registro/verificar/reenviar', [RegistrationVerificationController::class, 'resend'])->middleware('throttle:3,10')->name('registration.verify.resend');
 Route::get('/mi-cuenta', [ClienteController::class, 'profile'])->name('cliente.profile');
 Route::get('/mi-perfil/editar', [ProfileController::class, 'edit'])->name('profile.edit');
 Route::patch('/mi-perfil', [ProfileController::class, 'update'])->name('profile.update');
->>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f
 Route::post('/productos', [LocalController::class, 'storeProducto'])->name('productos.store');
 Route::patch('/comercio/estado', [LocalController::class, 'updateStatus'])->name('comercio.status');
 Route::patch('/productos/{producto}', [LocalController::class, 'updateProducto'])->name('productos.update');

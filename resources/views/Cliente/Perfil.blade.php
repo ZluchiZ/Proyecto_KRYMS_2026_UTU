@@ -19,13 +19,6 @@
                     <p>{{ $cliente->Email_Usuario ?? 'Cliente de El Gaucho Va' }}</p>
                 </div>
             </div>
-<<<<<<< HEAD
-            <div class="customer-profile-grid">
-                <div class="profile-info-block"><span>Correo electrónico</span><strong>{{ $cliente->Email_Usuario ?? 'No informado' }}</strong></div>
-                <div class="profile-info-block"><span>Teléfono</span><strong>{{ $cliente->{'Teléfono'} ?? 'No informado' }}</strong></div>
-                <div class="profile-info-block profile-info-wide"><span>Dirección guardada</span><strong>{{ $cliente->direccion ?? $cliente->Direccion_Entrega ?? 'Todavía no agregaste una dirección' }}</strong></div>
-            </div>
-=======
             @if (session('success'))
                 <p class="profile-form-message success" role="status">{{ session('success') }}</p>
             @endif
@@ -66,7 +59,6 @@
                     <button type="submit">Guardar cambios</button>
                 </div>
             </form>
->>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f
             <div class="customer-profile-actions">
                 <a class="profile-primary-action" href="{{ route('cliente.location.form') }}">Editar ubicación</a>
                 <a class="profile-secondary-action" href="{{ route('carrito') }}">Ver mi carrito</a>

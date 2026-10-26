@@ -2,54 +2,15 @@
 
 namespace Tests\Feature;
 
-<<<<<<< HEAD
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
-=======
 use App\Mail\RegistrationVerificationCode;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Tests\Concerns\CreatesRegistrationTables;
->>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f
 use Tests\TestCase;
 
 class ClienteRegistrationTest extends TestCase
 {
-<<<<<<< HEAD
-    public function test_registration_creates_a_cliente_record(): void
-    {
-        config([
-            'database.default' => 'sqlite',
-            'database.connections.sqlite' => [
-                'driver' => 'sqlite',
-                'database' => ':memory:',
-                'prefix' => '',
-            ],
-        ]);
-
-        DB::purge('sqlite');
-
-        Schema::connection('sqlite')->create('cliente', function (Blueprint $table) {
-            $table->id();
-            $table->string('cedula');
-            $table->string('nombre');
-            $table->string('apellido');
-            $table->string('telefono');
-            $table->date('fecha_nacimiento');
-            $table->string('correo')->unique();
-            $table->string('contrasena');
-            $table->timestamps();
-        });
-
-        foreach (['comercio', 'repartidor'] as $tableName) {
-            Schema::connection('sqlite')->create($tableName, function (Blueprint $table) {
-                $table->id();
-                $table->string('correo')->unique();
-            });
-        }
-=======
     use CreatesRegistrationTables;
 
     protected function setUp(): void
@@ -62,7 +23,6 @@ class ClienteRegistrationTest extends TestCase
     public function test_registration_creates_a_cliente_record(): void
     {
         Http::fake();
->>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f
 
         $response = $this->post(route('cliente.store'), [
             'cedula' => '12345678',
@@ -76,13 +36,6 @@ class ClienteRegistrationTest extends TestCase
             'opciones' => 'opcion1',
         ]);
 
-<<<<<<< HEAD
-        $response->assertRedirect(route('login'));
-
-        $this->assertTrue(
-            DB::connection('sqlite')->table('cliente')->where('correo', 'ana@example.com')->exists()
-        );
-=======
         $response->assertRedirect(route('registration.verify.form', ['email' => 'ana@example.com']));
 
         $this->assertDatabaseHas('registration_verifications', ['email' => 'ana@example.com']);
@@ -220,6 +173,5 @@ class ClienteRegistrationTest extends TestCase
         ])->assertRedirect(route('login'));
 
         $this->assertDatabaseHas('cliente', ['Email_Usuario' => 'ana@example.com']);
->>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f
     }
 }

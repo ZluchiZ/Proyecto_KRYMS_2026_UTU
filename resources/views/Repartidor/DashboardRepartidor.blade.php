@@ -15,10 +15,7 @@
             <div class="profile-info">
                 <strong>{{ $nombreUsuario }}</strong>
                 <span>{{ $tipoUsuario }}</span>
-<<<<<<< HEAD
-=======
                 <a class="dashboard-profile-link" href="{{ route('profile.edit') }}">Mi perfil</a>
->>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f
             </div>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf

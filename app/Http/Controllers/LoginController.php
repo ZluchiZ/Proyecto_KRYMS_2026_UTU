@@ -64,7 +64,6 @@ class LoginController extends Controller
                 ->first();
 
             if ($usuario && Hash::check($request->password, $usuario->{'Contraseña'})) {
-<<<<<<< HEAD
                 if (Schema::hasTable('email_verifications')
                     && DB::table('email_verifications')
                         ->where('email', $request->email)
@@ -75,8 +74,6 @@ class LoginController extends Controller
                         ->with('error', 'Debes confirmar tu correo antes de iniciar sesión.');
                 }
 
-=======
->>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f
                 if (strtolower($usuario->Estado_Cuenta ?? 'activa') !== 'activa') {
                     return back()
                         ->withInput($request->only('email'))

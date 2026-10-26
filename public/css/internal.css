@@ -564,8 +564,6 @@ body.internal-cart {
     color: var(--internal-coral);
 }
 
-<<<<<<< HEAD
-=======
 .profile-form-message {
     margin: 1rem 1.5rem 0;
 }
@@ -694,7 +692,6 @@ body.internal-cart {
     color: var(--internal-navy);
 }
 
->>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f
 @media (max-width: 640px) {
     .customer-profile-page {
         padding: 5.75rem .75rem 1rem;
@@ -722,8 +719,6 @@ body.internal-cart {
         width: 100%;
         margin-left: 0;
     }
-<<<<<<< HEAD
-=======
 
     .profile-edit-form {
         grid-template-columns: 1fr;
@@ -739,7 +734,6 @@ body.internal-cart {
     .registration-verification-card {
         padding: 1.25rem;
     }
->>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f
 }
 
 .location-page {

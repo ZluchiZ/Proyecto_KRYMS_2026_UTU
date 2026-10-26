@@ -17,6 +17,7 @@
                     'usuarios' => 'Usuarios',
                     'reportes' => 'Reportes',
                     'resenas' => 'Reseñas',
+                    'recuperaciones' => 'Recuperaciones',
                 ] as $clave => $titulo)
                     <a class="nav-link {{ $seccion === $clave ? 'active' : '' }}" href="{{ route('dashboard.admin', ['seccion' => $clave]) }}" @if ($seccion === $clave) aria-current="page" @endif>
                         <span>{{ $titulo }}</span>
@@ -39,7 +40,7 @@
                 <section class="page-heading">
                     <div>
                         <p class="eyebrow">KRYMS / ADMINISTRACIÓN</p>
-                        <h1>{{ ['adhesiones' => 'Adhesiones', 'usuarios' => 'Usuarios', 'reportes' => 'Reportes', 'resenas' => 'Reseñas'][$seccion] }}</h1>
+                        <h1>{{ ['adhesiones' => 'Adhesiones', 'usuarios' => 'Usuarios', 'reportes' => 'Reportes', 'resenas' => 'Reseñas', 'recuperaciones' => 'Recuperaciones'][$seccion] }}</h1>
                         <p class="heading-copy">Supervisa las cuentas y el contenido de la plataforma.</p>
                     </div>
                     <span class="date-stamp">{{ now()->locale('es')->translatedFormat('d M Y') }}</span>
@@ -55,8 +56,8 @@
                 <section class="data-panel">
                     <div class="panel-heading">
                         <div>
-                            <p class="eyebrow">{{ ['adhesiones' => 'REVISIÓN DE CUENTAS', 'usuarios' => 'DIRECTORIO', 'reportes' => 'CENTRO DE INCIDENCIAS', 'resenas' => 'CONTENIDO DE LA COMUNIDAD'][$seccion] }}</p>
-                            <h2>{{ ['adhesiones' => 'Solicitudes de adhesión', 'usuarios' => 'Cuentas registradas', 'reportes' => 'Reportes recibidos', 'resenas' => 'Reseñas registradas'][$seccion] }}</h2>
+                            <p class="eyebrow">{{ ['adhesiones' => 'REVISIÓN DE CUENTAS', 'usuarios' => 'DIRECTORIO', 'reportes' => 'CENTRO DE INCIDENCIAS', 'resenas' => 'CONTENIDO DE LA COMUNIDAD', 'recuperaciones' => 'SEGURIDAD DE CUENTAS'][$seccion] }}</p>
+                            <h2>{{ ['adhesiones' => 'Solicitudes de adhesión', 'usuarios' => 'Cuentas registradas', 'reportes' => 'Reportes recibidos', 'resenas' => 'Reseñas registradas', 'recuperaciones' => 'Solicitudes de recuperación'][$seccion] }}</h2>
                         </div>
                         @if ($seccion === 'usuarios')
                             <form class="search-form" method="GET" action="{{ route('dashboard.admin') }}">
@@ -66,7 +67,7 @@
                                 <button type="submit" aria-label="Buscar">Buscar</button>
                             </form>
                         @else
-                            <span class="record-count">{{ ['adhesiones' => $solicitudes->count(), 'reportes' => $reportes->count(), 'resenas' => $resenas->count()][$seccion] }} registros</span>
+                            <span class="record-count">{{ ['adhesiones' => $solicitudes->count(), 'reportes' => $reportes->count(), 'resenas' => $resenas->count(), 'recuperaciones' => $recuperaciones->count()][$seccion] }} registros</span>
                         @endif
                     </div>
 
@@ -170,7 +171,7 @@
                             </tbody></table></div>
                             <p class="table-note">Solicitar información o resolver un reporte requiere agregar una nota de gestión.</p>
                         @endif
-                    @else
+                    @elseif ($seccion === 'resenas')
                         @if ($resenas->isEmpty())
                             <div class="empty-state"><strong>No hay reseñas registradas</strong><p>Las reseñas de clientes aparecerán aquí para su revisión.</p></div>
                         @else
@@ -202,6 +203,31 @@
                                 @endforeach
                             </tbody></table></div>
                             <p class="table-note">Las reseñas retiradas dejan de estar disponibles y pueden restaurarse desde aquí.</p>
+                        @endif
+                    @else
+                        @if ($recuperaciones->isEmpty())
+                            <div class="empty-state"><strong>No hay solicitudes pendientes</strong><p>Las solicitudes de recuperación aparecerán aquí para su aprobación.</p></div>
+                        @else
+                            <div class="table-scroll"><table><thead><tr><th>Cuenta</th><th>Correo</th><th>Cédula</th><th>Fecha</th><th>Decisión</th></tr></thead><tbody>
+                                @foreach ($recuperaciones as $recuperacion)
+                                    <tr>
+                                        <td><span class="type-label">{{ ucfirst($recuperacion->account_type) }}</span></td>
+                                        <td>{{ $recuperacion->email }}</td>
+                                        <td>{{ $recuperacion->identifier }}</td>
+                                        <td>{{ \Illuminate\Support\Carbon::parse($recuperacion->created_at)->format('d/m/Y H:i') }}</td>
+                                        <td class="decision-cell">
+                                            <form method="POST" action="{{ route('admin.recuperaciones.approve', $recuperacion->id) }}">
+                                                @csrf
+                                                <button class="decision-accept" type="submit">Aceptar</button>
+                                            </form>
+                                            <form method="POST" action="{{ route('admin.recuperaciones.reject', $recuperacion->id) }}" onsubmit="return confirm('¿Rechazar esta solicitud?')">
+                                                @csrf
+                                                <button class="decision-reject" type="submit">Rechazar</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody></table></div>
                         @endif
                     @endif
                 </section>

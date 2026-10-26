@@ -37,7 +37,6 @@ return [
 
     'mailers' => [
 
-<<<<<<< HEAD
         'gmail' => [
             'transport' => 'smtp',
             'scheme' => 'smtp',
@@ -49,8 +48,6 @@ return [
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
         ],
 
-=======
->>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f
         'smtp' => [
             'transport' => 'smtp',
             'scheme' => env('MAIL_SCHEME'),

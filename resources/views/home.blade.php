@@ -44,11 +44,7 @@
             @if ($esClienteRegistrado)<button type="button" class="delivery-location delivery-location-button" id="open-location-modal"><span class="location-pin">⌖</span><span class="delivery-location-copy"><small>Entregar en</small><strong id="delivery-location-value">{{ $direccionEntrega ?: 'Seleccionar dirección' }}</strong></span><span class="location-chevron">⌄</span></button>@endif
             <nav class="header-actions" aria-label="Acciones de cuenta">
                 @if ($esClienteRegistrado)<a class="cart-link" href="{{ route('carrito') }}" aria-label="Ver carrito"><span>🛒</span><b>Carrito</b><em>{{ $cantidadCarrito }}</em></a>@endif
-<<<<<<< HEAD
-                <div class="profile-container"><button type="button" class="profile-button" aria-label="Abrir perfil" data-profile-toggle><span>◉</span><b>{{ $nombreUsuario ? 'Mi cuenta' : 'Ingresar' }}</b></button><div class="profile-menu" data-profile-menu>@if ($nombreUsuario)<strong>{{ $nombreUsuario }}</strong><span>{{ $tipoUsuario }}</span><small>{{ $correoUsuario }}</small>@if ($tipoUsuario === 'Cliente')<a href="{{ route('cliente.profile') }}">Ver mi perfil</a><a href="{{ route('cliente.pedidos') }}">Historial de pedidos</a>@endif<form method="POST" action="{{ route('logout') }}">@csrf<button type="submit">Cerrar sesión</button></form>@else<a href="{{ route('login') }}">Iniciar sesión</a>@endif</div></div>
-=======
                 <div class="profile-container"><button type="button" class="profile-button" aria-label="Abrir perfil" data-profile-toggle><span>◉</span><b>{{ $nombreUsuario ? 'Mi cuenta' : 'Ingresar' }}</b></button><div class="profile-menu" data-profile-menu>@if ($nombreUsuario)<strong>{{ $nombreUsuario }}</strong><span>{{ $tipoUsuario }}</span><small>{{ $correoUsuario }}</small>@if ($tipoUsuario === 'Cliente')<a href="{{ route('cliente.profile') }}">Ver mi perfil</a><a href="{{ route('cliente.pedidos') }}">Historial de pedidos</a>@else<a href="{{ route('profile.edit') }}">Mi perfil</a>@endif<form method="POST" action="{{ route('logout') }}">@csrf<button type="submit">Cerrar sesión</button></form>@else<a href="{{ route('login') }}">Iniciar sesión</a>@endif</div></div>
->>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f
             </nav>
         </div>
     </header>

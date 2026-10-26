@@ -1,9 +1,6 @@
 *.log
 .DS_Store
-<<<<<<< HEAD
 .env
-=======
->>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f
 .env.backup
 .env.production
 .phpactor.json
@@ -28,8 +25,3 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
-<<<<<<< HEAD
-=======
-
-.env
->>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f

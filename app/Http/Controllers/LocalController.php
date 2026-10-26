@@ -2,51 +2,16 @@
 
 namespace App\Http\Controllers;
 
-<<<<<<< HEAD
-use App\Services\EmailVerificationService;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Storage;
-=======
 use App\Exceptions\RegistrationMailDeliveryException;
 use App\Services\RegistrationVerificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
->>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class LocalController extends Controller
 {
-<<<<<<< HEAD
-    private function geocode(?string $address): array
-    {
-        if (! $address) {
-            return ['latitud' => null, 'longitud' => null];
-        }
-
-        try {
-            $result = Http::withHeaders([
-                'User-Agent' => 'KRYMS Proyecto 2026 / Laravel',
-            ])->timeout(5)->get('https://nominatim.openstreetmap.org/search', [
-                'q' => $address.', Uruguay',
-                'format' => 'json',
-                'limit' => 1,
-            ])->json();
-
-            return [
-                'latitud' => isset($result[0]['lat']) ? (float) $result[0]['lat'] : null,
-                'longitud' => isset($result[0]['lon']) ? (float) $result[0]['lon'] : null,
-            ];
-        } catch (\Throwable) {
-            return ['latitud' => null, 'longitud' => null];
-        }
-    }
-
-=======
->>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f
     public function updateStatus(Request $request): \Illuminate\Http\RedirectResponse
     {
         abort_unless(session('tipo_usuario') === 'comercio' && session('usuario_id') && session('email'), 403);
@@ -169,11 +134,7 @@ class LocalController extends Controller
             ->with('success', 'Producto eliminado correctamente.');
     }
 
-<<<<<<< HEAD
-    public function store(Request $request)
-=======
     public function store(Request $request, RegistrationVerificationService $verification)
->>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f
     {
         $validated = $request->validate([
             'rut' => [
@@ -201,50 +162,6 @@ class LocalController extends Controller
         ]);
 
         try {
-<<<<<<< HEAD
-            $password = bcrypt($validated['contrasena']);
-            $coordenadas = $this->geocode($validated['direccion'] ?? null);
-
-            $request->session()->put('pending_email_verification', $validated['correo']);
-
-            try {
-                app(EmailVerificationService::class)->start($validated['correo'], [
-                    'type' => 'comercio',
-                    'data' => [
-                        'rut' => $validated['rut'] ?? null,
-                        'nombre' => $validated['nombre'],
-                        'nombre_dueno' => $validated['nombre_dueno'],
-                        'cedula_dueno' => $validated['cedula_dueno'],
-                        'horario' => $validated['horario'],
-                        'direccion' => $validated['direccion'] ?? null,
-                        'logo' => $validated['logo'] ?? null,
-                        'latitud' => $coordenadas['latitud'],
-                        'longitud' => $coordenadas['longitud'],
-                        'password' => $password,
-                    ],
-                ]);
-            } catch (\Throwable $e) {
-                report($e);
-
-                return redirect()
-                    ->route('email-verification.show')
-                    ->with('error', 'No se pudo enviar el código. Revisá la configuración del correo y volvé a intentar el reenvío.');
-            }
-
-            return redirect()
-                ->route('email-verification.show')
-                ->with('success', 'Registro pendiente. Confirmá tu correo para guardar la solicitud del local.');
-        } catch (\Throwable $e) {
-            report($e);
-
-            return back()
-                ->withInput()
-                ->with('error', 'No se pudo iniciar el registro. Intentá nuevamente.');
-        }
-    }
-
-
-=======
             $sent = $verification->start('comercio', $validated['correo'], [
                 'rut' => $validated['rut'] ?? null,
                 'name' => $validated['nombre'],
@@ -270,5 +187,4 @@ class LocalController extends Controller
                 : 'Ya hay un registro pendiente para ese correo. Ingresá el código recibido o solicitá uno nuevo.');
     }
 
->>>>>>> 2454183e5acfdf3e4c0d75ce3f8717a428fe5a8f
 }
