@@ -113,6 +113,7 @@
 .history-summary strong { display: block; }
 .history-summary span { margin-bottom: .25rem; color: #718096; font-size: .68rem; }
 .history-summary strong { overflow-wrap: anywhere; color: #34251f; font-size: .8rem; }
+.local-sales-history-page .history-summary { grid-template-columns: 1.4fr 1.4fr 1fr auto; }
 .history-store { padding: .95rem 1.25rem; border-top: 1px solid #f0d2cb; }
 .history-store-heading { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
 .history-store-heading h2 { margin: 0; color: #34251f; font-size: .9rem; }
@@ -167,6 +168,7 @@
 @media (max-width: 600px) {
     .order-history-heading { align-items: flex-start; }
     .history-summary { grid-template-columns: 1fr 1fr; }
+    .local-sales-history-page .history-summary { grid-template-columns: 1fr 1fr; }
     .history-summary div:first-child { grid-column: 1 / -1; }
     .history-card-heading, .history-store-heading { align-items: flex-start; }
     .history-pagination { font-size: .68rem; }

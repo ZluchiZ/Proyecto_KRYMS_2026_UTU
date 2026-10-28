@@ -177,6 +177,8 @@ Route::get('/productos', function () {
     ]);
 })->name('products');
 
+Route::get('/local/historial-ventas', [LocalController::class, 'salesHistory'])->name('local.sales-history');
+
 Route::get('/local/{rut}', function (string $rut) {
     $comercio = DB::table('comercio')
         ->where('RUT', $rut)

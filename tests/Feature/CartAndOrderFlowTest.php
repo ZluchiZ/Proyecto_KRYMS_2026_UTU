@@ -321,6 +321,68 @@ class CartAndOrderFlowTest extends TestCase
             ->assertDontSee('Calle 2');
     }
 
+    public function test_local_can_view_only_its_own_sales_history(): void
+    {
+        $this->get(route('local.sales-history'))->assertForbidden();
+
+        DB::table('cliente')->insert([
+            ['CI' => '12345678', 'Email_Usuario' => 'ana@example.com', 'Nombre' => 'Ana', 'Apellido' => 'Pérez'],
+            ['CI' => '87654321', 'Email_Usuario' => 'otro@example.com', 'Nombre' => 'Otro', 'Apellido' => 'Cliente'],
+        ]);
+        DB::table('comercio')->insert([
+            ['RUT' => '111111111111', 'Email_Usuario' => 'local@example.com', 'Nombre_Comercio' => 'La Picantería'],
+            ['RUT' => '222222222222', 'Email_Usuario' => 'otro-local@example.com', 'Nombre_Comercio' => 'Otro Local'],
+        ]);
+        DB::table('producto')->insert([
+            ['ID_Producto' => 10, 'RUT_Comercio' => '111111111111', 'Nombre_Producto' => 'Milanesa', 'Precio' => 125],
+            ['ID_Producto' => 20, 'RUT_Comercio' => '222222222222', 'Nombre_Producto' => 'Producto ajeno', 'Precio' => 50],
+        ]);
+        DB::table('pedido')->insert([
+            [
+                'N_Pedido' => 41,
+                'CI_Cliente' => '12345678',
+                'Fecha' => '2026-10-14',
+                'Hora' => '12:30:00',
+                'Metodo_de_pago' => 'efectivo',
+                'Ubicacion' => 'Calle 1',
+            ],
+            [
+                'N_Pedido' => 42,
+                'CI_Cliente' => '87654321',
+                'Fecha' => '2026-10-15',
+                'Hora' => '13:00:00',
+                'Metodo_de_pago' => 'tarjeta',
+                'Ubicacion' => 'Calle 2',
+            ],
+        ]);
+        DB::table('subpedido')->insert([
+            ['N_Subpedido' => 51, 'N_Pedido' => 41, 'RUT_Comercio' => '111111111111', 'Estado' => 'entregado', 'Monto_Total' => 250],
+            ['N_Subpedido' => 52, 'N_Pedido' => 42, 'RUT_Comercio' => '222222222222', 'Estado' => 'aceptado', 'Monto_Total' => 50],
+        ]);
+        DB::table('detalle_de_pedido')->insert([
+            ['N_Subpedido' => 51, 'ID_Producto' => 10, 'Cantidad' => 2],
+            ['N_Subpedido' => 52, 'ID_Producto' => 20, 'Cantidad' => 1],
+        ]);
+
+        $this->withSession([
+            'tipo_usuario' => 'comercio',
+            'usuario_id' => 'local@example.com',
+            'email' => 'local@example.com',
+        ])->get(route('local.sales-history'))
+            ->assertOk()
+            ->assertSee('Historial de ventas')
+            ->assertSee('Pedido #41')
+            ->assertSee('2026-10-14')
+            ->assertSee('Ana Pérez')
+            ->assertSee('ana@example.com')
+            ->assertSee('Milanesa')
+            ->assertSee('× 2')
+            ->assertSee('$U 250,00')
+            ->assertDontSee('Pedido #42')
+            ->assertDontSee('Producto ajeno')
+            ->assertDontSee('Calle 2');
+    }
+
     public function test_local_can_accept_and_mark_orders_as_ready(): void
     {
         DB::table('comercio')->insert([

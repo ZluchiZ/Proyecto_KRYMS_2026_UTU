@@ -16,6 +16,7 @@
                 <span>{{ $tipoUsuario }}</span>
                 <small>{{ $correoUsuario }}</small>
                 <a class="dashboard-profile-link" href="{{ route('profile.edit') }}">Mi perfil</a>
+                <a class="dashboard-profile-link" href="{{ route('local.sales-history') }}">Historial de ventas</a>
             </div>
             <div class="status-toggle">
                 <span class="status-badge {{ $comercioAbierto ? 'open' : 'closed' }}">

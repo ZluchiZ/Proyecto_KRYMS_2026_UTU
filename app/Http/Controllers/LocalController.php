@@ -31,6 +31,56 @@ class LocalController extends Controller
             ->with('success', $request->boolean('abierto') ? 'El local está abierto.' : 'El local está cerrado.');
     }
 
+    public function salesHistory()
+    {
+        abort_unless(session('tipo_usuario') === 'comercio' && session('usuario_id') && session('email'), 403);
+
+        $comercio = DB::table('comercio')
+            ->where('Email_Usuario', session('email'))
+            ->first(['RUT', 'Nombre_Comercio']);
+
+        abort_unless($comercio, 403);
+
+        $ventas = DB::table('subpedido')
+            ->join('pedido', 'subpedido.N_Pedido', '=', 'pedido.N_Pedido')
+            ->leftJoin('cliente', 'pedido.CI_Cliente', '=', 'cliente.CI')
+            ->where('subpedido.RUT_Comercio', $comercio->RUT)
+            ->select(
+                'subpedido.N_Subpedido',
+                'pedido.N_Pedido',
+                'pedido.Fecha',
+                'pedido.Hora',
+                'pedido.Ubicacion',
+                'pedido.Metodo_de_pago',
+                'subpedido.Estado',
+                'subpedido.Monto_Total as Total_Local',
+                'cliente.Nombre as Nombre_Cliente',
+                'cliente.Apellido as Apellido_Cliente',
+                'cliente.Email_Usuario as Correo_Cliente'
+            )
+            ->orderByDesc('pedido.Fecha')
+            ->orderByDesc('pedido.Hora')
+            ->orderByDesc('subpedido.N_Subpedido')
+            ->paginate(10);
+
+        $productosPorSubpedido = collect();
+        if ($ventas->isNotEmpty()) {
+            $productosPorSubpedido = DB::table('detalle_de_pedido')
+                ->join('producto', 'detalle_de_pedido.ID_Producto', '=', 'producto.ID_Producto')
+                ->whereIn('detalle_de_pedido.N_Subpedido', $ventas->getCollection()->pluck('N_Subpedido'))
+                ->select('detalle_de_pedido.N_Subpedido', 'producto.Nombre_Producto', 'detalle_de_pedido.Cantidad')
+                ->orderBy('producto.Nombre_Producto')
+                ->get()
+                ->groupBy('N_Subpedido');
+        }
+
+        return view('Local.HistorialVentas', [
+            'comercio' => $comercio,
+            'ventas' => $ventas,
+            'productosPorSubpedido' => $productosPorSubpedido,
+        ]);
+    }
+
     public function storeProducto(Request $request)
     {
         abort_unless(session('tipo_usuario') === 'comercio' && session('usuario_id'), 403);
