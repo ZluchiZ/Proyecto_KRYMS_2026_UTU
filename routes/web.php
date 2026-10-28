@@ -9,6 +9,7 @@ use App\Http\Controllers\LocalController;
 use App\Http\Controllers\PasswordRecoveryController;
 use App\Http\Controllers\PedidoController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RegistrationVerificationController;
 use App\Http\Controllers\RepartidorController;
 use App\Http\Controllers\ReviewController;
@@ -532,6 +533,8 @@ Route::get('/registro/verificar', [RegistrationVerificationController::class, 's
 Route::post('/registro/verificar', [RegistrationVerificationController::class, 'verify'])->middleware('throttle:10,10')->name('registration.verify');
 Route::post('/registro/verificar/reenviar', [RegistrationVerificationController::class, 'resend'])->middleware('throttle:3,10')->name('registration.verify.resend');
 Route::get('/mi-cuenta', [ClienteController::class, 'profile'])->name('cliente.profile');
+Route::get('/mis-reportes', [ReportController::class, 'index'])->name('cliente.reportes.index');
+Route::post('/mis-reportes', [ReportController::class, 'store'])->name('cliente.reportes.store');
 Route::get('/mi-perfil/editar', [ProfileController::class, 'edit'])->name('profile.edit');
 Route::patch('/mi-perfil', [ProfileController::class, 'update'])->name('profile.update');
 Route::post('/productos', [LocalController::class, 'storeProducto'])->name('productos.store');

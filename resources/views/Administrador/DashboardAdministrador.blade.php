@@ -143,12 +143,14 @@
                         @if ($reportes->isEmpty())
                             <div class="empty-state"><strong>No hay reportes registrados</strong><p>Los reportes enviados aparecerán aquí para su revisión.</p></div>
                         @else
-                            <div class="table-scroll"><table><thead><tr><th>Reporte</th><th>Cliente</th><th>Comercio</th><th>Detalle</th><th>Estado</th><th>Gestión</th></tr></thead><tbody>
+                            <div class="table-scroll"><table><thead><tr><th>Reporte</th><th>Cliente</th><th>Categoría</th><th>Local relacionado</th><th>Detalle</th><th>Estado</th><th>Gestión</th></tr></thead><tbody>
                                 @foreach ($reportes as $reporte)
+                                    @php($categoriasReporte = ['local' => 'Local', 'repartidor' => 'Repartidor', 'aplicacion' => 'Aplicación', 'administracion' => 'Administración', 'otro' => 'Otro'])
                                     <tr>
                                         <td>#{{ $reporte->ID_Reporte }}</td>
                                         <td>{{ $reporte->CI_Cliente }}</td>
-                                        <td>{{ $reporte->RUT_Comercio }}</td>
+                                        <td>{{ $categoriasReporte[$reporte->Categoria ?? 'local'] ?? 'Otro' }}</td>
+                                        <td>{{ $reporte->RUT_Comercio ?: 'No especificado' }}</td>
                                         <td class="detail-cell">{{ $reporte->Comentario ?: 'Sin comentario' }}</td>
                                         <td><span class="status {{ $reporte->Estado_Gestion === 'Resuelto' ? 'active' : 'pending' }}">{{ $reporte->Estado_Gestion ?? 'Pendiente' }}</span>@if ($reporte->Resolucion)<small class="resolution-note">{{ $reporte->Resolucion }}</small>@endif</td>
                                         <td class="management-cell">

@@ -613,6 +613,117 @@ body.internal-cart {
     font-size: .78rem;
 }
 
+.customer-reports-section {
+    display: grid;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-top: 1px solid var(--internal-line);
+}
+
+.customer-reports-heading h2,
+.customer-report-history h3 {
+    margin: .25rem 0;
+    color: var(--internal-navy);
+}
+
+.customer-reports-heading p,
+.customer-report-empty {
+    margin: .35rem 0 0;
+    color: var(--internal-muted);
+    font-size: .82rem;
+}
+
+.customer-report-form {
+    display: grid;
+    gap: .9rem;
+    padding: 1rem;
+    border: 1px solid var(--internal-line);
+    border-radius: 12px;
+    background: #fffaf4;
+}
+
+.customer-report-field {
+    display: grid;
+    gap: .4rem;
+}
+
+.customer-report-field label {
+    color: var(--internal-muted);
+    font-size: .78rem;
+    font-weight: 700;
+}
+
+.customer-report-field label span {
+    font-weight: 400;
+}
+
+.customer-report-field select,
+.customer-report-field textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: .7rem .8rem;
+    border: 1px solid var(--internal-line);
+    border-radius: 8px;
+    background: var(--internal-white);
+    color: var(--internal-navy);
+    font: inherit;
+}
+
+.customer-report-field textarea {
+    resize: vertical;
+}
+
+.customer-report-submit {
+    justify-self: start;
+    min-height: 2.7rem;
+    padding: .65rem .9rem;
+    border: 0;
+    border-radius: 8px;
+    background: var(--internal-blue);
+    color: var(--internal-white);
+    font: inherit;
+    font-size: .8rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.customer-report-history {
+    display: grid;
+    gap: .65rem;
+}
+
+.customer-report-item {
+    padding: .9rem 1rem;
+    border: 1px solid var(--internal-line);
+    border-radius: 10px;
+    background: var(--internal-white);
+}
+
+.customer-report-item header {
+    display: flex;
+    justify-content: space-between;
+    gap: .75rem;
+    color: var(--internal-navy);
+    font-size: .8rem;
+}
+
+.customer-report-item header span {
+    color: var(--internal-muted);
+}
+
+.customer-report-item p {
+    margin: .55rem 0 0;
+    color: var(--internal-muted);
+    font-size: .82rem;
+    overflow-wrap: anywhere;
+}
+
+.customer-report-item .customer-report-resolution {
+    padding-top: .55rem;
+    border-top: 1px solid var(--internal-line);
+    color: var(--internal-navy);
+}
+
 .profile-edit-actions {
     display: flex;
     flex-wrap: wrap;
@@ -718,6 +829,11 @@ body.internal-cart {
     .customer-profile-actions form {
         width: 100%;
         margin-left: 0;
+    }
+
+    .customer-report-item header {
+        align-items: flex-start;
+        flex-direction: column;
     }
 
     .profile-edit-form {

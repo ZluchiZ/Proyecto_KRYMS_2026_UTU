@@ -143,12 +143,14 @@
                         <?php if($reportes->isEmpty()): ?>
                             <div class="empty-state"><strong>No hay reportes registrados</strong><p>Los reportes enviados aparecerán aquí para su revisión.</p></div>
                         <?php else: ?>
-                            <div class="table-scroll"><table><thead><tr><th>Reporte</th><th>Cliente</th><th>Comercio</th><th>Detalle</th><th>Estado</th><th>Gestión</th></tr></thead><tbody>
+                            <div class="table-scroll"><table><thead><tr><th>Reporte</th><th>Cliente</th><th>Categoría</th><th>Local relacionado</th><th>Detalle</th><th>Estado</th><th>Gestión</th></tr></thead><tbody>
                                 <?php $__currentLoopData = $reportes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $reporte): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <?php ($categoriasReporte = ['local' => 'Local', 'repartidor' => 'Repartidor', 'aplicacion' => 'Aplicación', 'administracion' => 'Administración', 'otro' => 'Otro']); ?>
                                     <tr>
                                         <td>#<?php echo e($reporte->ID_Reporte); ?></td>
                                         <td><?php echo e($reporte->CI_Cliente); ?></td>
-                                        <td><?php echo e($reporte->RUT_Comercio); ?></td>
+                                        <td><?php echo e($categoriasReporte[$reporte->Categoria ?? 'local'] ?? 'Otro'); ?></td>
+                                        <td><?php echo e($reporte->RUT_Comercio ?: 'No especificado'); ?></td>
                                         <td class="detail-cell"><?php echo e($reporte->Comentario ?: 'Sin comentario'); ?></td>
                                         <td><span class="status <?php echo e($reporte->Estado_Gestion === 'Resuelto' ? 'active' : 'pending'); ?>"><?php echo e($reporte->Estado_Gestion ?? 'Pendiente'); ?></span><?php if($reporte->Resolucion): ?><small class="resolution-note"><?php echo e($reporte->Resolucion); ?></small><?php endif; ?></td>
                                         <td class="management-cell">

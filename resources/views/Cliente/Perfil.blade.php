@@ -59,10 +59,12 @@
                     <button type="submit">Guardar cambios</button>
                 </div>
             </form>
+
             <div class="customer-profile-actions">
                 <a class="profile-primary-action" href="{{ route('cliente.location.form') }}">Editar ubicación</a>
                 <a class="profile-secondary-action" href="{{ route('carrito') }}">Ver mi carrito</a>
                 <a class="profile-secondary-action" href="{{ route('cliente.pedidos') }}">Historial de pedidos</a>
+                <a class="profile-secondary-action" href="{{ route('cliente.reportes.index') }}">Mis reportes</a>
                 <form method="POST" action="{{ route('logout') }}">@csrf<button type="submit">Cerrar sesión</button></form>
             </div>
         </section>
