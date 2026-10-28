@@ -14,5 +14,32 @@
 .local-profile-info div { display: grid; gap: .35rem; min-height: 86px; padding: 1rem; background: var(--white); }
 .local-profile-info span { color: var(--muted); font-size: .7rem; font-weight: 700; text-transform: uppercase; }
 .local-profile-info strong { color: var(--navy); font-size: .88rem; font-weight: 600; }
+.local-reviews-section { margin: 0 0 3rem; }
+.local-reviews-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+.local-reviews-heading h2 { margin: .25rem 0 0; color: var(--navy); font-size: 1.5rem; }
+.review-overview { display: grid; justify-items: end; gap: .15rem; color: var(--navy); }
+.review-overview strong { font-size: 1.05rem; }
+.review-overview > span, .review-stars { color: #b76518; letter-spacing: 0; }
+.review-overview small { color: var(--muted); font-size: .72rem; }
+.review-form { display: grid; gap: .7rem; margin-bottom: 1rem; padding: 1rem; border: 1px solid var(--line); border-radius: 8px; background: var(--white); }
+.review-rating-field { min-width: 0; margin: 0; padding: 0; border: 0; }
+.review-rating-field legend, .review-comment-label { margin-bottom: .45rem; color: var(--navy); font-size: .82rem; font-weight: 700; }
+.review-rating-options { display: flex; flex-wrap: wrap; gap: .35rem; }
+.review-rating-option { position: relative; display: inline-flex; cursor: pointer; }
+.review-rating-option input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.review-rating-option span { display: grid; min-width: 2.5rem; min-height: 2.5rem; place-items: center; padding: .3rem; border: 1px solid var(--line); border-radius: 6px; background: #fffaf0; color: #9c5b10; font-size: .82rem; }
+.review-rating-option input:checked + span { border-color: #b76518; background: #fff0cf; }
+.review-rating-option input:focus-visible + span { outline: 3px solid rgba(183, 101, 24, .3); outline-offset: 2px; }
+.review-comment-label span { color: var(--muted); font-weight: 400; }
+.review-form textarea { width: 100%; box-sizing: border-box; padding: .7rem; border: 1px solid var(--line); border-radius: 6px; font: inherit; resize: vertical; }
+.review-form button { justify-self: start; padding: .65rem .9rem; border: 0; border-radius: 6px; background: var(--blue); color: var(--white); font: inherit; font-weight: 700; cursor: pointer; }
+.review-field-error { color: #b42318; }
+.review-empty { padding: 1rem; border: 1px dashed var(--line); border-radius: 8px; color: var(--muted); }
+.local-review-list { display: grid; gap: .65rem; }
+.local-review-item { padding: .9rem 1rem; border: 1px solid var(--line); border-radius: 8px; background: var(--white); }
+.local-review-item header { display: flex; align-items: center; justify-content: space-between; gap: .8rem; color: var(--navy); font-size: .85rem; }
+.local-review-item p { margin: .5rem 0 0; color: var(--muted); font-size: .84rem; overflow-wrap: anywhere; }
+.review-pagination { display: flex; justify-content: space-between; gap: .8rem; margin-top: 1rem; color: var(--muted); font-size: .78rem; }
+.review-pagination a { color: var(--blue); font-weight: 700; }
 .local-products-section .section-heading { margin-bottom: 1rem; }
-@media (max-width: 600px) { .header-inner { gap: .65rem; }.profile-back-link { display: none; }.local-profile-main { width: min(100% - 1.25rem, 1100px); margin-top: 1.25rem; }.local-profile-hero { align-items: flex-start; flex-direction: column; padding: 1.25rem; }.local-profile-logo-wrap { width: 92px; height: 92px; }.local-profile-info { grid-template-columns: 1fr; }.local-profile-info div { min-height: auto; } }
+@media (max-width: 600px) { .header-inner { gap: .65rem; }.profile-back-link { display: none; }.local-profile-main { width: min(100% - 1.25rem, 1100px); margin-top: 1.25rem; }.local-profile-hero { align-items: flex-start; flex-direction: column; padding: 1.25rem; }.local-profile-logo-wrap { width: 92px; height: 92px; }.local-profile-info { grid-template-columns: 1fr; }.local-profile-info div { min-height: auto; }.local-reviews-heading { align-items: flex-start; }.review-overview { justify-items: start; }.local-review-item header { align-items: flex-start; flex-direction: column; } }

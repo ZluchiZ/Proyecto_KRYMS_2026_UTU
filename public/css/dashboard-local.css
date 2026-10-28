@@ -81,6 +81,18 @@ textarea { min-height: 90px; resize: vertical; }
 .status-badge.closed { background: #fbe0df; color: #9a4343; }
 .profile form { margin: 0; }
 .orders { margin-bottom: 2rem; }
+.local-reviews { margin-bottom: 2rem; }
+.local-reviews-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+.local-reviews-heading h2 { margin-bottom: .2rem; }
+.local-reviews-heading p { margin: 0; color: #666; font-size: .82rem; }
+.local-reviews-average { color: #8a5319; white-space: nowrap; }
+.local-review-list { display: grid; gap: .7rem; }
+.local-review-item { padding: 1rem; border: 1px solid #f0d2cb; border-radius: 8px; background: rgba(255, 251, 248, .96); }
+.local-review-item header { display: flex; justify-content: space-between; gap: .8rem; }
+.local-review-item p { margin: .5rem 0 0; overflow-wrap: anywhere; }
+.review-stars { color: #b76518; letter-spacing: 0; white-space: nowrap; }
+.review-pagination { display: flex; justify-content: space-between; gap: .8rem; margin-top: 1rem; font-size: .78rem; }
+.review-pagination a { color: #c96358; font-weight: 700; }
 .orders h2 { margin-bottom: 1rem; }
 .order-list { display: grid; gap: .8rem; }
 .order { display: grid; gap: .35rem; padding: 1rem; background: rgba(255, 251, 248, .96); border: 1px solid #f0d2cb; border-radius: 12px; box-shadow: 0 10px 25px rgba(184, 99, 87, .1); }
@@ -104,6 +116,7 @@ textarea { min-height: 90px; resize: vertical; }
     .profile { align-items: stretch; flex-direction: column; }
     .order-actions { flex-direction: column; }
     .order-title { align-items: flex-start; flex-direction: column; }
+    .local-reviews-heading, .local-review-item header { align-items: flex-start; flex-direction: column; }
 }
 
 @media (min-width: 40rem) {

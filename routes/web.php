@@ -11,6 +11,7 @@ use App\Http\Controllers\PedidoController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegistrationVerificationController;
 use App\Http\Controllers\RepartidorController;
+use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Route;
@@ -197,12 +198,41 @@ Route::get('/local/{rut}', function (string $rut) {
         $producto->Abierto = $comercio->Abierto;
     });
 
+    $consultaResenas = DB::table('reseña')
+        ->join('cliente', 'reseña.CI_Cliente', '=', 'cliente.CI')
+        ->where('reseña.RUT_Comercio', $comercio->RUT)
+        ->where(function ($query): void {
+            $query->whereNull('reseña.Estado_Moderacion')
+                ->orWhere('reseña.Estado_Moderacion', '<>', 'Retirada');
+        });
+    $totalResenas = (clone $consultaResenas)->count('reseña.ID');
+    $promedioResenas = (clone $consultaResenas)->avg('reseña.Puntuacion');
+    $resenas = $consultaResenas
+        ->select('reseña.ID', 'reseña.Puntuacion', 'reseña.Comentario', 'cliente.Nombre as Nombre_Cliente')
+        ->orderByDesc('reseña.ID')
+        ->paginate(10)
+        ->withQueryString();
+    $miResena = null;
+
+    if (session('tipo_usuario') === 'cliente' && session('usuario_id')) {
+        $miResena = DB::table('reseña')
+            ->where('CI_Cliente', session('usuario_id'))
+            ->where('RUT_Comercio', $comercio->RUT)
+            ->first();
+    }
+
     return view('local-profile', [
         'comercio' => $comercio,
         'productos' => $productos,
         'esClienteRegistrado' => session('tipo_usuario') === 'cliente' && session('usuario_id'),
+        'resenas' => $resenas,
+        'totalResenas' => $totalResenas,
+        'promedioResenas' => $promedioResenas,
+        'miResena' => $miResena,
     ]);
 })->name('local.profile');
+
+Route::post('/local/{rut}/resenas', [ReviewController::class, 'store'])->name('local.reviews.store');
 
 Route::get('/dashboard-local', function () {
     abort_unless(session('tipo_usuario') === 'comercio' && session('usuario_id'), 403);
@@ -249,9 +279,26 @@ Route::get('/dashboard-local', function () {
             ->get();
     }
 
+    $consultaResenas = DB::table('reseña')
+        ->join('cliente', 'reseña.CI_Cliente', '=', 'cliente.CI')
+        ->where('reseña.RUT_Comercio', $comercio->RUT ?? '')
+        ->where(function ($query): void {
+            $query->whereNull('reseña.Estado_Moderacion')
+                ->orWhere('reseña.Estado_Moderacion', '<>', 'Retirada');
+        });
+    $totalResenas = (clone $consultaResenas)->count('reseña.ID');
+    $promedioResenas = (clone $consultaResenas)->avg('reseña.Puntuacion');
+    $resenas = $consultaResenas
+        ->select('reseña.ID', 'reseña.Puntuacion', 'reseña.Comentario', 'reseña.Estado_Moderacion', 'cliente.Nombre as Nombre_Cliente')
+        ->orderByDesc('reseña.ID')
+        ->paginate(10);
+
     return view('Local.DashboardLocal', [
         'productos' => $productos,
         'pedidos' => $pedidos,
+        'resenas' => $resenas,
+        'totalResenas' => $totalResenas,
+        'promedioResenas' => $promedioResenas,
         'comercioAbierto' => (bool) $comercio->Abierto,
         'nombreUsuario' => $comercio->Nombre_Comercio,
         'correoUsuario' => $comercio->Email_Usuario,

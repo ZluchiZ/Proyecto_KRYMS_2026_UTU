@@ -43,6 +43,70 @@
             <div><span>Productos</span><strong>{{ $productos->count() }} publicados</strong></div>
         </section>
 
+        <section class="local-reviews-section" aria-labelledby="reviews-title">
+            <header class="local-reviews-heading">
+                <div>
+                    <p class="profile-eyebrow">Opiniones de clientes</p>
+                    <h2 id="reviews-title">Reseñas</h2>
+                </div>
+                <div class="review-overview">
+                    @if ($totalResenas > 0)
+                        <strong>{{ number_format((float) $promedioResenas, 1, ',', '.') }} / 5</strong>
+                        <span aria-label="Promedio de {{ number_format((float) $promedioResenas, 1, ',', '.') }} sobre 5">{{ str_repeat('★', (int) round($promedioResenas)) }}{{ str_repeat('☆', 5 - (int) round($promedioResenas)) }}</span>
+                    @else
+                        <strong>Sin puntuaciones</strong>
+                    @endif
+                    <small>{{ $totalResenas }} {{ $totalResenas === 1 ? 'reseña' : 'reseñas' }}</small>
+                </div>
+            </header>
+
+            @if ($esClienteRegistrado)
+                <form class="review-form" method="POST" action="{{ route('local.reviews.store', $comercio->RUT) }}">
+                    @csrf
+                    <fieldset class="review-rating-field">
+                        <legend>Tu puntuación</legend>
+                        <div class="review-rating-options">
+                            @foreach (range(0, 5) as $puntuacion)
+                                <label class="review-rating-option">
+                                    <input type="radio" name="puntuacion" value="{{ $puntuacion }}" aria-label="{{ $puntuacion }} {{ $puntuacion === 1 ? 'estrella' : 'estrellas' }}" @checked((string) old('puntuacion', $miResena->Puntuacion ?? '') === (string) $puntuacion) required>
+                                    <span aria-hidden="true">{{ $puntuacion === 0 ? '0' : str_repeat('★', $puntuacion) }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                        @error('puntuacion')<small class="review-field-error">{{ $message }}</small>@enderror
+                    </fieldset>
+                    <label class="review-comment-label" for="review-comment">Comentario <span>(opcional, máximo 250 caracteres)</span></label>
+                    <textarea id="review-comment" name="comentario" maxlength="250" rows="3">{{ old('comentario', $miResena->Comentario ?? '') }}</textarea>
+                    @error('comentario')<small class="review-field-error">{{ $message }}</small>@enderror
+                    <button type="submit">{{ $miResena ? 'Actualizar reseña' : 'Publicar reseña' }}</button>
+                </form>
+            @endif
+
+            @if ($resenas->isEmpty())
+                <p class="review-empty">Todavía no hay reseñas para este local.</p>
+            @else
+                <div class="local-review-list">
+                    @foreach ($resenas as $resena)
+                        @php($puntuacionResena = max(0, min(5, (int) $resena->Puntuacion)))
+                        <article class="local-review-item">
+                            <header>
+                                <strong>{{ $resena->Nombre_Cliente ?: 'Cliente' }}</strong>
+                                <span class="review-stars" aria-label="{{ $puntuacionResena }} de 5 estrellas">{{ str_repeat('★', $puntuacionResena) }}{{ str_repeat('☆', 5 - $puntuacionResena) }}</span>
+                            </header>
+                            <p>{{ $resena->Comentario ?: 'El cliente no dejó un comentario.' }}</p>
+                        </article>
+                    @endforeach
+                </div>
+                @if ($resenas->hasPages())
+                    <nav class="review-pagination" aria-label="Paginación de reseñas">
+                        @if ($resenas->previousPageUrl())<a href="{{ $resenas->previousPageUrl() }}" rel="prev">&larr; Anteriores</a>@else<span></span>@endif
+                        <span>Página {{ $resenas->currentPage() }} de {{ $resenas->lastPage() }}</span>
+                        @if ($resenas->nextPageUrl())<a href="{{ $resenas->nextPageUrl() }}" rel="next">Siguientes &rarr;</a>@else<span></span>@endif
+                    </nav>
+                @endif
+            @endif
+        </section>
+
         <section class="local-products-section" aria-labelledby="products-title">
             <div class="section-heading"><div><p class="eyebrow">Del local</p><h2 id="products-title">Productos</h2></div></div>
             @if ($productos->isNotEmpty())

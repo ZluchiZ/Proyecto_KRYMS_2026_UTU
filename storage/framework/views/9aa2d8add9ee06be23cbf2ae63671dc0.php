@@ -43,6 +43,84 @@
             <div><span>Productos</span><strong><?php echo e($productos->count()); ?> publicados</strong></div>
         </section>
 
+        <section class="local-reviews-section" aria-labelledby="reviews-title">
+            <header class="local-reviews-heading">
+                <div>
+                    <p class="profile-eyebrow">Opiniones de clientes</p>
+                    <h2 id="reviews-title">Reseñas</h2>
+                </div>
+                <div class="review-overview">
+                    <?php if($totalResenas > 0): ?>
+                        <strong><?php echo e(number_format((float) $promedioResenas, 1, ',', '.')); ?> / 5</strong>
+                        <span aria-label="Promedio de <?php echo e(number_format((float) $promedioResenas, 1, ',', '.')); ?> sobre 5"><?php echo e(str_repeat('★', (int) round($promedioResenas))); ?><?php echo e(str_repeat('☆', 5 - (int) round($promedioResenas))); ?></span>
+                    <?php else: ?>
+                        <strong>Sin puntuaciones</strong>
+                    <?php endif; ?>
+                    <small><?php echo e($totalResenas); ?> <?php echo e($totalResenas === 1 ? 'reseña' : 'reseñas'); ?></small>
+                </div>
+            </header>
+
+            <?php if($esClienteRegistrado): ?>
+                <form class="review-form" method="POST" action="<?php echo e(route('local.reviews.store', $comercio->RUT)); ?>">
+                    <?php echo csrf_field(); ?>
+                    <fieldset class="review-rating-field">
+                        <legend>Tu puntuación</legend>
+                        <div class="review-rating-options">
+                            <?php $__currentLoopData = range(0, 5); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $puntuacion): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <label class="review-rating-option">
+                                    <input type="radio" name="puntuacion" value="<?php echo e($puntuacion); ?>" aria-label="<?php echo e($puntuacion); ?> <?php echo e($puntuacion === 1 ? 'estrella' : 'estrellas'); ?>" <?php if((string) old('puntuacion', $miResena->Puntuacion ?? '') === (string) $puntuacion): echo 'checked'; endif; ?> required>
+                                    <span aria-hidden="true"><?php echo e($puntuacion === 0 ? '0' : str_repeat('★', $puntuacion)); ?></span>
+                                </label>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        </div>
+                        <?php $__errorArgs = ['puntuacion'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?><small class="review-field-error"><?php echo e($message); ?></small><?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
+                    </fieldset>
+                    <label class="review-comment-label" for="review-comment">Comentario <span>(opcional, máximo 250 caracteres)</span></label>
+                    <textarea id="review-comment" name="comentario" maxlength="250" rows="3"><?php echo e(old('comentario', $miResena->Comentario ?? '')); ?></textarea>
+                    <?php $__errorArgs = ['comentario'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?><small class="review-field-error"><?php echo e($message); ?></small><?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
+                    <button type="submit"><?php echo e($miResena ? 'Actualizar reseña' : 'Publicar reseña'); ?></button>
+                </form>
+            <?php endif; ?>
+
+            <?php if($resenas->isEmpty()): ?>
+                <p class="review-empty">Todavía no hay reseñas para este local.</p>
+            <?php else: ?>
+                <div class="local-review-list">
+                    <?php $__currentLoopData = $resenas; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $resena): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <?php ($puntuacionResena = max(0, min(5, (int) $resena->Puntuacion))); ?>
+                        <article class="local-review-item">
+                            <header>
+                                <strong><?php echo e($resena->Nombre_Cliente ?: 'Cliente'); ?></strong>
+                                <span class="review-stars" aria-label="<?php echo e($puntuacionResena); ?> de 5 estrellas"><?php echo e(str_repeat('★', $puntuacionResena)); ?><?php echo e(str_repeat('☆', 5 - $puntuacionResena)); ?></span>
+                            </header>
+                            <p><?php echo e($resena->Comentario ?: 'El cliente no dejó un comentario.'); ?></p>
+                        </article>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                </div>
+                <?php if($resenas->hasPages()): ?>
+                    <nav class="review-pagination" aria-label="Paginación de reseñas">
+                        <?php if($resenas->previousPageUrl()): ?><a href="<?php echo e($resenas->previousPageUrl()); ?>" rel="prev">&larr; Anteriores</a><?php else: ?><span></span><?php endif; ?>
+                        <span>Página <?php echo e($resenas->currentPage()); ?> de <?php echo e($resenas->lastPage()); ?></span>
+                        <?php if($resenas->nextPageUrl()): ?><a href="<?php echo e($resenas->nextPageUrl()); ?>" rel="next">Siguientes &rarr;</a><?php else: ?><span></span><?php endif; ?>
+                    </nav>
+                <?php endif; ?>
+            <?php endif; ?>
+        </section>
+
         <section class="local-products-section" aria-labelledby="products-title">
             <div class="section-heading"><div><p class="eyebrow">Del local</p><h2 id="products-title">Productos</h2></div></div>
             <?php if($productos->isNotEmpty()): ?>

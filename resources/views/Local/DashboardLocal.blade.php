@@ -114,6 +114,41 @@
             </section>
         @endforeach
 
+        <section class="local-reviews">
+            <header class="local-reviews-heading">
+                <div>
+                    <h2>Reseñas de clientes</h2>
+                    <p>{{ $totalResenas }} {{ $totalResenas === 1 ? 'reseña' : 'reseñas' }} visibles</p>
+                </div>
+                @if ($totalResenas > 0)
+                    <strong class="local-reviews-average">{{ number_format((float) $promedioResenas, 1, ',', '.') }} / 5 <span aria-hidden="true">★</span></strong>
+                @endif
+            </header>
+            @if ($resenas->isEmpty())
+                <div class="empty">Todavía no hay reseñas para este local.</div>
+            @else
+                <div class="local-review-list">
+                    @foreach ($resenas as $resena)
+                        @php($puntuacionResena = max(0, min(5, (int) $resena->Puntuacion)))
+                        <article class="local-review-item">
+                            <header>
+                                <strong>{{ $resena->Nombre_Cliente ?: 'Cliente' }}</strong>
+                                <span class="review-stars" aria-label="{{ $puntuacionResena }} de 5 estrellas">{{ str_repeat('★', $puntuacionResena) }}{{ str_repeat('☆', 5 - $puntuacionResena) }}</span>
+                            </header>
+                            <p>{{ $resena->Comentario ?: 'El cliente no dejó un comentario.' }}</p>
+                        </article>
+                    @endforeach
+                </div>
+                @if ($resenas->hasPages())
+                    <nav class="review-pagination" aria-label="Paginación de reseñas">
+                        @if ($resenas->previousPageUrl())<a href="{{ $resenas->previousPageUrl() }}" rel="prev">&larr; Anteriores</a>@else<span></span>@endif
+                        <span>Página {{ $resenas->currentPage() }} de {{ $resenas->lastPage() }}</span>
+                        @if ($resenas->nextPageUrl())<a href="{{ $resenas->nextPageUrl() }}" rel="next">Siguientes &rarr;</a>@else<span></span>@endif
+                    </nav>
+                @endif
+            @endif
+        </section>
+
         @if ($productos->isEmpty())
             <div class="empty">Todavía no hay productos cargados.</div>
         @else

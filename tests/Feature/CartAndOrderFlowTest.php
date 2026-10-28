@@ -41,7 +41,21 @@ class CartAndOrderFlowTest extends TestCase
             $table->string('RUT')->primary();
             $table->string('Email_Usuario');
             $table->string('Nombre_Comercio');
+            $table->string('Logo')->nullable();
+            $table->string('Dirección')->nullable();
+            $table->string('Horario')->nullable();
             $table->boolean('Abierto')->default(true);
+        });
+
+        Schema::create('reseña', function (Blueprint $table) {
+            $table->id('ID');
+            $table->string('CI_Cliente');
+            $table->string('RUT_Comercio')->nullable();
+            $table->string('CI_Repartidor')->nullable();
+            $table->integer('Puntuacion')->nullable();
+            $table->text('Comentario')->nullable();
+            $table->string('Estado_Moderacion')->default('Visible');
+            $table->text('Motivo_Retiro')->nullable();
         });
 
         Schema::create('producto', function (Blueprint $table) {
@@ -381,6 +395,96 @@ class CartAndOrderFlowTest extends TestCase
             ->assertDontSee('Pedido #42')
             ->assertDontSee('Producto ajeno')
             ->assertDontSee('Calle 2');
+    }
+
+    public function test_client_can_create_update_and_view_a_local_review(): void
+    {
+        DB::table('cliente')->insert([
+            'CI' => '12345678',
+            'Email_Usuario' => 'ana@example.com',
+            'Nombre' => 'Ana',
+            'Apellido' => 'Pérez',
+        ]);
+        DB::table('comercio')->insert([
+            'RUT' => '111111111111',
+            'Email_Usuario' => 'local@example.com',
+            'Nombre_Comercio' => 'La Picantería',
+            'Abierto' => true,
+        ]);
+
+        $this->post(route('local.reviews.store', '111111111111'), [
+            'puntuacion' => 0,
+        ])->assertForbidden();
+
+        $sesionCliente = ['tipo_usuario' => 'cliente', 'usuario_id' => '12345678'];
+        $this->withSession($sesionCliente)
+            ->post(route('local.reviews.store', '111111111111'), ['puntuacion' => 0])
+            ->assertRedirect(route('local.profile', '111111111111'));
+
+        $this->assertDatabaseHas('reseña', [
+            'CI_Cliente' => '12345678',
+            'RUT_Comercio' => '111111111111',
+            'Puntuacion' => 0,
+            'Comentario' => null,
+            'Estado_Moderacion' => 'Visible',
+        ]);
+
+        $comentario = str_repeat('a', 250);
+        $this->withSession($sesionCliente)
+            ->post(route('local.reviews.store', '111111111111'), [
+                'puntuacion' => 5,
+                'comentario' => $comentario,
+            ])
+            ->assertRedirect(route('local.profile', '111111111111'));
+
+        $this->assertSame(1, DB::table('reseña')->count());
+        $this->assertDatabaseHas('reseña', [
+            'CI_Cliente' => '12345678',
+            'RUT_Comercio' => '111111111111',
+            'Puntuacion' => 5,
+            'Comentario' => $comentario,
+        ]);
+
+        $this->withSession($sesionCliente)
+            ->get(route('local.profile', '111111111111'))
+            ->assertOk()
+            ->assertSee('Reseñas')
+            ->assertSee('Ana')
+            ->assertSee($comentario);
+
+        $this->withSession([
+            'tipo_usuario' => 'comercio',
+            'usuario_id' => 'local@example.com',
+            'email' => 'local@example.com',
+        ])->get(route('dashboard.local'))
+            ->assertOk()
+            ->assertSee('Reseñas de clientes')
+            ->assertSee('Ana')
+            ->assertSee($comentario);
+    }
+
+    public function test_local_review_rejects_scores_outside_zero_to_five_and_long_comments(): void
+    {
+        DB::table('cliente')->insert(['CI' => '12345678', 'Email_Usuario' => 'ana@example.com']);
+        DB::table('comercio')->insert([
+            'RUT' => '111111111111',
+            'Email_Usuario' => 'local@example.com',
+            'Nombre_Comercio' => 'La Picantería',
+        ]);
+
+        $sesionCliente = ['tipo_usuario' => 'cliente', 'usuario_id' => '12345678'];
+        $this->withSession($sesionCliente)
+            ->post(route('local.reviews.store', '111111111111'), ['puntuacion' => 6])
+            ->assertSessionHasErrors('puntuacion');
+
+        $this->withSession($sesionCliente)
+            ->post(route('local.reviews.store', '111111111111'), [
+                'puntuacion' => 4,
+                'comentario' => str_repeat('a', 251),
+            ])
+            ->assertSessionHasErrors('comentario');
+
+        $this->assertSame(0, DB::table('reseña')->count());
     }
 
     public function test_local_can_accept_and_mark_orders_as_ready(): void

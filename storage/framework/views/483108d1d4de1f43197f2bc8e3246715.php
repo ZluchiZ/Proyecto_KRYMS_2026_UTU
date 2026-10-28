@@ -15,6 +15,8 @@
                 <strong><?php echo e($nombreUsuario); ?></strong>
                 <span><?php echo e($tipoUsuario); ?></span>
                 <small><?php echo e($correoUsuario); ?></small>
+                <a class="dashboard-profile-link" href="<?php echo e(route('profile.edit')); ?>">Mi perfil</a>
+                <a class="dashboard-profile-link" href="<?php echo e(route('local.sales-history')); ?>">Historial de ventas</a>
             </div>
             <div class="status-toggle">
                 <span class="status-badge <?php echo e($comercioAbierto ? 'open' : 'closed'); ?>">
@@ -112,6 +114,41 @@
                 <?php endif; ?>
             </section>
         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+
+        <section class="local-reviews">
+            <header class="local-reviews-heading">
+                <div>
+                    <h2>Reseñas de clientes</h2>
+                    <p><?php echo e($totalResenas); ?> <?php echo e($totalResenas === 1 ? 'reseña' : 'reseñas'); ?> visibles</p>
+                </div>
+                <?php if($totalResenas > 0): ?>
+                    <strong class="local-reviews-average"><?php echo e(number_format((float) $promedioResenas, 1, ',', '.')); ?> / 5 <span aria-hidden="true">★</span></strong>
+                <?php endif; ?>
+            </header>
+            <?php if($resenas->isEmpty()): ?>
+                <div class="empty">Todavía no hay reseñas para este local.</div>
+            <?php else: ?>
+                <div class="local-review-list">
+                    <?php $__currentLoopData = $resenas; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $resena): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <?php ($puntuacionResena = max(0, min(5, (int) $resena->Puntuacion))); ?>
+                        <article class="local-review-item">
+                            <header>
+                                <strong><?php echo e($resena->Nombre_Cliente ?: 'Cliente'); ?></strong>
+                                <span class="review-stars" aria-label="<?php echo e($puntuacionResena); ?> de 5 estrellas"><?php echo e(str_repeat('★', $puntuacionResena)); ?><?php echo e(str_repeat('☆', 5 - $puntuacionResena)); ?></span>
+                            </header>
+                            <p><?php echo e($resena->Comentario ?: 'El cliente no dejó un comentario.'); ?></p>
+                        </article>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                </div>
+                <?php if($resenas->hasPages()): ?>
+                    <nav class="review-pagination" aria-label="Paginación de reseñas">
+                        <?php if($resenas->previousPageUrl()): ?><a href="<?php echo e($resenas->previousPageUrl()); ?>" rel="prev">&larr; Anteriores</a><?php else: ?><span></span><?php endif; ?>
+                        <span>Página <?php echo e($resenas->currentPage()); ?> de <?php echo e($resenas->lastPage()); ?></span>
+                        <?php if($resenas->nextPageUrl()): ?><a href="<?php echo e($resenas->nextPageUrl()); ?>" rel="next">Siguientes &rarr;</a><?php else: ?><span></span><?php endif; ?>
+                    </nav>
+                <?php endif; ?>
+            <?php endif; ?>
+        </section>
 
         <?php if($productos->isEmpty()): ?>
             <div class="empty">Todavía no hay productos cargados.</div>
