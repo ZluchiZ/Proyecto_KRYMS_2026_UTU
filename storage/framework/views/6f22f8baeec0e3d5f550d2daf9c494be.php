@@ -17,6 +17,7 @@
                     'usuarios' => 'Usuarios',
                     'reportes' => 'Reportes',
                     'resenas' => 'Reseñas',
+                    'recuperaciones' => 'Recuperaciones',
                 ]; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $clave => $titulo): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                     <a class="nav-link <?php echo e($seccion === $clave ? 'active' : ''); ?>" href="<?php echo e(route('dashboard.admin', ['seccion' => $clave])); ?>" <?php if($seccion === $clave): ?> aria-current="page" <?php endif; ?>>
                         <span><?php echo e($titulo); ?></span>
@@ -39,7 +40,7 @@
                 <section class="page-heading">
                     <div>
                         <p class="eyebrow">KRYMS / ADMINISTRACIÓN</p>
-                        <h1><?php echo e(['adhesiones' => 'Adhesiones', 'usuarios' => 'Usuarios', 'reportes' => 'Reportes', 'resenas' => 'Reseñas'][$seccion]); ?></h1>
+                        <h1><?php echo e(['adhesiones' => 'Adhesiones', 'usuarios' => 'Usuarios', 'reportes' => 'Reportes', 'resenas' => 'Reseñas', 'recuperaciones' => 'Recuperaciones'][$seccion]); ?></h1>
                         <p class="heading-copy">Supervisa las cuentas y el contenido de la plataforma.</p>
                     </div>
                     <span class="date-stamp"><?php echo e(now()->locale('es')->translatedFormat('d M Y')); ?></span>
@@ -49,14 +50,14 @@
                     <article class="metric"><span class="metric-label">Usuarios registrados</span><strong><?php echo e($totalUsuarios); ?></strong><small>Clientes, locales y repartidores</small></article>
                     <article class="metric"><span class="metric-label">Adhesiones pendientes</span><strong><?php echo e($solicitudes->count()); ?></strong><small>Locales y repartidores</small></article>
                     <article class="metric"><span class="metric-label">Reportes recibidos</span><strong><?php echo e($reportes->count()); ?></strong><small>Reportes registrados</small></article>
-                    <article class="metric"><span class="metric-label">Reseñas publicadas</span><strong><?php echo e($resenas->count()); ?></strong><small>Reseñas disponibles para revisión</small></article>
+                    <article class="metric"><span class="metric-label">Reseñas publicadas</span><strong><?php echo e($notificaciones['resenas']); ?></strong><small>Reseñas visibles para clientes</small></article>
                 </section>
 
                 <section class="data-panel">
                     <div class="panel-heading">
                         <div>
-                            <p class="eyebrow"><?php echo e(['adhesiones' => 'REVISIÓN DE CUENTAS', 'usuarios' => 'DIRECTORIO', 'reportes' => 'CENTRO DE INCIDENCIAS', 'resenas' => 'CONTENIDO DE LA COMUNIDAD'][$seccion]); ?></p>
-                            <h2><?php echo e(['adhesiones' => 'Solicitudes de adhesión', 'usuarios' => 'Cuentas registradas', 'reportes' => 'Reportes recibidos', 'resenas' => 'Reseñas registradas'][$seccion]); ?></h2>
+                            <p class="eyebrow"><?php echo e(['adhesiones' => 'REVISIÓN DE CUENTAS', 'usuarios' => 'DIRECTORIO', 'reportes' => 'CENTRO DE INCIDENCIAS', 'resenas' => 'CONTENIDO DE LA COMUNIDAD', 'recuperaciones' => 'SEGURIDAD DE CUENTAS'][$seccion]); ?></p>
+                            <h2><?php echo e(['adhesiones' => 'Solicitudes de adhesión', 'usuarios' => 'Cuentas registradas', 'reportes' => 'Reportes recibidos', 'resenas' => 'Reseñas registradas', 'recuperaciones' => 'Solicitudes de recuperación'][$seccion]); ?></h2>
                         </div>
                         <?php if($seccion === 'usuarios'): ?>
                             <form class="search-form" method="GET" action="<?php echo e(route('dashboard.admin')); ?>">
@@ -66,7 +67,7 @@
                                 <button type="submit" aria-label="Buscar">Buscar</button>
                             </form>
                         <?php else: ?>
-                            <span class="record-count"><?php echo e(['adhesiones' => $solicitudes->count(), 'reportes' => $reportes->count(), 'resenas' => $resenas->count()][$seccion]); ?> registros</span>
+                            <span class="record-count"><?php echo e(['adhesiones' => $solicitudes->count(), 'reportes' => $reportes->count(), 'resenas' => $resenas->count(), 'recuperaciones' => $recuperaciones->count()][$seccion]); ?> registros</span>
                         <?php endif; ?>
                     </div>
 
@@ -170,7 +171,7 @@
                             </tbody></table></div>
                             <p class="table-note">Solicitar información o resolver un reporte requiere agregar una nota de gestión.</p>
                         <?php endif; ?>
-                    <?php else: ?>
+                    <?php elseif($seccion === 'resenas'): ?>
                         <?php if($resenas->isEmpty()): ?>
                             <div class="empty-state"><strong>No hay reseñas registradas</strong><p>Las reseñas de clientes aparecerán aquí para su revisión.</p></div>
                         <?php else: ?>
@@ -192,16 +193,40 @@
                                                     <button class="account-action" type="submit">Restaurar</button>
                                                 <?php else: ?>
                                                     <label class="sr-only" for="motivo-resena-<?php echo e($resena->ID); ?>">Motivo para retirar la reseña</label>
-                                                    <textarea id="motivo-resena-<?php echo e($resena->ID); ?>" name="motivo" placeholder="Motivo (si se retira)"></textarea>
+                                                    <textarea id="motivo-resena-<?php echo e($resena->ID); ?>" name="motivo" placeholder="Motivo de incumplimiento" required maxlength="1000"></textarea>
                                                     <button class="account-action suspend" name="decision" value="retirar" type="submit">Retirar</button>
-                                                    <button class="account-action" name="decision" value="mantener" type="submit">Mantener</button>
                                                 <?php endif; ?>
                                             </form>
                                         </td>
                                     </tr>
                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </tbody></table></div>
-                            <p class="table-note">Las reseñas retiradas dejan de estar disponibles y pueden restaurarse desde aquí.</p>
+                            <p class="table-note">Las reseñas se publican automáticamente. Retira una solo si incumple las normas, por ejemplo por acoso, discriminación, datos personales o spam; el motivo es obligatorio. Las retiradas pueden restaurarse.</p>
+                        <?php endif; ?>
+                    <?php else: ?>
+                        <?php if($recuperaciones->isEmpty()): ?>
+                            <div class="empty-state"><strong>No hay solicitudes pendientes</strong><p>Las solicitudes de recuperación aparecerán aquí para su aprobación.</p></div>
+                        <?php else: ?>
+                            <div class="table-scroll"><table><thead><tr><th>Cuenta</th><th>Correo</th><th>Cédula</th><th>Fecha</th><th>Decisión</th></tr></thead><tbody>
+                                <?php $__currentLoopData = $recuperaciones; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $recuperacion): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <tr>
+                                        <td><span class="type-label"><?php echo e(ucfirst($recuperacion->account_type)); ?></span></td>
+                                        <td><?php echo e($recuperacion->email); ?></td>
+                                        <td><?php echo e($recuperacion->identifier); ?></td>
+                                        <td><?php echo e(\Illuminate\Support\Carbon::parse($recuperacion->created_at)->format('d/m/Y H:i')); ?></td>
+                                        <td class="decision-cell">
+                                            <form method="POST" action="<?php echo e(route('admin.recuperaciones.approve', $recuperacion->id)); ?>">
+                                                <?php echo csrf_field(); ?>
+                                                <button class="decision-accept" type="submit">Aceptar</button>
+                                            </form>
+                                            <form method="POST" action="<?php echo e(route('admin.recuperaciones.reject', $recuperacion->id)); ?>" onsubmit="return confirm('¿Rechazar esta solicitud?')">
+                                                <?php echo csrf_field(); ?>
+                                                <button class="decision-reject" type="submit">Rechazar</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            </tbody></table></div>
                         <?php endif; ?>
                     <?php endif; ?>
                 </section>

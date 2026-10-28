@@ -487,6 +487,59 @@ class CartAndOrderFlowTest extends TestCase
         $this->assertSame(0, DB::table('reseña')->count());
     }
 
+    public function test_only_admin_can_remove_a_review_and_must_give_a_reason(): void
+    {
+        DB::table('cliente')->insert([
+            'CI' => '12345678',
+            'Email_Usuario' => 'ana@example.com',
+            'Nombre' => 'Ana',
+        ]);
+        DB::table('comercio')->insert([
+            'RUT' => '111111111111',
+            'Email_Usuario' => 'local@example.com',
+            'Nombre_Comercio' => 'La Picantería',
+        ]);
+        DB::table('reseña')->insert([
+            'CI_Cliente' => '12345678',
+            'RUT_Comercio' => '111111111111',
+            'Puntuacion' => 1,
+            'Comentario' => 'Contenido que incumple las normas.',
+            'Estado_Moderacion' => 'Visible',
+        ]);
+        $idResena = DB::table('reseña')->value('ID');
+
+        $this->withSession(['tipo_usuario' => 'cliente', 'usuario_id' => '12345678'])
+            ->patch(route('admin.resenas.moderate', $idResena), [
+                'decision' => 'retirar',
+                'motivo' => 'Contenido prohibido',
+            ])
+            ->assertForbidden();
+
+        $sesionAdmin = ['tipo_usuario' => 'administrador', 'usuario_id' => 'admin@example.com'];
+        $this->withSession($sesionAdmin)
+            ->patch(route('admin.resenas.moderate', $idResena), ['decision' => 'retirar'])
+            ->assertSessionHasErrors('motivo');
+
+        $this->assertDatabaseHas('reseña', ['ID' => $idResena, 'Estado_Moderacion' => 'Visible']);
+
+        $this->withSession($sesionAdmin)
+            ->patch(route('admin.resenas.moderate', $idResena), [
+                'decision' => 'retirar',
+                'motivo' => 'Incluye contenido prohibido.',
+            ])
+            ->assertRedirect(route('dashboard.admin', ['seccion' => 'resenas']));
+
+        $this->assertDatabaseHas('reseña', [
+            'ID' => $idResena,
+            'Estado_Moderacion' => 'Retirada',
+            'Motivo_Retiro' => 'Incluye contenido prohibido.',
+        ]);
+
+        $this->get(route('local.profile', '111111111111'))
+            ->assertOk()
+            ->assertDontSee('Contenido que incumple las normas.');
+    }
+
     public function test_local_can_accept_and_mark_orders_as_ready(): void
     {
         DB::table('comercio')->insert([

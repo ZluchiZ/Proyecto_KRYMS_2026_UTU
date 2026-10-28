@@ -50,7 +50,7 @@
                     <article class="metric"><span class="metric-label">Usuarios registrados</span><strong>{{ $totalUsuarios }}</strong><small>Clientes, locales y repartidores</small></article>
                     <article class="metric"><span class="metric-label">Adhesiones pendientes</span><strong>{{ $solicitudes->count() }}</strong><small>Locales y repartidores</small></article>
                     <article class="metric"><span class="metric-label">Reportes recibidos</span><strong>{{ $reportes->count() }}</strong><small>Reportes registrados</small></article>
-                    <article class="metric"><span class="metric-label">Reseñas publicadas</span><strong>{{ $resenas->count() }}</strong><small>Reseñas disponibles para revisión</small></article>
+                    <article class="metric"><span class="metric-label">Reseñas publicadas</span><strong>{{ $notificaciones['resenas'] }}</strong><small>Reseñas visibles para clientes</small></article>
                 </section>
 
                 <section class="data-panel">
@@ -193,16 +193,15 @@
                                                     <button class="account-action" type="submit">Restaurar</button>
                                                 @else
                                                     <label class="sr-only" for="motivo-resena-{{ $resena->ID }}">Motivo para retirar la reseña</label>
-                                                    <textarea id="motivo-resena-{{ $resena->ID }}" name="motivo" placeholder="Motivo (si se retira)"></textarea>
+                                                    <textarea id="motivo-resena-{{ $resena->ID }}" name="motivo" placeholder="Motivo de incumplimiento" required maxlength="1000"></textarea>
                                                     <button class="account-action suspend" name="decision" value="retirar" type="submit">Retirar</button>
-                                                    <button class="account-action" name="decision" value="mantener" type="submit">Mantener</button>
                                                 @endif
                                             </form>
                                         </td>
                                     </tr>
                                 @endforeach
                             </tbody></table></div>
-                            <p class="table-note">Las reseñas retiradas dejan de estar disponibles y pueden restaurarse desde aquí.</p>
+                            <p class="table-note">Las reseñas se publican automáticamente. Retira una solo si incumple las normas, por ejemplo por acoso, discriminación, datos personales o spam; el motivo es obligatorio. Las retiradas pueden restaurarse.</p>
                         @endif
                     @else
                         @if ($recuperaciones->isEmpty())
