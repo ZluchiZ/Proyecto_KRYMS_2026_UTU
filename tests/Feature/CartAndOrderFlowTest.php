@@ -111,6 +111,10 @@ class CartAndOrderFlowTest extends TestCase
             $table->string('Apellido')->nullable();
             $table->string('Teléfono')->nullable();
         });
+        Schema::create('administrador', function (Blueprint $table) {
+            $table->string('Email_Usuario')->primary();
+        });
+        DB::table('administrador')->insert(['Email_Usuario' => 'admin@example.com']);
         Schema::create('pedido_repartidor_estado', function (Blueprint $table) {
             $table->unsignedBigInteger('N_Pedido');
             $table->string('CI_Repartidor', 20);
@@ -427,6 +431,53 @@ class CartAndOrderFlowTest extends TestCase
         ]);
     }
 
+    public function test_checkout_records_card_on_delivery_as_a_selected_method_only(): void
+    {
+        DB::table('cliente')->insert([
+            'id' => 9,
+            'CI' => '12345678',
+            'Email_Usuario' => 'cliente@example.com',
+        ]);
+        DB::table('comercio')->insert([
+            ['RUT' => '111111111111', 'Email_Usuario' => 'uno@example.com', 'Nombre_Comercio' => 'Local Uno', 'Abierto' => true],
+            ['RUT' => '222222222222', 'Email_Usuario' => 'dos@example.com', 'Nombre_Comercio' => 'Local Dos', 'Abierto' => true],
+        ]);
+        DB::table('producto')->insert([
+            ['ID_Producto' => 10, 'RUT_Comercio' => '111111111111', 'Nombre_Producto' => 'Producto Uno', 'Precio' => 100, 'Disponible' => true],
+            ['ID_Producto' => 11, 'RUT_Comercio' => '222222222222', 'Nombre_Producto' => 'Producto Dos', 'Precio' => 200, 'Disponible' => true],
+        ]);
+        DB::table('carrito')->insert([
+            ['ID_Cliente' => 9, 'ID_Producto' => 10, 'Cantidad' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['ID_Cliente' => 9, 'ID_Producto' => 11, 'Cantidad' => 1, 'created_at' => now(), 'updated_at' => now()],
+        ]);
+        $session = ['tipo_usuario' => 'cliente', 'usuario_id' => '12345678'];
+
+        $this->withSession($session)
+            ->get(route('carrito'))
+            ->assertOk()
+            ->assertSee('Tarjeta contra entrega');
+
+        $this->withSession($session)
+            ->post(route('carrito.confirm'), [
+                'direccion_envio' => 'Calle 1',
+                'metodo_pago' => 'tarjeta',
+                'latitud' => -34.9,
+                'longitud' => -56.2,
+            ])
+            ->assertRedirect(route('carrito'))
+            ->assertSessionHas('order_sent', 2);
+
+        $this->assertDatabaseHas('pedido', [
+            'CI_Cliente' => '12345678',
+            'Metodo_de_pago' => 'tarjeta',
+        ]);
+        $this->assertDatabaseHas('tarjeta', [
+            'CI_Cliente' => '12345678',
+            'Banco' => null,
+        ]);
+        $this->assertSame(0, DB::table('tarjeta')->whereNotNull('Banco')->count());
+    }
+
     public function test_client_can_view_only_their_own_order_history(): void
     {
         $this->get(route('cliente.pedidos'))->assertForbidden();
@@ -557,6 +608,45 @@ class CartAndOrderFlowTest extends TestCase
             ->assertDontSee('Pedido #42')
             ->assertDontSee('Producto ajeno')
             ->assertDontSee('Calle 2');
+    }
+
+    public function test_commerce_cannot_update_or_delete_another_commerces_product(): void
+    {
+        DB::table('comercio')->insert([
+            ['RUT' => '111111111111', 'Email_Usuario' => 'local@example.com', 'Nombre_Comercio' => 'Mi local'],
+            ['RUT' => '222222222222', 'Email_Usuario' => 'otro-local@example.com', 'Nombre_Comercio' => 'Otro local'],
+        ]);
+        DB::table('producto')->insert([
+            'ID_Producto' => 20,
+            'RUT_Comercio' => '222222222222',
+            'Nombre_Producto' => 'Producto ajeno',
+            'Precio' => 200,
+            'Descuento_Porcentaje' => 0,
+            'Disponible' => true,
+        ]);
+        $session = [
+            'tipo_usuario' => 'comercio',
+            'usuario_id' => '111111111111',
+            'email' => 'local@example.com',
+        ];
+
+        $this->withSession($session)
+            ->patch(route('productos.update', 20), [
+                'precio' => 1,
+                'descuento' => 100,
+                'disponible' => false,
+            ])
+            ->assertNotFound();
+        $this->assertDatabaseHas('producto', [
+            'ID_Producto' => 20,
+            'RUT_Comercio' => '222222222222',
+            'Precio' => 200,
+        ]);
+
+        $this->withSession($session)
+            ->delete(route('productos.destroy', 20))
+            ->assertNotFound();
+        $this->assertDatabaseHas('producto', ['ID_Producto' => 20]);
     }
 
     public function test_client_can_create_update_and_view_a_local_review(): void
@@ -972,6 +1062,10 @@ class CartAndOrderFlowTest extends TestCase
 
     public function test_notification_inbox_only_shows_and_marks_the_current_users_notifications(): void
     {
+        DB::table('cliente')->insert([
+            ['CI' => '12345678', 'Email_Usuario' => 'ana@example.com'],
+            ['CI' => '87654321', 'Email_Usuario' => 'otra@example.com'],
+        ]);
         DB::table('app_notifications')->insert([
             [
                 'recipient_type' => 'cliente',
@@ -1020,9 +1114,15 @@ class CartAndOrderFlowTest extends TestCase
 
     public function test_repartidor_is_redirected_to_dashboard_instead_of_home(): void
     {
+        DB::table('repartidor')->insert([
+            'CI' => '87654321',
+            'Email_Usuario' => 'repartidor@example.com',
+        ]);
+
         $this->withSession([
             'tipo_usuario' => 'repartidor',
             'usuario_id' => '87654321',
+            'email' => 'repartidor@example.com',
         ])->get(route('home'))
             ->assertRedirect(route('dashboard.repartidor'));
     }

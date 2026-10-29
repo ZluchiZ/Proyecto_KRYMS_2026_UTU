@@ -557,7 +557,7 @@ class PedidoController extends Controller
             ->value('ID');
         $tarjeta ??= DB::table('tarjeta')->insertGetId([
             'CI_Cliente' => session('usuario_id'),
-            'Banco' => $validated['metodo_pago'],
+            'Banco' => null,
         ]);
 
         $pedido = DB::table('pedido')->insertGetId([

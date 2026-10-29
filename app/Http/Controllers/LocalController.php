@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\RegistrationMailDeliveryException;
+use App\Models\Comercio;
 use App\Services\RegistrationVerificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +20,7 @@ class LocalController extends Controller
             'abierto' => 'required|boolean',
         ]);
 
-        $actualizado = DB::table('comercio')
+        $actualizado = Comercio::query()
             ->where('Email_Usuario', session('email'))
             ->update(['Abierto' => $request->boolean('abierto')]);
 
@@ -34,7 +35,7 @@ class LocalController extends Controller
     {
         abort_unless(session('tipo_usuario') === 'comercio' && session('usuario_id') && session('email'), 403);
 
-        $comercio = DB::table('comercio')
+        $comercio = Comercio::query()
             ->where('Email_Usuario', session('email'))
             ->first(['RUT', 'Nombre_Comercio']);
 
@@ -111,19 +112,15 @@ class LocalController extends Controller
             ->where('Email_Usuario', session('email'))
             ->first(['RUT', 'Email_Usuario', 'Nombre_Comercio']);
 
-        abort_unless($comercio, 403);
-
-        $identificadorComercio = $comercio->RUT ?? session('usuario_id');
-        abort_unless($identificadorComercio, 403, 'Este comercio no tiene un RUT asociado.');
+        abort_unless($comercio?->RUT, 403, 'Este comercio no tiene un RUT asociado.');
 
         $rutaImagen = $request->file('imagen')->store('productos', 'public');
-        DB::table('producto')->insert([
-                'RUT_Comercio' => $identificadorComercio,
-                'Nombre_Producto' => $validated['nombre'],
-                'Precio' => $validated['precio'],
-                'Categoria' => $validated['categoria'],
-                'Foto_Producto' => Storage::url($rutaImagen),
-                'Disponible' => $request->boolean('disponible'),
+        $comercio->productos()->create([
+            'Nombre_Producto' => $validated['nombre'],
+            'Precio' => $validated['precio'],
+            'Categoria' => $validated['categoria'],
+            'Foto_Producto' => Storage::url($rutaImagen),
+            'Disponible' => $request->boolean('disponible'),
         ]);
 
         return redirect()
@@ -141,22 +138,16 @@ class LocalController extends Controller
             'disponible' => 'required|boolean',
         ]);
 
-        $comercio = DB::table('comercio')
+        $comercio = Comercio::query()
             ->where('Email_Usuario', session('email'))
             ->first(['RUT']);
 
-        abort_unless($comercio, 403);
+        abort_unless($comercio?->RUT, 403, 'Este comercio no tiene un RUT asociado.');
 
-        $identificadorComercio = $comercio->RUT ?? session('usuario_id');
-        abort_unless($identificadorComercio, 403, 'Este comercio no tiene un RUT asociado.');
+        $productoLocal = $comercio->productos()->where('ID_Producto', $producto)->first();
+        abort_unless($productoLocal, 404);
 
-        $productoQuery = DB::table('producto')
-            ->where('ID_Producto', $producto)
-            ->where('RUT_Comercio', $identificadorComercio);
-
-        abort_unless($productoQuery->exists(), 404);
-
-        $productoQuery->update([
+        $productoLocal->update([
             'Precio' => $validated['precio'],
             'Descuento_Porcentaje' => $validated['descuento'],
             'Disponible' => $request->boolean('disponible'),
@@ -171,10 +162,13 @@ class LocalController extends Controller
     {
         abort_unless(session('tipo_usuario') === 'comercio' && session('usuario_id') && session('email'), 403);
 
-        $eliminado = DB::table('producto')
-            ->where('ID_Producto', $producto)
-            ->where('RUT_Comercio', session('usuario_id'))
-            ->delete();
+        $comercio = Comercio::query()
+            ->where('Email_Usuario', session('email'))
+            ->first(['RUT']);
+
+        abort_unless($comercio?->RUT, 403, 'Este comercio no tiene un RUT asociado.');
+
+        $eliminado = $comercio->productos()->where('ID_Producto', $producto)->delete();
 
         abort_unless($eliminado, 404);
 

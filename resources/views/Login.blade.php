@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="{{ asset('css/login.css') }}">
     <link rel="stylesheet" href="{{ asset('css/internal.css') }}">
     <title>Inicio de sesión</title>
+    <link rel="stylesheet" href="{{ asset('css/visual-refresh.css') }}">
 </head>
 <body class="internal-page internal-auth login-page">
 @include('partials.internal-header')

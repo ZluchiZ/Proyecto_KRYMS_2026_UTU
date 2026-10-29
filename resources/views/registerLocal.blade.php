@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="{{ asset('css/register-local.css') }}">
   <link rel="stylesheet" href="{{ asset('css/internal.css') }}">
     <title>Registro Local</title>
+  <link rel="stylesheet" href="{{ asset('css/visual-refresh.css') }}">
 </head>
 <body class="internal-page internal-auth register-page local-register-page">
 @include('partials.internal-header')

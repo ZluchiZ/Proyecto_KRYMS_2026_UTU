@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="<?php echo e(asset('css/register.css')); ?>">
     <link rel="stylesheet" href="<?php echo e(asset('css/internal.css')); ?>">
     <title>Registro</title>
+    <link rel="stylesheet" href="<?php echo e(asset('css/visual-refresh.css')); ?>">
 </head>
 <body class="internal-page internal-auth register-page">
 <?php echo $__env->make('partials.internal-header', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>

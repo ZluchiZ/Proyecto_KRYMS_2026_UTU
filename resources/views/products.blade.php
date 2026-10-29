@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="{{ asset('css/products.css') }}">
     <link rel="stylesheet" href="{{ asset('css/notifications.css') }}">
     <title>Productos | KRYMS</title>
+    <link rel="stylesheet" href="{{ asset('css/visual-refresh.css') }}">
 </head>
 <body class="home-page products-page">
     @if (session('success'))
@@ -17,7 +18,6 @@
     <header class="site-header">
         <div class="header-inner">
             <a class="brand" href="{{ route('home') }}" aria-label="Volver al inicio"><img src="{{ asset('img/Logo_GauchoVA.jpeg') }}" alt="El Gaucho Va" class="logo"></a>
-            <a class="products-back-link" href="{{ route('home') }}">← Volver al inicio</a>
             <nav class="header-actions" aria-label="Acciones de cuenta">
                 @if ($esClienteRegistrado)<a class="cart-link" href="{{ route('carrito') }}" aria-label="Ver carrito"><span>🛒</span><b>Carrito</b></a>@endif
                 @include('partials.notifications-menu')

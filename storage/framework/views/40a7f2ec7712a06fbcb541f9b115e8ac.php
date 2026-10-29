@@ -7,7 +7,9 @@
     <link rel="stylesheet" href="<?php echo e(asset('css/styles.css')); ?>">
     <link rel="stylesheet" href="<?php echo e(asset('css/home.css')); ?>">
     <link rel="stylesheet" href="<?php echo e(asset('css/products.css')); ?>">
+    <link rel="stylesheet" href="<?php echo e(asset('css/notifications.css')); ?>">
     <title>Productos | KRYMS</title>
+    <link rel="stylesheet" href="<?php echo e(asset('css/visual-refresh.css')); ?>">
 </head>
 <body class="home-page products-page">
     <?php if(session('success')): ?>
@@ -16,10 +18,10 @@
     <header class="site-header">
         <div class="header-inner">
             <a class="brand" href="<?php echo e(route('home')); ?>" aria-label="Volver al inicio"><img src="<?php echo e(asset('img/Logo_GauchoVA.jpeg')); ?>" alt="El Gaucho Va" class="logo"></a>
-            <a class="products-back-link" href="<?php echo e(route('home')); ?>">← Volver al inicio</a>
             <nav class="header-actions" aria-label="Acciones de cuenta">
                 <?php if($esClienteRegistrado): ?><a class="cart-link" href="<?php echo e(route('carrito')); ?>" aria-label="Ver carrito"><span>🛒</span><b>Carrito</b></a><?php endif; ?>
-                <div class="profile-container"><button type="button" class="profile-button" aria-label="Abrir perfil" data-profile-toggle><span>◉</span><b><?php echo e($esClienteRegistrado ? 'Mi cuenta' : 'Ingresar'); ?></b></button><div class="profile-menu" data-profile-menu><a href="<?php echo e(route('login')); ?>"><?php echo e($esClienteRegistrado ? 'Mi cuenta' : 'Iniciar sesión'); ?></a></div></div>
+                <?php echo $__env->make('partials.notifications-menu', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+                <div class="profile-container"><button type="button" class="profile-button" aria-label="Abrir perfil" data-profile-toggle><span>◉</span><b><?php echo e($esClienteRegistrado ? 'Mi cuenta' : 'Ingresar'); ?></b></button><div class="profile-menu" data-profile-menu><a href="<?php echo e(route('login')); ?>" data-native-navigation><?php echo e($esClienteRegistrado ? 'Mi cuenta' : 'Iniciar sesión'); ?></a></div></div>
             </nav>
         </div>
     </header>
@@ -55,10 +57,6 @@
     <footer class="site-footer"><div class="footer-inner"><div class="footer-brand"><strong>KRYMS</strong><p>Lo que necesitás,<br>más cerca.</p></div><div><h3>Descubrí</h3><a href="<?php echo e(route('restaurants')); ?>">Restaurantes</a><a href="<?php echo e(route('products')); ?>">Productos</a><a href="<?php echo e(route('home')); ?>#cerca">Ofertas</a></div><div><h3>Ayuda</h3><a href="#">Preguntas frecuentes</a><a href="#">Contacto</a><a href="#">Términos y privacidad</a></div><div class="footer-social"><h3>Seguinos</h3><a href="#" aria-label="Instagram">◎</a><a href="#" aria-label="Facebook">f</a><a href="#" aria-label="TikTok">♪</a></div></div><div class="footer-bottom"><span>© <?php echo e(date('Y')); ?> KRYMS. Todos los derechos reservados.</span><span>Hecho para moverte mejor.</span></div></footer>
 
     <script>
-        const profileToggle = document.querySelector('[data-profile-toggle]');
-        const profileMenu = document.querySelector('[data-profile-menu]');
-        profileToggle?.addEventListener('click', () => profileMenu.classList.toggle('is-open'));
-        document.addEventListener('click', (event) => { if (!event.target.closest('.profile-container')) profileMenu?.classList.remove('is-open'); });
         const purchaseModal = document.getElementById('purchase-modal');
         document.querySelectorAll('.purchase-trigger[data-product-id]').forEach((trigger) => trigger.addEventListener('click', () => { document.getElementById('purchase-product-id').value = trigger.dataset.productId; document.getElementById('purchase-product-name').textContent = trigger.dataset.productName; document.getElementById('purchase-product-local').textContent = `Local: ${trigger.dataset.productLocal}`; document.getElementById('purchase-product-price').textContent = trigger.dataset.productPrice; document.getElementById('purchase-quantity').value = 1; purchaseModal.showModal(); }));
         document.getElementById('close-purchase-modal')?.addEventListener('click', () => purchaseModal.close());

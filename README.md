@@ -64,3 +64,17 @@ Los registros de Cliente, Local y Repartidor se completan luego de introducir el
 Configurá un proveedor SMTP en el archivo `.env` (`MAIL_MAILER`, `MAIL_SCHEME`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD` y `MAIL_FROM_ADDRESS`) antes de registrar usuarios. Los valores de `.env.example` son marcadores de posición y deben reemplazarse por los datos del proveedor.
 
 Después de copiar `.env.example` a `.env`, ejecutá `php artisan migrate` para crear la tabla que conserva temporalmente los registros pendientes.
+
+## Seguridad de credenciales
+
+Las contraseñas se almacenan mediante hash seguro con los mecanismos de Laravel (`Hash::make`) y se verifican con `Hash::check`. Un hash no es cifrado: no se revierte para recuperar la contraseña original. Los datos personales como cédula, teléfono y dirección no son contraseñas y no se protegen convirtiéndolos en hashes; su tratamiento depende de controles de acceso, minimización y protección de la base de datos.
+
+## Métodos de pago del prototipo
+
+En el carrito, el cliente puede seleccionar **efectivo contra entrega** o **tarjeta contra entrega**. La selección se guarda en `Pedido.Metodo_de_pago`; es una simulación del método elegido y no procesa un pago. El proyecto no integra una pasarela, autorización, captura ni liquidación de transacciones.
+
+La tabla `Tarjeta` se conserva como referencia técnica del prototipo y no almacena número, vencimiento, titular ni código de seguridad. El checkout crea únicamente una referencia asociada al cliente, sin datos bancarios. No ingreses tarjetas reales. Para procesar pagos electrónicos en una versión futura habrá que integrar un proveedor de pagos y usar su tokenización, sin almacenar credenciales de tarjeta en la aplicación.
+
+## Pruebas automatizadas
+
+Ejecutá la suite con `php artisan test`. Las pruebas feature cubren registro y verificación, login, permisos por rol e identidad, carrito y creación de pedidos, decisiones de comercios y clientes, estados de preparación y entrega, asignación de repartidores y selección simulada del método de pago.

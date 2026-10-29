@@ -1,0 +1,495 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap');
+
+@media (min-width: 761px) {
+    :root {
+        --app-ink: #26332f;
+        --app-muted: #687570;
+        --app-canvas: #f4f6f3;
+        --app-surface: #fff;
+        --app-line: #dfe5df;
+        --app-primary: #b94f31;
+        --app-primary-hover: #963f28;
+        --app-secondary: #35685a;
+        --app-gold: #dfa84e;
+        --app-shadow: 0 12px 32px rgba(37, 51, 47, .075);
+        --color-ink: var(--app-ink);
+        --color-muted: var(--app-muted);
+        --color-surface: var(--app-surface);
+        --color-background: var(--app-canvas);
+        --color-accent: var(--app-primary);
+        --color-accent-dark: var(--app-primary-hover);
+        --color-border: var(--app-line);
+        --navy: var(--app-ink);
+        --blue: var(--app-secondary);
+        --coral: var(--app-primary);
+        --mint: #e5eee8;
+        --cream: var(--app-canvas);
+        --line: var(--app-line);
+        --muted: var(--app-muted);
+        --white: var(--app-surface);
+        --internal-navy: var(--app-ink);
+        --internal-blue: var(--app-secondary);
+        --internal-coral: var(--app-primary);
+        --internal-peach: #f3e7d5;
+        --internal-pink: #f4e7e2;
+        --internal-cream: var(--app-canvas);
+        --internal-white: var(--app-surface);
+        --internal-line: var(--app-line);
+        --internal-muted: var(--app-muted);
+        --internal-shadow: var(--app-shadow);
+        --ink: var(--app-ink);
+        --muted: var(--app-muted);
+        --surface: var(--app-surface);
+        --canvas: var(--app-canvas);
+        --primary: var(--app-primary);
+        --primary-dark: var(--app-primary-hover);
+        --internal-salmon: var(--app-primary);
+        --internal-salmon-dark: var(--app-primary-hover);
+        --internal-border: var(--app-line);
+    }
+
+    body,
+    body.home-page,
+    body.internal-page {
+        color: var(--app-ink);
+        background-color: var(--app-canvas);
+        font-family: 'DM Sans', 'Segoe UI', sans-serif;
+        line-height: 1.55;
+    }
+
+    :where(h1, h2, h3, .brand, .profile-kicker, .eyebrow) {
+        font-family: 'Manrope', 'DM Sans', sans-serif;
+        letter-spacing: 0;
+    }
+
+    :where(button, input, select, textarea) {
+        font-family: 'DM Sans', 'Segoe UI', sans-serif;
+    }
+
+    :where(button, a, input, select, textarea):focus-visible {
+        outline-color: rgba(53, 104, 90, .38);
+    }
+
+    :where(input:not([type='checkbox']):not([type='radio']), select, textarea) {
+        border-color: var(--app-line);
+        border-radius: 7px;
+        background-color: var(--app-surface);
+        color: var(--app-ink);
+    }
+
+    :where(input, select, textarea):focus-visible {
+        border-color: var(--app-secondary);
+        outline: 3px solid rgba(53, 104, 90, .13);
+    }
+
+    :where(button, .primary-button, .profile-primary-action, .empty-cart-action, .history-primary-link) {
+        border-radius: 7px;
+        font-weight: 700;
+        transition: background-color .18s ease, border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+    }
+
+    :where(.site-header, .internal-header, .topbar) {
+        border-color: var(--app-line);
+        background-color: rgba(255, 255, 255, .96);
+        box-shadow: 0 5px 20px rgba(37, 51, 47, .055);
+    }
+
+    .home-page {
+        background: var(--app-canvas);
+    }
+
+    .home-page::before {
+        opacity: .2;
+        background-image: linear-gradient(rgba(53, 104, 90, .035) 1px, transparent 1px), linear-gradient(90deg, rgba(53, 104, 90, .035) 1px, transparent 1px);
+    }
+
+    .home-page .site-header {
+        border-bottom: 1px solid var(--app-line);
+    }
+
+    .header-inner {
+        width: min(100% - 3rem, 1320px);
+        margin-inline: auto;
+    }
+
+    .brand::after {
+        background: var(--app-gold);
+    }
+
+    .hero-section {
+        border-color: rgba(38, 51, 47, .08);
+        border-radius: 8px;
+        box-shadow: 0 18px 44px rgba(37, 51, 47, .1);
+    }
+
+    .hero-copy .eyebrow,
+    .section-heading .eyebrow,
+    .eyebrow,
+    .cart-eyebrow {
+        color: var(--app-secondary);
+    }
+
+    .hero-copy .eyebrow::before {
+        background: var(--app-gold);
+    }
+
+    .search-form:focus-within {
+        box-shadow: 0 10px 24px rgba(37, 51, 47, .11);
+    }
+
+    .home-page .search-form button,
+    .home-page .primary-button,
+    .home-page .offer-buy-button,
+    .home-page .location-form button[type='submit'],
+    .internal-page button:not(.notifications-toggle):not(.carousel-controls button):not(.purchase-close):not(.close):not(.logout):not(.customer-profile-actions button) {
+        background-color: var(--app-primary);
+    }
+
+    .home-page .search-form button:hover,
+    .home-page .primary-button:hover,
+    .home-page .offer-buy-button:hover,
+    .internal-page button:not(.notifications-toggle):not(.carousel-controls button):not(.purchase-close):not(.close):not(.logout):not(.customer-profile-actions button):hover {
+        background-color: var(--app-primary-hover);
+        box-shadow: 0 7px 16px rgba(185, 79, 49, .18);
+        transform: translateY(-1px);
+    }
+
+    .category-item,
+    .home-page .local-card,
+    .home-page .product-card,
+    .home-page .restaurant-card,
+    .home-page .offer-card,
+    .restaurants-page .restaurant-directory-card,
+    .products-page .catalog-product-card,
+    .internal-cart .item,
+    .internal-cart .checkout,
+    .history-card,
+    .history-empty,
+    .customer-profile-card,
+    .location-page-card,
+    .login-card,
+    .register-content > section,
+    .formularioregistro,
+    .local-register-card,
+    .rider-register-card,
+    .google-register-card,
+    .registration-verification-card,
+    .profile,
+    .dashboard-panel,
+    .order-card,
+    .order,
+    .product,
+    .local-review-item,
+    .metric,
+    .data-panel,
+    .notification-list .notification-item {
+        border-color: var(--app-line);
+        border-radius: 8px;
+        background-color: var(--app-surface);
+        box-shadow: var(--app-shadow);
+    }
+
+    .category-item:hover,
+    .home-page .local-card:hover,
+    .home-page .product-card:hover,
+    .home-page .restaurant-card:hover {
+        border-color: #b8c9bf;
+        box-shadow: 0 16px 34px rgba(37, 51, 47, .12);
+    }
+
+    .cart-link,
+    .profile-button,
+    .notifications-toggle,
+    .internal-home-link,
+    .dashboard-profile-link,
+    .profile-secondary-action {
+        border-color: var(--app-line);
+        border-radius: 7px;
+        background-color: var(--app-surface);
+        color: var(--app-ink);
+    }
+
+    .home-page .profile-button {
+        display: inline-flex;
+        min-height: 42px;
+        align-items: center;
+        gap: .45rem;
+        padding: .45rem .8rem;
+        border: 1px solid var(--app-line);
+        background: var(--app-surface);
+        box-shadow: 0 3px 10px rgba(37, 51, 47, .06);
+        color: var(--app-ink);
+        font-size: .78rem;
+    }
+
+    .home-page a.profile-button {
+        color: var(--app-ink);
+        text-decoration: none;
+    }
+
+    .home-page .profile-button span {
+        display: none;
+    }
+
+    .home-page .profile-button::after {
+        color: var(--app-secondary);
+        content: '\2304';
+        font-size: .9rem;
+    }
+
+    .home-page .profile-button:hover {
+        border-color: #b8c9bf;
+        background: #f7faf7;
+        box-shadow: 0 5px 13px rgba(37, 51, 47, .09);
+        color: var(--app-ink);
+        transform: translateY(-1px);
+    }
+
+    .notifications-count,
+    .status-pill,
+    .status-badge,
+    .history-status,
+    .order-status {
+        border-radius: 5px;
+    }
+
+    .internal-header {
+        box-sizing: border-box;
+    }
+
+    .internal-header-actions {
+        display: flex;
+        flex: 0 0 auto;
+        align-items: center;
+        justify-content: flex-end;
+        gap: .65rem;
+        min-width: 0;
+    }
+
+    .internal-header-actions .notifications,
+    .internal-header-actions .notifications-toggle,
+    .internal-header-actions .internal-home-link {
+        flex: 0 0 auto;
+    }
+
+    .internal-header-actions .notifications-toggle,
+    .internal-header-actions .internal-home-link {
+        display: inline-flex;
+        box-sizing: border-box;
+        min-height: 42px;
+        height: 42px;
+        align-items: center;
+        justify-content: center;
+        gap: .45rem;
+        padding: .5rem .85rem;
+        border: 1px solid var(--app-line);
+        border-radius: 7px;
+        font-size: .78rem;
+        line-height: 1.2;
+        white-space: nowrap;
+    }
+
+    .internal-header-actions .notifications-toggle {
+        background: var(--app-surface);
+        color: var(--app-ink);
+    }
+
+    .internal-header-actions .internal-home-link {
+        border-color: var(--app-secondary);
+        background: var(--app-secondary);
+        color: #fff !important;
+    }
+
+    .internal-header-actions .internal-home-link:hover {
+        border-color: #294f45;
+        background: #294f45;
+        color: #fff !important;
+    }
+
+    .internal-home-link:hover,
+    .dashboard-profile-link:hover,
+    .profile-secondary-action:hover {
+        border-color: #b8c9bf;
+        background-color: #edf3ee;
+        color: var(--app-ink);
+    }
+
+    .customer-profile-actions form {
+        display: flex;
+        align-items: center;
+        margin-left: auto;
+    }
+
+    .customer-profile-actions form button {
+        display: inline-flex;
+        min-height: 42px;
+        align-items: center;
+        justify-content: center;
+        padding: .55rem .9rem;
+        border: 1px solid #ead3cb;
+        border-radius: 7px;
+        background: #fbf3ef;
+        color: var(--app-primary);
+        font-size: .78rem;
+        font-weight: 700;
+    }
+
+    .customer-profile-actions form button:hover {
+        border-color: #d7b2a7;
+        background: #f7e9e3;
+        box-shadow: none;
+        color: var(--app-primary-hover);
+        transform: translateY(-1px);
+    }
+
+    .customer-profile-cover,
+    .login-page .login-intro,
+    .register-content > .register-intro {
+        color: var(--app-ink);
+    }
+
+    .internal-auth,
+    .login-page,
+    .register-page {
+        background: var(--app-canvas);
+    }
+
+    .login-page .login-card,
+    .login-page .container,
+    .register-content,
+    .register-content .formularioregistro,
+    .register-content .FormarParteLocal,
+    .register-content .FormarParteRepartidor {
+        border-color: var(--app-line);
+        border-radius: 8px;
+        background: var(--app-surface);
+        box-shadow: var(--app-shadow);
+    }
+
+    .login-page .login-intro h1,
+    .login-page .login-intro p,
+    .login-page .login-heading h2,
+    .register-content h1,
+    .register-content h2 {
+        color: var(--app-ink);
+    }
+
+    .internal-dashboard,
+    .internal-cart,
+    .customer-profile-page,
+    .location-page {
+        background: var(--app-canvas);
+    }
+
+    .internal-dashboard main,
+    .internal-cart main,
+    .customer-profile-main,
+    .location-page-main,
+    .order-history-main {
+        max-width: 1180px;
+    }
+
+    .profile,
+    .dashboard-header,
+    .order-history-heading,
+    .customer-profile-cover {
+        border-color: var(--app-line);
+    }
+
+    .dashboard-panel,
+    .customer-profile-card,
+    .location-page-card,
+    .history-card,
+    .history-empty,
+    .internal-cart .item,
+    .internal-cart .checkout {
+        padding: 1.35rem;
+    }
+
+    .profile-form-message.success,
+    .history-feedback-success,
+    .success {
+        border-color: #c9ded1;
+        background: #edf5ef;
+        color: #35685a;
+    }
+
+    .profile-form-message.error,
+    .history-feedback-error,
+    .error {
+        border-color: #efd0c9;
+        background: #fbefec;
+        color: #9c3d2c;
+    }
+
+    .admin-layout {
+        background: var(--app-canvas);
+        color: var(--app-ink);
+        font-family: 'DM Sans', 'Segoe UI', sans-serif;
+    }
+
+    .admin-layout .sidebar {
+        background: #25332f;
+    }
+
+    .admin-layout .nav-link:hover,
+    .admin-layout .nav-link.active {
+        background: #3b5148;
+    }
+
+    .admin-layout .topbar {
+        color: var(--app-ink);
+    }
+
+    .admin-layout .metric strong,
+    .admin-layout .page-heading h1,
+    .admin-layout .panel-heading h2 {
+        color: var(--app-ink);
+        font-family: 'Manrope', 'DM Sans', sans-serif;
+    }
+
+    .admin-layout th {
+        background: #f2f5f1;
+        color: var(--app-muted);
+    }
+
+    .admin-layout tbody tr:hover {
+        background: #f6f8f5;
+    }
+
+    .admin-layout .search-form button,
+    .admin-layout .account-action,
+    .admin-layout .decision-accept,
+    .admin-layout .decision-reject {
+        border-radius: 7px;
+        background: var(--app-primary);
+    }
+
+    .admin-layout .account-action.reactivate,
+    .admin-layout .status.active {
+        color: var(--app-secondary);
+        background: #e8f1eb;
+    }
+
+    .admin-layout .type-label,
+    .admin-layout .status.pending {
+        color: #815a24;
+        background: #f7edda;
+    }
+
+    .admin-layout .status.suspended {
+        color: #9c3d2c;
+        background: #fbefec;
+    }
+
+    .repartidor-map,
+    .location-page-map,
+    .header-map {
+        border-color: var(--app-line);
+        border-radius: 7px;
+    }
+
+    .site-footer {
+        background: #25332f;
+    }
+}

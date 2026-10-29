@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="{{ asset('css/local-profile.css') }}">
     <link rel="stylesheet" href="{{ asset('css/notifications.css') }}">
     <title>{{ $comercio->Nombre_Comercio ?: 'Local' }} | KRYMS</title>
+    <link rel="stylesheet" href="{{ asset('css/visual-refresh.css') }}">
 </head>
 <body class="home-page local-profile-page">
     @if (session('success'))

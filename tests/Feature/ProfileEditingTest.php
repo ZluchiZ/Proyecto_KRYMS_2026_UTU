@@ -55,6 +55,11 @@ class ProfileEditingTest extends TestCase
             $table->string('Nombre_de_Usuario');
         });
 
+        Schema::connection('sqlite')->create('administrador', function (Blueprint $table): void {
+            $table->string('Email_Usuario')->primary();
+        });
+        DB::table('administrador')->insert(['Email_Usuario' => 'admin@example.com']);
+
         Schema::connection('sqlite')->create('reporte', function (Blueprint $table): void {
             $table->id('ID_Reporte');
             $table->string('CI_Cliente');
@@ -292,5 +297,23 @@ class ProfileEditingTest extends TestCase
     public function test_profile_edit_is_not_available_without_a_supported_account_session(): void
     {
         $this->get(route('profile.edit'))->assertForbidden();
+    }
+
+    public function test_client_role_cannot_be_used_with_another_account_identifier(): void
+    {
+        $this->withSession([
+            'tipo_usuario' => 'cliente',
+            'usuario_id' => '87654321',
+            'email' => 'cliente@example.com',
+        ])->get(route('profile.edit'))->assertForbidden();
+    }
+
+    public function test_commerce_role_cannot_be_used_with_another_commerce_identifier(): void
+    {
+        $this->withSession([
+            'tipo_usuario' => 'comercio',
+            'usuario_id' => '999999999999',
+            'email' => 'local@example.com',
+        ])->get(route('profile.edit'))->assertForbidden();
     }
 }

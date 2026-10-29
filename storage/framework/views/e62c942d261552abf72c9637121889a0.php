@@ -27,7 +27,7 @@
             <?php elseif($producto->Disponible && $esClienteRegistrado): ?>
                 <button type="button" class="purchase-trigger add-button" data-product-id="<?php echo e($producto->ID_Producto); ?>" data-product-name="<?php echo e($producto->Nombre_Producto); ?>" data-product-price="$U <?php echo e(number_format($precioFinalProducto, 2, ',', '.')); ?>" data-product-local="<?php echo e($producto->Nombre_Comercio ?: 'Local adherido'); ?>" aria-label="Agregar <?php echo e($producto->Nombre_Producto); ?>">+</button>
             <?php elseif($producto->Disponible): ?>
-                <a class="add-button" href="<?php echo e(route('login')); ?>" aria-label="Iniciar sesión para comprar">+</a>
+                <a class="add-button" href="<?php echo e(route('login')); ?>" aria-label="Iniciar sesión para comprar" data-native-navigation>+</a>
             <?php else: ?>
                 <span class="unavailable-label">No disponible</span>
             <?php endif; ?>

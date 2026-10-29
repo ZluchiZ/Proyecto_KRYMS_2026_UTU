@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="{{ asset('css/internal.css') }}">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <title>Elegir ubicación | El Gaucho Va</title>
+    <link rel="stylesheet" href="{{ asset('css/visual-refresh.css') }}">
 </head>
 <body class="internal-page location-page">
     @include('partials.internal-header')

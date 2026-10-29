@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="<?php echo e(asset('css/login.css')); ?>">
     <link rel="stylesheet" href="<?php echo e(asset('css/internal.css')); ?>">
     <title>Inicio de sesión</title>
+    <link rel="stylesheet" href="<?php echo e(asset('css/visual-refresh.css')); ?>">
 </head>
 <body class="internal-page internal-auth login-page">
 <?php echo $__env->make('partials.internal-header', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
@@ -23,6 +24,13 @@
             <h2>Iniciar sesión</h2>
             <p>Usá tus datos para continuar.</p>
         </div>
+
+<?php if(session('success')): ?>
+    <div class="alert alert-success" role="status">
+        <?php echo e(session('success')); ?>
+
+    </div>
+<?php endif; ?>
 
 <?php if(session('error')): ?>
     <div class="alert alert-danger">
@@ -49,9 +57,10 @@
             <input id="login-password" type="password" name="password" placeholder="Tu contraseña" required>
             <button type="submit">Entrar a mi cuenta</button>
         </form>
+        <a class="password-recovery-link" href="<?php echo e(route('password-recovery.request')); ?>">¿Olvidaste tu contraseña?</a>
 
         <div class="login-divider"><span>o continuá con</span></div>
-        <a href="<?php echo e(route('google.login')); ?>" class="google-btn">Continuar con Google</a>
+        <a href="<?php echo e(route('google.login')); ?>" class="google-btn" data-native-navigation>Continuar con Google</a>
 
         <p class="login-register">
             ¿Todavía no tenés cuenta?

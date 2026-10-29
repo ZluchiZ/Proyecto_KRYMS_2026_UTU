@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cliente;
+use App\Models\Comercio;
+use App\Models\Resena;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,13 +20,12 @@ class ReviewController extends Controller
             'comentario' => 'nullable|string|max:250',
         ]);
 
-        $cliente = DB::table('cliente')->where('CI', session('usuario_id'))->exists();
+        $cliente = Cliente::query()->find(session('usuario_id'));
         abort_unless($cliente, 403);
 
-        DB::transaction(function () use ($validated, $pedido): void {
-            $pedidoActual = DB::table('pedido')
+        DB::transaction(function () use ($validated, $pedido, $cliente): void {
+            $pedidoActual = $cliente->pedidos()
                 ->where('N_Pedido', $pedido)
-                ->where('CI_Cliente', session('usuario_id'))
                 ->lockForUpdate()
                 ->first(['N_Pedido', 'Estado', 'CI_Repartidor']);
 
@@ -34,14 +36,14 @@ class ReviewController extends Controller
                 'Solo podés reseñar al repartidor de un pedido entregado.'
             );
             abort_if(
-                DB::table('reseña')->where('N_Pedido', $pedido)->exists(),
+                Resena::query()->where('N_Pedido', $pedido)->exists(),
                 409,
                 'Ya dejaste una reseña para este pedido.'
             );
 
             $comentario = trim($validated['comentario'] ?? '');
-            DB::table('reseña')->insert([
-                'CI_Cliente' => session('usuario_id'),
+            Resena::query()->create([
+                'CI_Cliente' => $cliente->CI,
                 'RUT_Comercio' => null,
                 'CI_Repartidor' => $pedidoActual->CI_Repartidor,
                 'N_Pedido' => $pedidoActual->N_Pedido,
@@ -66,10 +68,10 @@ class ReviewController extends Controller
             'comentario' => 'nullable|string|max:250',
         ]);
 
-        $comercio = DB::table('comercio')->where('RUT', $rut)->exists();
+        $comercio = Comercio::query()->where('RUT', $rut)->exists();
         abort_unless($comercio, 404);
 
-        $cliente = DB::table('cliente')->where('CI', session('usuario_id'))->exists();
+        $cliente = Cliente::query()->find(session('usuario_id'));
         abort_unless($cliente, 403);
 
         $comentario = trim($validated['comentario'] ?? '');
@@ -78,19 +80,14 @@ class ReviewController extends Controller
             'Comentario' => $comentario === '' ? null : $comentario,
         ];
 
-        $resenaExistente = DB::table('reseña')
-            ->where('CI_Cliente', session('usuario_id'))
+        $resena = $cliente->resenas()
             ->where('RUT_Comercio', $rut)
-            ->exists();
+            ->first();
 
-        if ($resenaExistente) {
-            DB::table('reseña')
-                ->where('CI_Cliente', session('usuario_id'))
-                ->where('RUT_Comercio', $rut)
-                ->update($datosResena);
+        if ($resena) {
+            $resena->update($datosResena);
         } else {
-            DB::table('reseña')->insert($datosResena + [
-                'CI_Cliente' => session('usuario_id'),
+            $cliente->resenas()->create($datosResena + [
                 'RUT_Comercio' => $rut,
                 'CI_Repartidor' => null,
                 'Estado_Moderacion' => 'Visible',
@@ -100,6 +97,6 @@ class ReviewController extends Controller
 
         return redirect()
             ->route('local.profile', $rut)
-            ->with('success', $resenaExistente ? 'Tu reseña fue actualizada.' : 'Gracias por dejar tu reseña.');
+            ->with('success', $resena ? 'Tu reseña fue actualizada.' : 'Gracias por dejar tu reseña.');
     }
 }

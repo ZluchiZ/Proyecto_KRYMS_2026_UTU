@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="{{ asset('css/google-register.css') }}">
     <link rel="stylesheet" href="{{ asset('css/internal.css') }}">
     <title>Completar registro</title>
+    <link rel="stylesheet" href="{{ asset('css/visual-refresh.css') }}">
 </head>
 <body class="internal-page internal-auth">
 @include('partials.internal-header')

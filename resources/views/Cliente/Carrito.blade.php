@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ asset('css/carrito.css') }}">
     <link rel="stylesheet" href="{{ asset('css/internal.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/visual-refresh.css') }}">
     <title>Mi carrito | El Gaucho Va</title>
 </head>
 <body class="internal-page internal-cart">
@@ -97,6 +98,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ asset('css/carrito.css') }}">
     <link rel="stylesheet" href="{{ asset('css/internal.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/visual-refresh.css') }}">
     <title>Mi carrito | El Gaucho Va</title>
 </head>
 <body class="internal-page internal-cart">
@@ -191,6 +193,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ asset('css/carrito.css') }}">
     <link rel="stylesheet" href="{{ asset('css/internal.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/visual-refresh.css') }}">
     <title>Mi carrito</title>
 </head>
 <body class="internal-page internal-cart">

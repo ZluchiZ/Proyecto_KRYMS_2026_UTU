@@ -68,7 +68,7 @@
                     <div class="order-list">
                     <?php $__currentLoopData = $seccion['items']->groupBy('N_Subpedido'); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $lineasPedido): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                         <?php ($pedido = $lineasPedido->first()); ?>
-                        <article class="order">
+                        <article class="order" id="pedido-<?php echo e($pedido->N_Pedido); ?>">
                             <div class="order-title">
                                 <span>Pedido #<?php echo e($pedido->ID_Pedido ?? $pedido->N_Pedido); ?></span>
                                 <span class="order-status <?php echo e(($pedido->Estado_Subpedido ?? '') === 'rechazado' ? 'rejected' : ''); ?>"><?php echo e($pedido->Estado_Subpedido ?? 'pendiente'); ?></span>

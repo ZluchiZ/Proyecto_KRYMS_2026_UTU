@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="{{ asset('css/dashboard-local.css') }}">
     <link rel="stylesheet" href="{{ asset('css/internal.css') }}">
     <title>Productos del local</title>
+    <link rel="stylesheet" href="{{ asset('css/visual-refresh.css') }}">
 </head>
 <body class="internal-page internal-dashboard">
     @include('partials.internal-header')

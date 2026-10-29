@@ -6,6 +6,7 @@
     <title>Mis pedidos | El Gaucho Va</title>
     <link rel="stylesheet" href="{{ asset('css/internal.css') }}">
     <link rel="stylesheet" href="{{ asset('css/order-history.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/visual-refresh.css') }}">
 </head>
 <body class="internal-page internal-cart order-history-page">
     @include('partials.internal-header')

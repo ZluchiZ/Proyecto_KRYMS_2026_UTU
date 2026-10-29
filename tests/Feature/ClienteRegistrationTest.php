@@ -82,6 +82,61 @@ class ClienteRegistrationTest extends TestCase
         ));
     }
 
+    public function test_registered_client_can_log_in_with_the_hashed_password(): void
+    {
+        $passwordHash = Hash::make('password123');
+        DB::table('usuario')->insert([
+            'Email' => 'ana@example.com',
+            'Nombre_de_Usuario' => 'Ana',
+            'Contraseña' => $passwordHash,
+            'Tipo_Usuario' => 'cliente',
+        ]);
+        DB::table('cliente')->insert([
+            'CI' => '12345678',
+            'Email_Usuario' => 'ana@example.com',
+            'Contraseña' => $passwordHash,
+            'Fecha_nacimiento' => '1990-01-02',
+            'Nombre' => 'Ana',
+            'Apellido' => 'Pérez',
+            'Teléfono' => '099123456',
+        ]);
+
+        $this->post(route('login.post'), [
+            'email' => 'ana@example.com',
+            'password' => 'password123',
+        ])->assertRedirect(route('home'))
+            ->assertSessionHas('tipo_usuario', 'cliente')
+            ->assertSessionHas('usuario_id', '12345678');
+    }
+
+    public function test_client_login_rejects_an_incorrect_password(): void
+    {
+        $passwordHash = Hash::make('password123');
+        DB::table('usuario')->insert([
+            'Email' => 'ana@example.com',
+            'Nombre_de_Usuario' => 'Ana',
+            'Contraseña' => $passwordHash,
+            'Tipo_Usuario' => 'cliente',
+        ]);
+        DB::table('cliente')->insert([
+            'CI' => '12345678',
+            'Email_Usuario' => 'ana@example.com',
+            'Contraseña' => $passwordHash,
+            'Fecha_nacimiento' => '1990-01-02',
+            'Nombre' => 'Ana',
+            'Apellido' => 'Pérez',
+            'Teléfono' => '099123456',
+        ]);
+
+        $this->from(route('login'))
+            ->post(route('login.post'), [
+                'email' => 'ana@example.com',
+                'password' => 'incorrecta',
+            ])
+            ->assertRedirect(route('login'))
+            ->assertSessionHas('error', 'Correo o contraseña incorrectos.');
+    }
+
     public function test_wrong_code_does_not_create_an_account_and_counts_an_attempt(): void
     {
         $this->post(route('cliente.store'), [

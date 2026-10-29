@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="{{ asset('css/register-repartidor.css') }}">
     <link rel="stylesheet" href="{{ asset('css/internal.css') }}">
     <title>Registro Repartidor</title>
+    <link rel="stylesheet" href="{{ asset('css/visual-refresh.css') }}">
 </head>
 <body class="internal-page internal-auth register-page rider-register-page">
 @include('partials.internal-header')

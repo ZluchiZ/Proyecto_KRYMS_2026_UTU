@@ -6,6 +6,7 @@
     <title>Historial de ventas | {{ $comercio->Nombre_Comercio }}</title>
     <link rel="stylesheet" href="{{ asset('css/internal.css') }}">
     <link rel="stylesheet" href="{{ asset('css/order-history.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/visual-refresh.css') }}">
 </head>
 <body class="internal-page order-history-page local-sales-history-page">
     @include('partials.internal-header')

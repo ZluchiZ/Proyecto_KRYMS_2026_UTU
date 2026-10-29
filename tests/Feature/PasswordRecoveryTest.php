@@ -35,6 +35,10 @@ class PasswordRecoveryTest extends TestCase
             $table->timestamp('reviewed_at')->nullable();
             $table->timestamps();
         });
+        Schema::connection('sqlite')->create('administrador', function (Blueprint $table): void {
+            $table->string('Email_Usuario')->primary();
+        });
+        DB::table('administrador')->insert(['Email_Usuario' => 'admin@example.com']);
     }
 
     public function test_recovery_requires_admin_approval_before_password_can_be_changed(): void

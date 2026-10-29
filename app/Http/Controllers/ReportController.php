@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cliente;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class ReportController extends Controller
@@ -13,13 +13,10 @@ class ReportController extends Controller
     {
         abort_unless(session('tipo_usuario') === 'cliente' && session('usuario_id'), 403);
 
-        $cliente = DB::table('cliente')
-            ->where('CI', session('usuario_id'))
-            ->first();
+        $cliente = Cliente::query()->find(session('usuario_id'));
         abort_unless($cliente, 404);
 
-        $reportes = DB::table('reporte')
-            ->where('CI_Cliente', session('usuario_id'))
+        $reportes = $cliente->reportes()
             ->orderByDesc('ID_Reporte')
             ->get();
 
@@ -43,11 +40,10 @@ class ReportController extends Controller
             'comentario.max' => 'El reporte no puede superar los 500 caracteres.',
         ]);
 
-        $cliente = DB::table('cliente')->where('CI', session('usuario_id'))->exists();
+        $cliente = Cliente::query()->find(session('usuario_id'));
         abort_unless($cliente, 403);
 
-        DB::table('reporte')->insert([
-            'CI_Cliente' => session('usuario_id'),
+        $cliente->reportes()->create([
             'RUT_Comercio' => null,
             'Categoria' => $validated['categoria'],
             'Comentario' => trim($validated['comentario']),

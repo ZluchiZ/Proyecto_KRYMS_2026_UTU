@@ -6,6 +6,7 @@
     <title>Administración | KRYMS</title>
     <link rel="stylesheet" href="{{ asset('css/dashboard-admin.css') }}">
     <link rel="stylesheet" href="{{ asset('css/notifications.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/visual-refresh.css') }}">
 </head>
 <body>
     <div class="admin-layout">

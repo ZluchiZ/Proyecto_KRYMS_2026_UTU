@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="<?php echo e(asset('css/internal.css')); ?>">
     <title>Mi perfil | El Gaucho Va</title>
+    <link rel="stylesheet" href="<?php echo e(asset('css/visual-refresh.css')); ?>">
 </head>
 <body class="internal-page customer-profile-page">
     <?php echo $__env->make('partials.internal-header', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>

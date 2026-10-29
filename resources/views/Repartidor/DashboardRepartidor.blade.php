@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="{{ asset('css/dashboard-repartidor.css') }}">
     <link rel="stylesheet" href="{{ asset('css/internal.css') }}">
     <title>Dashboard repartidor</title>
+    <link rel="stylesheet" href="{{ asset('css/visual-refresh.css') }}">
 </head>
 <body class="internal-page internal-dashboard">
     @include('partials.internal-header')
