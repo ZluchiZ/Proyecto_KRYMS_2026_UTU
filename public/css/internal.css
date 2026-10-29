@@ -1057,6 +1057,34 @@ body.internal-cart {
     font-size: .8rem;
 }
 
+<<<<<<< HEAD
+=======
+.delivery-progress {
+    display: grid;
+    gap: .55rem;
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+    color: var(--internal-muted);
+}
+
+.delivery-progress li {
+    padding-left: .2rem;
+}
+
+.delivery-progress li.current {
+    color: var(--internal-navy);
+    font-weight: 800;
+}
+
+.delivery-progress li.complete {
+    color: #397454;
+}
+
+.internal-dashboard .my-delivery form button {
+    width: 100%;
+}
+
+>>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
 @media (max-width: 640px) {
     .internal-header {
         min-height: 62px;

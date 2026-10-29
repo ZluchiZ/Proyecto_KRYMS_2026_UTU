@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Administración | KRYMS</title>
     <link rel="stylesheet" href="{{ asset('css/dashboard-admin.css') }}">
+<<<<<<< HEAD
+=======
+    <link rel="stylesheet" href="{{ asset('css/notifications.css') }}">
+>>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
 </head>
 <body>
     <div class="admin-layout">
@@ -35,7 +39,11 @@
         </aside>
 
         <main class="main-content">
+<<<<<<< HEAD
             <header class="topbar"><span>Panel de control <span class="crumb">/ {{ ucfirst($seccion) }}</span></span><span class="live-indicator">Sistema operativo</span></header>
+=======
+            <header class="topbar"><span>Panel de control <span class="crumb">/ {{ ucfirst($seccion) }}</span></span><span class="live-indicator">Sistema operativo</span>@include('partials.notifications-menu')</header>
+>>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
             <div class="page-wrap">
                 <section class="page-heading">
                     <div>

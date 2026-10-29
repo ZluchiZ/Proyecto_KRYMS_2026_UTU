@@ -34,12 +34,20 @@
                         $estadoPedido = strtolower($pedido->Estado ?? 'pendiente');
                         $claseEstado = match ($estadoPedido) {
                             'rechazado', 'cancelado' => 'cancelled',
+<<<<<<< HEAD
+=======
+                            'requiere_decision_cliente' => 'cancelled',
+>>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
                             'entregado', 'completado', 'listo' => 'completed',
                             'aceptado', 'en_reparto' => 'progress',
                             default => 'pending',
                         };
                     @endphp
+<<<<<<< HEAD
                     <article class="history-card">
+=======
+                    <article class="history-card" id="pedido-{{ $pedido->N_Pedido }}">
+>>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
                         <header class="history-card-heading">
                             <div>
                                 <span class="history-order-label">Pedido #{{ $pedido->N_Pedido }}</span>
@@ -54,6 +62,63 @@
                             <div><span>Total</span><strong>$U {{ number_format((float) ($pedido->Monto_Total ?? 0), 2, ',', '.') }}</strong></div>
                         </div>
 
+<<<<<<< HEAD
+=======
+                        @if ($estadoPedido === 'en_reparto' && $pedido->Codigo_Secreto)
+                            <section class="history-store" aria-label="Código secreto de entrega">
+                                <h2>Código secreto de entrega</h2>
+                                <p>Compartí este código con el repartidor cuando recibas tu pedido. Solo vos podés verlo.</p>
+                                <strong>{{ $pedido->Codigo_Secreto }}</strong>
+                            </section>
+                        @endif
+
+                        @if ($estadoPedido === 'en_reparto')
+                            @php
+                                $etapasEntrega = [
+                                    'productos_recolectados' => 'El gaucho recogió todos sus productos',
+                                    'en_camino' => 'El gaucho va en camino',
+                                    'en_puerta' => 'El gaucho está en tu puerta',
+                                ];
+                                $etapaActual = $pedido->Estado_Entrega;
+                                $etapaActualIndice = array_search($etapaActual, array_keys($etapasEntrega), true);
+                            @endphp
+                            <section class="history-store" aria-label="Progreso de entrega">
+                                <h2>Seguimiento de entrega</h2>
+                                @if (! $etapaActual)
+                                    <p>Esperando que el repartidor recoja todos los productos.</p>
+                                @endif
+                                <ol class="delivery-progress">
+                                    @foreach ($etapasEntrega as $etapa => $etiqueta)
+                                        <li class="{{ $etapaActual === $etapa ? 'current' : ($etapaActualIndice !== false && array_search($etapa, array_keys($etapasEntrega), true) < $etapaActualIndice ? 'complete' : '') }}">
+                                            {{ $etiqueta }}
+                                        </li>
+                                    @endforeach
+                                </ol>
+                            </section>
+                        @endif
+
+                        @if ($estadoPedido === 'requiere_decision_cliente')
+                            <div class="history-store">
+                                <strong>Un comercio rechazó su parte del pedido.</strong>
+                                <p>Podés continuar sin los comercios que rechazaron o cancelar el pedido completo.</p>
+                                @if ($pedido->locales->contains(fn ($local) => ! in_array($local->estado, ['rechazado', 'omitido', 'cancelado'], true)))
+                                    <form method="POST" action="{{ route('pedidos.client-decision', $pedido->N_Pedido) }}">
+                                        @csrf
+                                        @method('PATCH')
+                                        <input type="hidden" name="decision" value="continuar">
+                                        <button type="submit">Continuar sin esos comercios</button>
+                                    </form>
+                                @endif
+                                <form method="POST" action="{{ route('pedidos.client-decision', $pedido->N_Pedido) }}" onsubmit="return confirm('¿Cancelar el pedido completo?');">
+                                    @csrf
+                                    @method('PATCH')
+                                    <input type="hidden" name="decision" value="cancelar">
+                                    <button type="submit">Cancelar pedido completo</button>
+                                </form>
+                            </div>
+                        @endif
+
+>>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
                         @foreach ($pedido->locales as $local)
                             <section class="history-store">
                                 <header class="history-store-heading">
@@ -69,7 +134,11 @@
                                 @else
                                     <p class="history-no-products">No hay productos detallados para este local.</p>
                                 @endif
+<<<<<<< HEAD
                                 @if ($local->total !== null)
+=======
+                                @if ($local->total !== null && $local->estado !== 'omitido')
+>>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
                                     <p class="history-store-total">Subtotal del local <strong>$U {{ number_format((float) $local->total, 2, ',', '.') }}</strong></p>
                                 @endif
                             </section>

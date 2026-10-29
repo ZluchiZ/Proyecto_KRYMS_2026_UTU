@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+<<<<<<< HEAD
+=======
+use App\Services\InAppNotificationService;
+>>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -190,7 +194,11 @@ class PedidoController extends Controller
 
         $pedidos = DB::table('pedido')
             ->where('CI_Cliente', session('usuario_id'))
+<<<<<<< HEAD
             ->select('N_Pedido', 'Fecha', 'Hora', 'Estado', 'Ubicacion', 'Monto_Total', 'Costo_de_envio', 'Metodo_de_pago')
+=======
+            ->select('N_Pedido', 'Fecha', 'Hora', 'Estado', 'Estado_Entrega', 'Codigo_Secreto', 'Ubicacion', 'Monto_Total', 'Costo_de_envio', 'Metodo_de_pago')
+>>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
             ->orderByDesc('N_Pedido')
             ->paginate(10);
 
@@ -254,7 +262,11 @@ class PedidoController extends Controller
         return redirect()->route('carrito')->with('success', 'Producto eliminado del carrito.');
     }
 
+<<<<<<< HEAD
     public function confirmCart(Request $request)
+=======
+    public function confirmCart(Request $request, InAppNotificationService $notifications)
+>>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
     {
         $this->requireClient();
 
@@ -285,7 +297,11 @@ class PedidoController extends Controller
                 ]);
         }
 
+<<<<<<< HEAD
         $locales = DB::transaction(function () use ($validated, $coordenadas) {
+=======
+        $locales = DB::transaction(function () use ($validated, $coordenadas, $notifications) {
+>>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
             $columnaCliente = $this->cartClientColumn();
             $valorCliente = $this->cartClientValue();
             $items = DB::table('carrito')
@@ -312,7 +328,11 @@ class PedidoController extends Controller
                 ];
             }
 
+<<<<<<< HEAD
             $this->insertOrder($productosPorLocal, $validated, $coordenadas);
+=======
+            $this->insertOrder($productosPorLocal, $validated, $coordenadas, $notifications);
+>>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
             DB::table('carrito')->where($columnaCliente, $valorCliente)->delete();
 
             return count($productosPorLocal);
@@ -321,7 +341,11 @@ class PedidoController extends Controller
         return redirect()->route('carrito')->with('order_sent', $locales);
     }
 
+<<<<<<< HEAD
     public function updateStatus(Request $request, int $pedido)
+=======
+    public function updateStatus(Request $request, int $pedido, InAppNotificationService $notifications)
+>>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
     {
         abort_unless(session('tipo_usuario') === 'comercio' && session('usuario_id'), 403);
 
@@ -335,6 +359,7 @@ class PedidoController extends Controller
 
         abort_unless($rutComercio, 403);
 
+<<<<<<< HEAD
         $subpedido = DB::table('subpedido')
             ->where('N_Subpedido', $pedido)
             ->where('RUT_Comercio', $rutComercio)
@@ -343,16 +368,54 @@ class PedidoController extends Controller
         abort_unless($subpedido, 404, 'El pedido no pertenece a este local.');
 
         DB::transaction(function () use ($subpedido, $validated): void {
+=======
+        DB::transaction(function () use ($pedido, $rutComercio, $validated, $notifications): void {
+            $subpedido = DB::table('subpedido')
+                ->where('N_Subpedido', $pedido)
+                ->where('RUT_Comercio', $rutComercio)
+                ->lockForUpdate()
+                ->first(['N_Subpedido', 'N_Pedido', 'Estado']);
+
+            abort_unless($subpedido, 404, 'El pedido no pertenece a este local.');
+
+            $pedidoActual = DB::table('pedido')
+                ->where('N_Pedido', $subpedido->N_Pedido)
+                ->lockForUpdate()
+                ->first(['N_Pedido', 'CI_Cliente', 'Estado']);
+
+            abort_unless($pedidoActual, 404, 'El pedido no existe.');
+            abort_if(
+                in_array($pedidoActual->Estado, ['cancelado', 'en_reparto', 'entregado', 'completado'], true),
+                409,
+                'Este pedido ya no admite cambios.'
+            );
+
+            $estadoAnterior = $subpedido->Estado ?? 'pendiente';
+            $transicionPermitida = match ($validated['estado']) {
+                'aceptado', 'rechazado' => $estadoAnterior === 'pendiente',
+                'listo' => $estadoAnterior === 'aceptado',
+            };
+            abort_unless($transicionPermitida, 409, 'El estado del subpedido ya fue actualizado.');
+
+>>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
             DB::table('subpedido')
                 ->where('N_Subpedido', $subpedido->N_Subpedido)
                 ->update(['Estado' => $validated['estado']]);
 
             $estados = DB::table('subpedido')
                 ->where('N_Pedido', $subpedido->N_Pedido)
+<<<<<<< HEAD
                 ->pluck('Estado');
 
             if ($estados->contains('rechazado')) {
                 $estadoPedido = 'rechazado';
+=======
+                ->where('Estado', '<>', 'omitido')
+                ->pluck('Estado');
+
+            if ($estados->contains('rechazado')) {
+                $estadoPedido = 'requiere_decision_cliente';
+>>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
             } elseif ($estados->isNotEmpty() && $estados->every(fn ($estado) => $estado === 'listo')) {
                 $estadoPedido = 'listo';
             } elseif ($estados->contains('aceptado') || $estados->contains('listo')) {
@@ -367,6 +430,40 @@ class PedidoController extends Controller
                     'Estado' => $estadoPedido,
                     'Confirmacion_entrega' => in_array($estadoPedido, ['aceptado', 'listo'], true),
                 ]);
+<<<<<<< HEAD
+=======
+
+            $nombreComercio = DB::table('comercio')
+                ->where('RUT', $rutComercio)
+                ->value('Nombre_Comercio') ?? 'Un comercio';
+
+            if (in_array($validated['estado'], ['aceptado', 'rechazado'], true) && $pedidoActual->CI_Cliente) {
+                $estadoTexto = $validated['estado'] === 'aceptado' ? 'aceptó' : 'rechazó';
+                $notifications->sendTo(
+                    'cliente',
+                    $pedidoActual->CI_Cliente,
+                    'respuesta_comercio',
+                    "{$nombreComercio} {$estadoTexto} su parte del pedido #{$subpedido->N_Pedido}.",
+                    (int) $subpedido->N_Pedido,
+                    [
+                        'comercio' => $nombreComercio,
+                        'estado' => $validated['estado'],
+                        'subpedido_id' => $subpedido->N_Subpedido,
+                    ],
+                );
+            }
+
+            if ($estadoPedido === 'listo' && $pedidoActual->Estado !== 'listo' && $pedidoActual->CI_Cliente) {
+                $notifications->sendTo(
+                    'cliente',
+                    $pedidoActual->CI_Cliente,
+                    'pedido_listo',
+                    "Tu pedido #{$subpedido->N_Pedido} está listo; estamos esperando un repartidor.",
+                    (int) $subpedido->N_Pedido,
+                    ['estado' => 'listo', 'esperando_repartidor' => true],
+                );
+            }
+>>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
         });
 
         $mensaje = match ($validated['estado']) {
@@ -380,7 +477,98 @@ class PedidoController extends Controller
             ->with('success', $mensaje);
     }
 
+<<<<<<< HEAD
     private function insertOrder(array $productosPorLocal, array $validated, array $coordenadas): int
+=======
+    public function customerDecision(Request $request, int $pedido, InAppNotificationService $notifications)
+    {
+        $this->requireClient();
+        $validated = $request->validate([
+            'decision' => 'required|in:continuar,cancelar',
+        ]);
+
+        $mensaje = DB::transaction(function () use ($pedido, $validated, $notifications): string {
+            $pedidoActual = DB::table('pedido')
+                ->where('N_Pedido', $pedido)
+                ->where('CI_Cliente', session('usuario_id'))
+                ->lockForUpdate()
+                ->first(['N_Pedido', 'Estado', 'Monto_Total', 'CI_Cliente']);
+
+            abort_unless($pedidoActual, 404, 'El pedido no existe.');
+            abort_unless($pedidoActual->Estado === 'requiere_decision_cliente', 409, 'Este pedido no requiere una decisión.');
+
+            if ($validated['decision'] === 'cancelar') {
+                DB::table('subpedido')
+                    ->where('N_Pedido', $pedido)
+                    ->update(['Estado' => 'cancelado']);
+                DB::table('pedido')
+                    ->where('N_Pedido', $pedido)
+                    ->update(['Estado' => 'cancelado', 'Confirmacion_entrega' => false]);
+                $notifications->notifyOrderParticipants(
+                    $pedido,
+                    'pedido_cancelado_cliente',
+                    "El cliente canceló el pedido #{$pedido}.",
+                    ['estado' => 'cancelado'],
+                );
+
+                return 'El pedido completo fue cancelado.';
+            }
+
+            $comerciosActivos = DB::table('subpedido')
+                ->where('N_Pedido', $pedido)
+                ->whereNotIn('Estado', ['rechazado', 'omitido', 'cancelado'])
+                ->count();
+            abort_if($comerciosActivos === 0, 409, 'No quedan comercios que puedan preparar este pedido; cancelalo por completo.');
+
+            DB::table('subpedido')
+                ->where('N_Pedido', $pedido)
+                ->where('Estado', 'rechazado')
+                ->update(['Estado' => 'omitido']);
+
+            $estados = DB::table('subpedido')
+                ->where('N_Pedido', $pedido)
+                ->where('Estado', '<>', 'omitido')
+                ->pluck('Estado');
+            $nuevoEstado = $estados->every(fn ($estado) => $estado === 'listo')
+                ? 'listo'
+                : ($estados->contains('aceptado') || $estados->contains('listo') ? 'aceptado' : 'pendiente');
+            $nuevoTotal = DB::table('subpedido')
+                ->where('N_Pedido', $pedido)
+                ->where('Estado', '<>', 'omitido')
+                ->sum('Monto_Total');
+
+            DB::table('pedido')
+                ->where('N_Pedido', $pedido)
+                ->update([
+                    'Estado' => $nuevoEstado,
+                    'Monto_Total' => $nuevoTotal,
+                    'Confirmacion_entrega' => in_array($nuevoEstado, ['aceptado', 'listo'], true),
+                ]);
+
+            if ($nuevoEstado === 'listo' && $pedidoActual->Estado !== 'listo') {
+                $notifications->sendTo(
+                    'cliente',
+                    $pedidoActual->CI_Cliente,
+                    'pedido_listo',
+                    "Tu pedido #{$pedido} está listo; estamos esperando un repartidor.",
+                    $pedido,
+                    ['estado' => 'listo', 'esperando_repartidor' => true],
+                );
+            }
+
+            return 'El pedido continúa sin los comercios que lo rechazaron.';
+        });
+
+        return redirect()->route('cliente.pedidos')->with('success', $mensaje);
+    }
+
+    private function insertOrder(
+        array $productosPorLocal,
+        array $validated,
+        array $coordenadas,
+        InAppNotificationService $notifications,
+    ): int
+>>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
     {
         $totalPedido = 0;
         foreach ($productosPorLocal as $productos) {
@@ -426,6 +614,10 @@ class PedidoController extends Controller
             'Distancia_Local_Km' => $distancia,
             'Monto_Total' => $totalPedido,
             'Metodo_de_pago' => $validated['metodo_pago'],
+<<<<<<< HEAD
+=======
+            'Codigo_Secreto' => $this->generateDeliveryCode(),
+>>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
         ], 'N_Pedido');
 
         foreach ($productosPorLocal as $rutLocal => $productos) {
@@ -453,8 +645,35 @@ class PedidoController extends Controller
                     'Cantidad' => $item['cantidad'],
                 ]);
             }
+<<<<<<< HEAD
+=======
+
+            $nombreComercio = DB::table('comercio')
+                ->where('RUT', $rutLocal)
+                ->value('Nombre_Comercio') ?? 'Un comercio';
+            $notifications->sendTo(
+                'comercio',
+                $rutLocal,
+                'nuevo_pedido',
+                "Recibiste un nuevo subpedido #{$subpedido} del pedido #{$pedido}.",
+                $pedido,
+                ['comercio' => $nombreComercio, 'subpedido_id' => $subpedido],
+            );
+>>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
         }
 
         return $pedido;
     }
+<<<<<<< HEAD
+=======
+
+    private function generateDeliveryCode(): string
+    {
+        do {
+            $code = strtoupper(\Illuminate\Support\Str::random(12));
+        } while (DB::table('pedido')->where('Codigo_Secreto', $code)->exists());
+
+        return $code;
+    }
+>>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
 }

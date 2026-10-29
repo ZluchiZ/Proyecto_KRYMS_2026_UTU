@@ -61,7 +61,11 @@
             @else
                 <div class="order-list">
                     @foreach ($pedidosListos as $pedido)
+<<<<<<< HEAD
                         <article class="order-card">
+=======
+                        <article class="order-card" id="pedido-{{ $pedido->N_Pedido }}">
+>>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
                             <div class="order-header">
                                 <strong>Pedido #{{ $pedido->N_Pedido }}</strong>
                                 <span class="status-pill ready">Listo</span>
@@ -122,7 +126,11 @@
                         <article class="order-card assigned">
                             <div class="order-header">
                                 <strong>Pedido #{{ $pedido->N_Pedido }}</strong>
+<<<<<<< HEAD
                                 <span class="status-pill assigned">Asignado</span>
+=======
+                                <span class="status-pill assigned">{{ $pedido->Estado_Entrega ? ucfirst(str_replace('_', ' ', $pedido->Estado_Entrega)) : 'Asignado' }}</span>
+>>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
                             </div>
 
                             <div class="order-grid">
@@ -143,6 +151,57 @@
                                     </section>
                                 @endforeach
                             </div>
+<<<<<<< HEAD
+=======
+                            @php
+                                $etapasEntrega = [
+                                    'productos_recolectados' => 'El gaucho recogió todos sus productos',
+                                    'en_camino' => 'El gaucho va en camino',
+                                    'en_puerta' => 'El gaucho está en tu puerta',
+                                ];
+                                $etapaActual = $pedido->Estado_Entrega;
+                                $siguienteEtapa = match ($etapaActual) {
+                                    null, '' => 'productos_recolectados',
+                                    'productos_recolectados' => 'en_camino',
+                                    'en_camino' => 'en_puerta',
+                                    default => null,
+                                };
+                            @endphp
+                            <ol class="delivery-progress" aria-label="Progreso de entrega">
+                                @foreach ($etapasEntrega as $etapa => $etiqueta)
+                                    <li class="{{ $etapaActual === $etapa ? 'current' : (array_search($etapa, array_keys($etapasEntrega), true) < array_search($etapaActual, array_keys($etapasEntrega), true) ? 'complete' : '') }}">
+                                        {{ $etiqueta }}
+                                    </li>
+                                @endforeach
+                            </ol>
+                            @if ($siguienteEtapa)
+                                <form method="POST" action="{{ route('repartidor.pedidos.progreso', $pedido->N_Pedido) }}">
+                                    @csrf
+                                    @method('PATCH')
+                                    <input type="hidden" name="estado_entrega" value="{{ $siguienteEtapa }}">
+                                    <button type="submit">{{ $etapasEntrega[$siguienteEtapa] }}</button>
+                                </form>
+                            @else
+                                <p role="status">El pedido está en tu puerta.</p>
+                                @if ($errors->has('codigo_secreto'))
+                                    <p class="error" role="alert">{{ $errors->first('codigo_secreto') }}</p>
+                                @endif
+                                <form method="POST" action="{{ route('repartidor.pedidos.confirmar-entrega', $pedido->N_Pedido) }}">
+                                    @csrf
+                                    <label for="codigo-secreto-{{ $pedido->N_Pedido }}">Código secreto proporcionado por el cliente</label>
+                                    <input
+                                        type="text"
+                                        id="codigo-secreto-{{ $pedido->N_Pedido }}"
+                                        name="codigo_secreto"
+                                        value="{{ old('codigo_secreto') }}"
+                                        maxlength="16"
+                                        autocomplete="off"
+                                        required
+                                    >
+                                    <button type="submit">Confirmar pedido entregado</button>
+                                </form>
+                            @endif
+>>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
                         </article>
                     @endforeach
                 </div>

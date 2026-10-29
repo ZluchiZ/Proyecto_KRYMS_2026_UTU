@@ -6,6 +6,10 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\LocalController;
+<<<<<<< HEAD
+=======
+use App\Http\Controllers\NotificationController;
+>>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
 use App\Http\Controllers\PasswordRecoveryController;
 use App\Http\Controllers\PedidoController;
 use App\Http\Controllers\ProfileController;
@@ -449,10 +453,18 @@ Route::get('/dashboard-repartidor', function () {
         });
 
     if (Schema::hasTable('pedido_repartidor_estado')) {
+<<<<<<< HEAD
         $pedidosListosQuery->whereNotExists(function ($subQuery) {
             $subQuery->from('pedido_repartidor_estado')
                 ->whereColumn('pedido_repartidor_estado.N_Pedido', 'pedido.N_Pedido')
                 ->whereIn('pedido_repartidor_estado.Estado', ['aceptado', 'rechazado']);
+=======
+        $pedidosListosQuery->whereNotExists(function ($subQuery) use ($ciRepartidor) {
+            $subQuery->from('pedido_repartidor_estado')
+                ->whereColumn('pedido_repartidor_estado.N_Pedido', 'pedido.N_Pedido')
+                ->where('pedido_repartidor_estado.CI_Repartidor', (string) $ciRepartidor)
+                ->where('pedido_repartidor_estado.Estado', 'rechazado');
+>>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
         });
     }
 
@@ -494,7 +506,11 @@ Route::get('/dashboard-repartidor', function () {
         ->leftJoin('cliente', 'pedido.CI_Cliente', '=', 'cliente.CI')
         ->where('pedido.CI_Repartidor', $ciRepartidor)
         ->where('subpedido.Estado', 'en_reparto')
+<<<<<<< HEAD
         ->select($columnasEntrega)
+=======
+        ->select([...$columnasEntrega, 'pedido.Estado_Entrega'])
+>>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
         ->distinct()
         ->orderByDesc('pedido.N_Pedido')
         ->get());
@@ -511,6 +527,15 @@ Route::get('/dashboard-repartidor', function () {
 
 Route::patch('/repartidor/ubicacion', [RepartidorController::class, 'updateLocation'])->name('repartidor.ubicacion');
 Route::patch('/repartidor/pedidos/{pedido}/estado', [RepartidorController::class, 'updatePedidoStatus'])->name('repartidor.pedidos.estado');
+<<<<<<< HEAD
+=======
+Route::patch('/repartidor/pedidos/{pedido}/progreso', [RepartidorController::class, 'updateDeliveryProgress'])
+    ->whereNumber('pedido')
+    ->name('repartidor.pedidos.progreso');
+Route::post('/repartidor/pedidos/{pedido}/confirmar-entrega', [RepartidorController::class, 'confirmDelivery'])
+    ->whereNumber('pedido')
+    ->name('repartidor.pedidos.confirmar-entrega');
+>>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
 
 Route::get('/register', function () {
     return view('register');
@@ -549,6 +574,20 @@ Route::get('/mis-pedidos', [PedidoController::class, 'orderHistory'])->name('cli
 Route::delete('/carrito/{item}', [PedidoController::class, 'removeFromCart'])->name('carrito.remove');
 Route::post('/carrito/confirmar', [PedidoController::class, 'confirmCart'])->name('carrito.confirm');
 Route::patch('/pedidos/{pedido}/estado', [PedidoController::class, 'updateStatus'])->name('pedidos.status');
+<<<<<<< HEAD
+=======
+Route::patch('/pedidos/{pedido}/decision-cliente', [PedidoController::class, 'customerDecision'])
+    ->whereNumber('pedido')
+    ->name('pedidos.client-decision');
+Route::get('/notificaciones', [NotificationController::class, 'index'])->name('notifications.index');
+Route::patch('/notificaciones/leer-todas', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
+Route::patch('/notificaciones/{notification}/leer', [NotificationController::class, 'markRead'])
+    ->whereNumber('notification')
+    ->name('notifications.read');
+Route::get('/notificaciones/{notification}/abrir', [NotificationController::class, 'open'])
+    ->whereNumber('notification')
+    ->name('notifications.open');
+>>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
 
 Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 Route::get('/auth/google', [GoogleController::class, 'redirect'])->name('google.login');
