@@ -1,4 +1,5 @@
-document.addEventListener("DOMContentLoaded", function () {
+(() => {
+const initializeRegistrationValidation = function () {
     const form = document.getElementById("registroFormulario");
     const ciInput = document.getElementById("CI");
     const numInput = document.getElementById("Num");
@@ -12,9 +13,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const errorFecha = document.getElementById("errorFecha");
     const fechaNacimientoInput = document.getElementById("fechaNacimiento");
 
-    if (!form) {
+    if (!form || form.dataset.validationBound) {
         return;
     }
+    form.dataset.validationBound = "true";
 
     if (ciInput) {
         ciInput.addEventListener("input", function () {
@@ -62,7 +64,6 @@ document.addEventListener("DOMContentLoaded", function () {
         } else if (errorApellido) {
             errorApellido.textContent = "";
         }
-
 
         if (!/^\d{8}$/.test(ci)) {
             e.preventDefault();
@@ -144,6 +145,8 @@ document.addEventListener("DOMContentLoaded", function () {
         if (errorContrasena) {
             errorContrasena.textContent = "";
         }
-
     });
-});
+};
+
+initializeRegistrationValidation();
+})();

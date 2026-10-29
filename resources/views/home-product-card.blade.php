@@ -27,7 +27,7 @@
             @elseif ($producto->Disponible && $esClienteRegistrado)
                 <button type="button" class="purchase-trigger add-button" data-product-id="{{ $producto->ID_Producto }}" data-product-name="{{ $producto->Nombre_Producto }}" data-product-price="$U {{ number_format($precioFinalProducto, 2, ',', '.') }}" data-product-local="{{ $producto->Nombre_Comercio ?: 'Local adherido' }}" aria-label="Agregar {{ $producto->Nombre_Producto }}">+</button>
             @elseif ($producto->Disponible)
-                <a class="add-button" href="{{ route('login') }}" aria-label="Iniciar sesión para comprar">+</a>
+                <a class="add-button" href="{{ route('login') }}" aria-label="Iniciar sesión para comprar" data-native-navigation>+</a>
             @else
                 <span class="unavailable-label">No disponible</span>
             @endif

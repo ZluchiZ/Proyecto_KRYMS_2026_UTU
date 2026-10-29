@@ -22,7 +22,7 @@
             <nav class="header-actions" aria-label="Acciones de cuenta">
                 @if ($esClienteRegistrado)<a class="cart-link" href="{{ route('carrito') }}" aria-label="Ver carrito"><span>🛒</span><b>Carrito</b></a>@endif
                 @include('partials.notifications-menu')
-                <div class="profile-container"><button type="button" class="profile-button" aria-label="Abrir perfil" data-profile-toggle><span>◉</span><b>Cuenta</b></button><div class="profile-menu" data-profile-menu><a href="{{ route('login') }}">{{ $esClienteRegistrado ? 'Mi cuenta' : 'Iniciar sesión' }}</a></div></div>
+                <div class="profile-container"><button type="button" class="profile-button" aria-label="Abrir perfil" data-profile-toggle><span>◉</span><b>Cuenta</b></button><div class="profile-menu" data-profile-menu><a href="{{ route('login') }}" data-native-navigation>{{ $esClienteRegistrado ? 'Mi cuenta' : 'Iniciar sesión' }}</a></div></div>
             </nav>
         </div>
     </header>
@@ -128,10 +128,6 @@
     @endif
 
     <script>
-        const profileToggle = document.querySelector('[data-profile-toggle]');
-        const profileMenu = document.querySelector('[data-profile-menu]');
-        profileToggle?.addEventListener('click', () => profileMenu.classList.toggle('is-open'));
-        document.addEventListener('click', (event) => { if (!event.target.closest('.profile-container')) profileMenu?.classList.remove('is-open'); });
         const purchaseModal = document.getElementById('purchase-modal');
         document.querySelectorAll('.purchase-trigger[data-product-id]').forEach((trigger) => trigger.addEventListener('click', () => { document.getElementById('purchase-product-id').value = trigger.dataset.productId; document.getElementById('purchase-product-name').textContent = trigger.dataset.productName; document.getElementById('purchase-product-local').textContent = `Local: ${trigger.dataset.productLocal}`; document.getElementById('purchase-product-price').textContent = trigger.dataset.productPrice; document.getElementById('purchase-quantity').value = 1; purchaseModal.showModal(); }));
         document.getElementById('close-purchase-modal')?.addEventListener('click', () => purchaseModal.close());

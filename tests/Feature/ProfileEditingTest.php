@@ -140,7 +140,7 @@ class ProfileEditingTest extends TestCase
             ->get(route('cliente.reportes.index'))
             ->assertOk()
             ->assertSee('Enviar un reporte')
-            ->assertSee('Máximo 500 caracteres')
+            ->assertSee('El detalle debe tener un máximo de 500 caracteres.')
             ->assertSee('Administración');
 
         $this->withSession($session)

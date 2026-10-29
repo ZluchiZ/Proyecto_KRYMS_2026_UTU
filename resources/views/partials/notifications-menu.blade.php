@@ -29,31 +29,4 @@
             <a class="notifications-all" href="{{ route('notifications.index') }}">Ver todas las notificaciones</a>
         </div>
     </div>
-    <script>
-        (() => {
-            const menu = document.querySelector('[data-notifications]');
-            if (!menu || menu.dataset.ready) return;
-            menu.dataset.ready = 'true';
-            const toggle = menu.querySelector('[data-notifications-toggle]');
-            const panel = menu.querySelector('[data-notifications-panel]');
-            toggle.addEventListener('click', () => {
-                const open = toggle.getAttribute('aria-expanded') === 'true';
-                toggle.setAttribute('aria-expanded', String(!open));
-                panel.hidden = open;
-            });
-            document.addEventListener('click', (event) => {
-                if (!menu.contains(event.target)) {
-                    toggle.setAttribute('aria-expanded', 'false');
-                    panel.hidden = true;
-                }
-            });
-            document.addEventListener('keydown', (event) => {
-                if (event.key === 'Escape') {
-                    toggle.setAttribute('aria-expanded', 'false');
-                    panel.hidden = true;
-                    toggle.focus();
-                }
-            });
-        })();
-    </script>
 @endif

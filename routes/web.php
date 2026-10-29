@@ -158,6 +158,28 @@ Route::get('/', function (Request $request) {
     ]);
 })->name('home');
 
+Route::get('/buscar-productos', function (Request $request) {
+    $busqueda = trim($request->string('q')->toString());
+    $productos = DB::table('producto')
+        ->leftJoin('comercio', 'producto.RUT_Comercio', '=', 'comercio.RUT')
+        ->select('producto.*', 'comercio.Nombre_Comercio', 'comercio.Logo', 'comercio.Dirección', 'comercio.Abierto')
+        ->where(function ($query) use ($busqueda) {
+            $query->where('producto.Nombre_Producto', 'like', "%{$busqueda}%")
+                ->orWhere('producto.Categoria', 'like', "%{$busqueda}%")
+                ->orWhere('comercio.Nombre_Comercio', 'like', "%{$busqueda}%");
+        })
+        ->orderByDesc('producto.ID_Producto')
+        ->get();
+
+    return response()
+        ->view('partials.home-search-results', [
+            'productos' => $productos,
+            'busqueda' => $busqueda,
+            'esClienteRegistrado' => session('tipo_usuario') === 'cliente' && session('usuario_id'),
+        ])
+        ->header('Cache-Control', 'no-store');
+})->name('search.products');
+
 Route::get('/restaurantes', function () {
     $locales = DB::table('comercio')
         ->whereNotNull('RUT')

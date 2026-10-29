@@ -200,7 +200,7 @@ class CartAndOrderFlowTest extends TestCase
             'Email_Usuario' => 'cliente@example.com',
             'Nombre' => 'Ana',
             'Apellido' => 'Pérez',
-    ]);
+        ]);
         DB::table('comercio')->insert([
             ['RUT' => '111111111111', 'Email_Usuario' => 'uno@example.com', 'Nombre_Comercio' => 'La Picantería', 'Abierto' => true],
             ['RUT' => '222222222222', 'Email_Usuario' => 'dos@example.com', 'Nombre_Comercio' => 'Otro Local', 'Abierto' => true],
@@ -863,6 +863,44 @@ class CartAndOrderFlowTest extends TestCase
         ]);
     }
 
+    public function test_local_can_reject_order_using_post_method_spoofing(): void
+    {
+        DB::table('comercio')->insert([
+            'RUT' => '222222222222',
+            'Email_Usuario' => 'local2@example.com',
+            'Nombre_Comercio' => 'Otro Local',
+            'Abierto' => true,
+        ]);
+        DB::table('pedido')->insert([
+            'N_Pedido' => 5,
+            'CI_Cliente' => '12345678',
+            'Monto_Total' => 500,
+            'Metodo_de_pago' => 'efectivo',
+            'Ubicacion' => 'Calle 2',
+            'Estado' => 'pendiente',
+            'Confirmacion_entrega' => false,
+        ]);
+        DB::table('subpedido')->insert([
+            'N_Subpedido' => 11,
+            'N_Pedido' => 5,
+            'RUT_Comercio' => '222222222222',
+            'Estado' => 'pendiente',
+            'Monto_Total' => 500,
+        ]);
+
+        $this->withSession([
+            'tipo_usuario' => 'comercio',
+            'usuario_id' => 'local2@example.com',
+            'email' => 'local2@example.com',
+        ])->post(route('pedidos.status', 11), [
+            '_method' => 'PATCH',
+            'estado' => 'rechazado',
+        ])->assertRedirect(route('dashboard.local'));
+
+        $this->assertDatabaseHas('subpedido', ['N_Subpedido' => 11, 'Estado' => 'rechazado']);
+        $this->assertDatabaseHas('pedido', ['N_Pedido' => 5, 'Estado' => 'requiere_decision_cliente']);
+    }
+
     public function test_customer_can_continue_without_rejected_stores_or_cancel_the_order(): void
     {
         DB::table('cliente')->insert([
@@ -987,5 +1025,93 @@ class CartAndOrderFlowTest extends TestCase
             'usuario_id' => '87654321',
         ])->get(route('home'))
             ->assertRedirect(route('dashboard.repartidor'));
+    }
+
+    public function test_html_views_include_fetch_navigation_enhancement(): void
+    {
+        $this->get(route('login'))
+            ->assertOk()
+            ->assertSee('js/fetch-navigation.js?v='.filemtime(public_path('js/fetch-navigation.js')));
+    }
+
+    public function test_guest_can_open_login_directly_from_the_home_header(): void
+    {
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee('class="profile-button" aria-label="Ingresar" href="'.route('login').'" data-native-navigation', false)
+            ->assertSee('<b>Ingresar</b>', false);
+    }
+
+    public function test_home_search_results_render_immediately_after_the_search_form(): void
+    {
+        DB::table('comercio')->insert([
+            'RUT' => '111111111111',
+            'Email_Usuario' => 'local@example.com',
+            'Nombre_Comercio' => 'La Picantería',
+            'Abierto' => true,
+        ]);
+        DB::table('producto')->insert([
+            'ID_Producto' => 10,
+            'RUT_Comercio' => '111111111111',
+            'Nombre_Producto' => 'Milanesa especial',
+            'Categoria' => 'Restaurantes',
+            'Precio' => 250,
+            'Disponible' => true,
+        ]);
+
+        $response = $this->get(route('home', ['q' => 'Milanesa']))
+            ->assertOk()
+            ->assertSee('Resultados para “Milanesa”')
+            ->assertSee('Milanesa especial')
+            ->assertSee('data-live-search', false)
+            ->assertSee(route('search.products'), false);
+
+        $content = $response->getContent();
+        $this->assertLessThan(
+            strpos($content, '<section class="results-section search-results-section"'),
+            strpos($content, '<form class="search-form home-search-form"'),
+            'The product search field should appear before its search results.',
+        );
+        $this->assertLessThan(
+            strpos($content, '<section class="category-section"'),
+            strpos($content, 'Resultados para “Milanesa”'),
+            'Search results should appear before the category section.',
+        );
+    }
+
+    public function test_live_product_search_returns_only_the_matching_results_fragment(): void
+    {
+        DB::table('comercio')->insert([
+            'RUT' => '111111111111',
+            'Email_Usuario' => 'local@example.com',
+            'Nombre_Comercio' => 'La Picantería',
+            'Abierto' => true,
+        ]);
+        DB::table('producto')->insert([
+            [
+                'ID_Producto' => 10,
+                'RUT_Comercio' => '111111111111',
+                'Nombre_Producto' => 'Milanesa especial',
+                'Categoria' => 'Restaurantes',
+                'Precio' => 250,
+                'Disponible' => true,
+            ],
+            [
+                'ID_Producto' => 11,
+                'RUT_Comercio' => '111111111111',
+                'Nombre_Producto' => 'Papas fritas',
+                'Categoria' => 'Restaurantes',
+                'Precio' => 120,
+                'Disponible' => true,
+            ],
+        ]);
+
+        $this->get(route('search.products', ['q' => 'Milanesa']))
+            ->assertOk()
+            ->assertHeader('content-type', 'text/html; charset=UTF-8')
+            ->assertSee('Resultados para “Milanesa”')
+            ->assertSee('Milanesa especial')
+            ->assertDontSee('Papas fritas')
+            ->assertDontSee('<html', false);
     }
 }

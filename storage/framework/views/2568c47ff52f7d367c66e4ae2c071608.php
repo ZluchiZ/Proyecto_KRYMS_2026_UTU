@@ -22,7 +22,7 @@
             <nav class="header-actions" aria-label="Acciones de cuenta">
                 <?php if($esClienteRegistrado): ?><a class="cart-link" href="<?php echo e(route('carrito')); ?>" aria-label="Ver carrito"><span>🛒</span><b>Carrito</b></a><?php endif; ?>
                 <?php echo $__env->make('partials.notifications-menu', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
-                <div class="profile-container"><button type="button" class="profile-button" aria-label="Abrir perfil" data-profile-toggle><span>◉</span><b>Cuenta</b></button><div class="profile-menu" data-profile-menu><a href="<?php echo e(route('login')); ?>"><?php echo e($esClienteRegistrado ? 'Mi cuenta' : 'Iniciar sesión'); ?></a></div></div>
+                <div class="profile-container"><button type="button" class="profile-button" aria-label="Abrir perfil" data-profile-toggle><span>◉</span><b>Cuenta</b></button><div class="profile-menu" data-profile-menu><a href="<?php echo e(route('login')); ?>" data-native-navigation><?php echo e($esClienteRegistrado ? 'Mi cuenta' : 'Iniciar sesión'); ?></a></div></div>
             </nav>
         </div>
     </header>
@@ -142,10 +142,6 @@ unset($__errorArgs, $__bag); ?>
     <?php endif; ?>
 
     <script>
-        const profileToggle = document.querySelector('[data-profile-toggle]');
-        const profileMenu = document.querySelector('[data-profile-menu]');
-        profileToggle?.addEventListener('click', () => profileMenu.classList.toggle('is-open'));
-        document.addEventListener('click', (event) => { if (!event.target.closest('.profile-container')) profileMenu?.classList.remove('is-open'); });
         const purchaseModal = document.getElementById('purchase-modal');
         document.querySelectorAll('.purchase-trigger[data-product-id]').forEach((trigger) => trigger.addEventListener('click', () => { document.getElementById('purchase-product-id').value = trigger.dataset.productId; document.getElementById('purchase-product-name').textContent = trigger.dataset.productName; document.getElementById('purchase-product-local').textContent = `Local: ${trigger.dataset.productLocal}`; document.getElementById('purchase-product-price').textContent = trigger.dataset.productPrice; document.getElementById('purchase-quantity').value = 1; purchaseModal.showModal(); }));
         document.getElementById('close-purchase-modal')?.addEventListener('click', () => purchaseModal.close());

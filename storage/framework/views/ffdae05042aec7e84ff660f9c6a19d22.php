@@ -59,7 +59,7 @@
         <a class="password-recovery-link" href="<?php echo e(route('password-recovery.request')); ?>">¿Olvidaste tu contraseña?</a>
 
         <div class="login-divider"><span>o continuá con</span></div>
-        <a href="<?php echo e(route('google.login')); ?>" class="google-btn">Continuar con Google</a>
+        <a href="<?php echo e(route('google.login')); ?>" class="google-btn" data-native-navigation>Continuar con Google</a>
 
         <p class="login-register">
             ¿Todavía no tenés cuenta?

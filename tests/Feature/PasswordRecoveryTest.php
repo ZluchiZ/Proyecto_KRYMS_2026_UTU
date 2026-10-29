@@ -102,10 +102,11 @@ class PasswordRecoveryTest extends TestCase
     {
         $this->createClientAccount();
 
-        $this->post(route('password-recovery.submit'), [
-            'email' => 'ana@example.com',
-            'cedula' => '87654321',
-        ])->assertRedirect(route('password-recovery.request'))
+        $this->from(route('password-recovery.request'))
+            ->post(route('password-recovery.submit'), [
+                'email' => 'ana@example.com',
+                'cedula' => '87654321',
+            ])->assertRedirect(route('password-recovery.request'))
             ->assertSessionHasErrors('cedula');
 
         $this->assertDatabaseCount('password_recovery_requests', 0);
@@ -114,10 +115,11 @@ class PasswordRecoveryTest extends TestCase
 
     public function test_unknown_email_is_reported_without_creating_or_notifying_a_request(): void
     {
-        $this->post(route('password-recovery.submit'), [
-            'email' => 'inexistente@example.com',
-            'cedula' => '12345678',
-        ])->assertRedirect(route('password-recovery.request'))
+        $this->from(route('password-recovery.request'))
+            ->post(route('password-recovery.submit'), [
+                'email' => 'inexistente@example.com',
+                'cedula' => '12345678',
+            ])->assertRedirect(route('password-recovery.request'))
             ->assertSessionHasErrors([
                 'email' => 'No existe una cuenta registrada con ese correo electrónico.',
             ]);

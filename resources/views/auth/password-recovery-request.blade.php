@@ -43,7 +43,7 @@
                 <button type="submit">Solicitar recuperación</button>
             </form>
 
-            <p class="login-register"><a href="{{ route('login') }}">Volver a iniciar sesión</a></p>
+            <p class="login-register"><a href="{{ route('login') }}" data-native-navigation>Volver a iniciar sesión</a></p>
         </section>
     </main>
     @if (session('status'))

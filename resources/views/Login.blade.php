@@ -57,7 +57,7 @@
         <a class="password-recovery-link" href="{{ route('password-recovery.request') }}">¿Olvidaste tu contraseña?</a>
 
         <div class="login-divider"><span>o continuá con</span></div>
-        <a href="{{ route('google.login') }}" class="google-btn">Continuar con Google</a>
+        <a href="{{ route('google.login') }}" class="google-btn" data-native-navigation>Continuar con Google</a>
 
         <p class="login-register">
             ¿Todavía no tenés cuenta?
