@@ -6,6 +6,7 @@ use App\Mail\VerificacionCorreo;
 use App\Services\EmailVerificationService;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
@@ -141,7 +142,7 @@ class EmailVerificationTest extends TestCase
                 'apellido' => 'Pérez',
                 'telefono' => '099123456',
                 'nacimiento' => '1990-01-02',
-                'password' => bcrypt('password123'),
+                'password' => 'password123',
             ],
         ]);
 
@@ -161,6 +162,14 @@ class EmailVerificationTest extends TestCase
             'CI' => '12345678',
             'Email_Usuario' => 'cliente@example.com',
         ]);
+        $this->assertTrue(Hash::check(
+            'password123',
+            DB::table('usuario')->where('Email', 'cliente@example.com')->value('Contraseña')
+        ));
+        $this->assertTrue(Hash::check(
+            'password123',
+            DB::table('cliente')->where('Email_Usuario', 'cliente@example.com')->value('Contraseña')
+        ));
     }
 
     public function test_local_and_repartidor_are_saved_only_after_email_code_is_verified(): void
@@ -180,7 +189,7 @@ class EmailVerificationTest extends TestCase
                     'logo' => 'https://example.com/logo.png',
                     'latitud' => -34.9,
                     'longitud' => -56.2,
-                    'password' => bcrypt('password123'),
+                    'password' => 'password123',
                 ],
             ],
             [
@@ -192,7 +201,7 @@ class EmailVerificationTest extends TestCase
                     'nombre' => 'Luis',
                     'apellido' => 'Pérez',
                     'telefono' => '099123456',
-                    'password' => bcrypt('password123'),
+                    'password' => 'password123',
                 ],
             ],
         ];
@@ -221,6 +230,14 @@ class EmailVerificationTest extends TestCase
             $this->assertSame('verified', $service->verify($registration['email'], $code));
             $this->assertDatabaseHas('usuario', ['Email' => $registration['email']]);
             $this->assertDatabaseHas($registration['table'], ['Email_Usuario' => $registration['email']]);
+            $this->assertTrue(Hash::check(
+                'password123',
+                DB::table('usuario')->where('Email', $registration['email'])->value('Contraseña')
+            ));
+            $this->assertTrue(Hash::check(
+                'password123',
+                DB::table($registration['table'])->where('Email_Usuario', $registration['email'])->value('Contraseña')
+            ));
         }
     }
 }

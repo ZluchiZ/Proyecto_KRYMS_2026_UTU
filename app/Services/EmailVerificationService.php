@@ -19,6 +19,12 @@ class EmailVerificationService
 
     public function start(string $email, array $registration = []): void
     {
+        if (isset($registration['data']['password'])) {
+            $registration['data']['password'] = $this->hashPasswordIfNeeded(
+                (string) $registration['data']['password']
+            );
+        }
+
         $this->sendCode($email, $registration);
     }
 
@@ -139,6 +145,7 @@ class EmailVerificationService
         }
 
         $data = $registration['data'];
+        $password = $this->hashPasswordIfNeeded((string) $data['password']);
         $type = $registration['type'];
         $userAlreadyExists = DB::table('usuario')->where('Email', $email)->exists();
         $isGoogleRegistration = $registration['allow_existing_user'] ?? false;
@@ -167,7 +174,7 @@ class EmailVerificationService
             DB::table('usuario')->insert([
                 'Email' => $email,
                 'Nombre_de_Usuario' => $data['nombre'],
-                'Contraseña' => $data['password'],
+                'Contraseña' => $password,
                 'Tipo_Usuario' => $type === 'comercio' ? 'comercio' : $type,
             ]);
         }
@@ -176,7 +183,7 @@ class EmailVerificationService
             DB::table('cliente')->insert([
                 'CI' => $data['cedula'],
                 'Email_Usuario' => $email,
-                'Contraseña' => $data['password'],
+                'Contraseña' => $password,
                 'Fecha_nacimiento' => $data['nacimiento'],
                 'Nombre' => $data['nombre'],
                 'Apellido' => $data['apellido'],
@@ -185,7 +192,7 @@ class EmailVerificationService
         } elseif ($type === 'comercio') {
             DB::table('comercio')->insert([
                 'Email_Usuario' => $email,
-                'Contraseña' => $data['password'],
+                'Contraseña' => $password,
                 'RUT' => $data['rut'],
                 'Nombre_Comercio' => $data['nombre'],
                 'Nombre_dueño' => $data['nombre_dueno'],
@@ -202,7 +209,7 @@ class EmailVerificationService
             DB::table('repartidor')->insert([
                 'CI' => $data['cedula'],
                 'Email_Usuario' => $email,
-                'Contraseña' => $data['password'],
+                'Contraseña' => $password,
                 'Nombre' => $data['nombre'],
                 'Apellido' => $data['apellido'],
                 'Teléfono' => $data['telefono'],
@@ -212,5 +219,10 @@ class EmailVerificationService
         }
 
         return true;
+    }
+
+    private function hashPasswordIfNeeded(string $password): string
+    {
+        return Hash::needsRehash($password) ? Hash::make($password) : $password;
     }
 }

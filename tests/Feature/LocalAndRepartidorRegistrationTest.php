@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Mail\RegistrationVerificationCode;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Tests\Concerns\CreatesRegistrationTables;
@@ -54,6 +56,14 @@ class LocalAndRepartidorRegistrationTest extends TestCase
             'Email_Usuario' => 'local@example.com',
             'Estado_Adhesion' => 'Pendiente',
         ]);
+        $this->assertTrue(Hash::check(
+            'password123',
+            DB::table('comercio')->where('Email_Usuario', 'local@example.com')->value('Contraseña')
+        ));
+        $this->assertTrue(Hash::check(
+            'password123',
+            DB::table('usuario')->where('Email', 'local@example.com')->value('Contraseña')
+        ));
     }
 
     public function test_repartidor_registration_creates_a_repartidor_record(): void
@@ -86,5 +96,13 @@ class LocalAndRepartidorRegistrationTest extends TestCase
             'Email_Usuario' => 'repartidor@example.com',
             'Estado_Adhesion' => 'Pendiente',
         ]);
+        $this->assertTrue(Hash::check(
+            'password123',
+            DB::table('repartidor')->where('Email_Usuario', 'repartidor@example.com')->value('Contraseña')
+        ));
+        $this->assertTrue(Hash::check(
+            'password123',
+            DB::table('usuario')->where('Email', 'repartidor@example.com')->value('Contraseña')
+        ));
     }
 }

@@ -6,7 +6,6 @@ use App\Exceptions\RegistrationMailDeliveryException;
 use App\Services\RegistrationVerificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
 class ClienteController extends Controller
@@ -44,7 +43,7 @@ class ClienteController extends Controller
                 'apellido' => $validated['apellido'],
                 'telefono' => $validated['Numero'],
                 'nacimiento' => $validated['nacimiento'],
-                'password' => Hash::make($validated['password']),
+                'password' => $validated['password'],
             ]);
         } catch (RegistrationMailDeliveryException $exception) {
             report($exception);

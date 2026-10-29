@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Exceptions\RegistrationMailDeliveryException;
 use App\Mail\RegistrationVerificationCode;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
@@ -23,6 +25,10 @@ class RegistrationVerificationService
 
     public function start(string $type, string $email, array $payload): bool
     {
+        if (isset($payload['password'])) {
+            $payload['password'] = $this->hashPasswordIfNeeded((string) $payload['password']);
+        }
+
         $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         $now = now();
 
@@ -74,7 +80,7 @@ class RegistrationVerificationService
         abort_unless($pending, 404, 'No hay un registro pendiente para ese correo.');
 
         if (now()->lessThan(
-            \Illuminate\Support\Carbon::parse($pending->created_at)->addSeconds(self::RESEND_COOLDOWN_SECONDS)
+            Carbon::parse($pending->created_at)->addSeconds(self::RESEND_COOLDOWN_SECONDS)
         )) {
             throw new HttpException(429, 'Esperá un minuto antes de solicitar otro código.');
         }
@@ -146,7 +152,7 @@ class RegistrationVerificationService
     {
         abort_if(DB::table('usuario')->where('Email', $email)->exists(), 409, 'Este correo ya tiene una cuenta.');
 
-        $password = $payload['password'];
+        $password = $this->hashPasswordIfNeeded((string) $payload['password']);
         $name = $payload['name'];
 
         DB::table('usuario')->insert([
@@ -216,6 +222,11 @@ class RegistrationVerificationService
         abort(422, 'Tipo de registro no válido.');
     }
 
+    private function hashPasswordIfNeeded(string $password): string
+    {
+        return Hash::needsRehash($password) ? Hash::make($password) : $password;
+    }
+
     private function accountId(string $type, array $payload): string
     {
         return match ($type) {
@@ -238,7 +249,7 @@ class RegistrationVerificationService
                 'format' => 'json',
                 'limit' => 1,
             ])->json();
-        } catch (\Illuminate\Http\Client\ConnectionException $exception) {
+        } catch (ConnectionException $exception) {
             report($exception);
             Log::warning('No se pudieron obtener las coordenadas del local durante el registro.', [
                 'address' => $address,

@@ -6,7 +6,6 @@ use App\Exceptions\RegistrationMailDeliveryException;
 use App\Services\RegistrationVerificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
@@ -220,7 +219,7 @@ class LocalController extends Controller
                 'horario' => $validated['horario'],
                 'direccion' => $validated['direccion'] ?? null,
                 'logo' => $validated['logo'] ?? null,
-                'password' => Hash::make($validated['contrasena']),
+                'password' => $validated['contrasena'],
             ]);
         } catch (RegistrationMailDeliveryException $exception) {
             report($exception);
@@ -236,5 +235,4 @@ class LocalController extends Controller
                 ? 'Te enviamos un código de verificación. Ingresalo para completar el registro.'
                 : 'Ya hay un registro pendiente para ese correo. Ingresá el código recibido o solicitá uno nuevo.');
     }
-
 }

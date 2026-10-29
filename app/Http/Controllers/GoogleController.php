@@ -7,7 +7,7 @@ use App\Services\RegistrationVerificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -101,7 +101,7 @@ class GoogleController extends Controller
                 'apellido' => $request->apellido,
                 'telefono' => $request->telefono,
                 'nacimiento' => $request->nacimiento,
-                'password' => Hash::make(\Illuminate\Support\Str::random(40)),
+                'password' => Str::random(40),
                 'google_registration' => true,
             ]);
         } catch (RegistrationMailDeliveryException $exception) {

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Mail\RegistrationVerificationCode;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Tests\Concerns\CreatesRegistrationTables;
@@ -71,6 +72,14 @@ class ClienteRegistrationTest extends TestCase
             'Email' => 'ana@example.com',
             'Tipo_Usuario' => 'cliente',
         ]);
+        $this->assertTrue(Hash::check(
+            'password123',
+            DB::table('cliente')->where('Email_Usuario', 'ana@example.com')->value('Contraseña')
+        ));
+        $this->assertTrue(Hash::check(
+            'password123',
+            DB::table('usuario')->where('Email', 'ana@example.com')->value('Contraseña')
+        ));
     }
 
     public function test_wrong_code_does_not_create_an_account_and_counts_an_attempt(): void

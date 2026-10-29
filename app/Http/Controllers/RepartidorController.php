@@ -7,10 +7,9 @@ use App\Services\InAppNotificationService;
 use App\Services\RegistrationVerificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class RepartidorController extends Controller
 {
@@ -40,7 +39,7 @@ class RepartidorController extends Controller
                 'apellido' => $validated['apellido'],
                 'telefono' => $validated['telefono'],
                 'nacimiento' => $validated['fecha_nacimiento'],
-                'password' => Hash::make($validated['contrasena']),
+                'password' => $validated['contrasena'],
             ]);
         } catch (RegistrationMailDeliveryException $exception) {
             report($exception);
