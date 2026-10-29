@@ -67,11 +67,7 @@
                     <div class="order-list">
                     @foreach ($seccion['items']->groupBy('N_Subpedido') as $lineasPedido)
                         @php($pedido = $lineasPedido->first())
-<<<<<<< HEAD
-                        <article class="order">
-=======
                         <article class="order" id="pedido-{{ $pedido->N_Pedido }}">
->>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
                             <div class="order-title">
                                 <span>Pedido #{{ $pedido->ID_Pedido ?? $pedido->N_Pedido }}</span>
                                 <span class="order-status {{ ($pedido->Estado_Subpedido ?? '') === 'rechazado' ? 'rejected' : '' }}">{{ $pedido->Estado_Subpedido ?? 'pendiente' }}</span>

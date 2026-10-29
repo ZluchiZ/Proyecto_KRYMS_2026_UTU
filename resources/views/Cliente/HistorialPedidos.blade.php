@@ -20,6 +20,13 @@
             <span class="order-history-count">{{ $pedidos->total() }} {{ $pedidos->total() === 1 ? 'pedido' : 'pedidos' }}</span>
         </header>
 
+        @if (session('success'))
+            <p class="history-feedback history-feedback-success" role="status">{{ session('success') }}</p>
+        @endif
+        @if ($errors->any())
+            <p class="history-feedback history-feedback-error" role="alert">Revisá los datos de la reseña e intentá nuevamente.</p>
+        @endif
+
         @if ($pedidos->isEmpty())
             <section class="history-empty">
                 <span class="history-empty-mark" aria-hidden="true">↗</span>
@@ -34,20 +41,13 @@
                         $estadoPedido = strtolower($pedido->Estado ?? 'pendiente');
                         $claseEstado = match ($estadoPedido) {
                             'rechazado', 'cancelado' => 'cancelled',
-<<<<<<< HEAD
-=======
                             'requiere_decision_cliente' => 'cancelled',
->>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
                             'entregado', 'completado', 'listo' => 'completed',
                             'aceptado', 'en_reparto' => 'progress',
                             default => 'pending',
                         };
                     @endphp
-<<<<<<< HEAD
-                    <article class="history-card">
-=======
                     <article class="history-card" id="pedido-{{ $pedido->N_Pedido }}">
->>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
                         <header class="history-card-heading">
                             <div>
                                 <span class="history-order-label">Pedido #{{ $pedido->N_Pedido }}</span>
@@ -62,8 +62,38 @@
                             <div><span>Total</span><strong>$U {{ number_format((float) ($pedido->Monto_Total ?? 0), 2, ',', '.') }}</strong></div>
                         </div>
 
-<<<<<<< HEAD
-=======
+                        @if ($estadoPedido === 'entregado' && $pedido->CI_Repartidor)
+                            <section class="history-store courier-review" aria-label="Reseña del repartidor">
+                                @if ($pedido->resenaRepartidor)
+                                    <h2>Tu reseña al repartidor</h2>
+                                    <p class="courier-review-rating" aria-label="{{ $pedido->resenaRepartidor->Puntuacion }} de 5 estrellas">
+                                        {{ str_repeat('★', (int) $pedido->resenaRepartidor->Puntuacion) }}{{ str_repeat('☆', 5 - (int) $pedido->resenaRepartidor->Puntuacion) }}
+                                    </p>
+                                    @if ($pedido->resenaRepartidor->Comentario)
+                                        <p>{{ $pedido->resenaRepartidor->Comentario }}</p>
+                                    @endif
+                                @else
+                                    <h2>¿Cómo fue la entrega?</h2>
+                                    <p>Dejá una reseña para el repartidor de este pedido.</p>
+                                    <form method="POST" action="{{ route('pedidos.reviews.courier.store', $pedido->N_Pedido) }}">
+                                        @csrf
+                                        <label for="puntuacion-repartidor-{{ $pedido->N_Pedido }}">Puntuación (1 a 5 estrellas)</label>
+                                        <select id="puntuacion-repartidor-{{ $pedido->N_Pedido }}" name="puntuacion" required>
+                                            <option value="">Seleccionar puntuación</option>
+                                            @for ($puntuacion = 5; $puntuacion >= 1; $puntuacion--)
+                                                <option value="{{ $puntuacion }}" @selected(old('puntuacion') == $puntuacion)>{{ $puntuacion }} {{ $puntuacion === 1 ? 'estrella' : 'estrellas' }}</option>
+                                            @endfor
+                                        </select>
+                                        <label for="comentario-repartidor-{{ $pedido->N_Pedido }}">Comentario (opcional, máximo 250 caracteres)</label>
+                                        <textarea id="comentario-repartidor-{{ $pedido->N_Pedido }}" name="comentario" maxlength="250">{{ old('comentario') }}</textarea>
+                                        @error('puntuacion')<small class="review-field-error">{{ $message }}</small>@enderror
+                                        @error('comentario')<small class="review-field-error">{{ $message }}</small>@enderror
+                                        <button type="submit">Enviar reseña</button>
+                                    </form>
+                                @endif
+                            </section>
+                        @endif
+
                         @if ($estadoPedido === 'en_reparto' && $pedido->Codigo_Secreto)
                             <section class="history-store" aria-label="Código secreto de entrega">
                                 <h2>Código secreto de entrega</h2>
@@ -118,7 +148,6 @@
                             </div>
                         @endif
 
->>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
                         @foreach ($pedido->locales as $local)
                             <section class="history-store">
                                 <header class="history-store-heading">
@@ -134,11 +163,7 @@
                                 @else
                                     <p class="history-no-products">No hay productos detallados para este local.</p>
                                 @endif
-<<<<<<< HEAD
-                                @if ($local->total !== null)
-=======
                                 @if ($local->total !== null && $local->estado !== 'omitido')
->>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
                                     <p class="history-store-total">Subtotal del local <strong>$U {{ number_format((float) $local->total, 2, ',', '.') }}</strong></p>
                                 @endif
                             </section>

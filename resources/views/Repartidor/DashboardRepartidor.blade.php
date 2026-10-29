@@ -61,11 +61,7 @@
             @else
                 <div class="order-list">
                     @foreach ($pedidosListos as $pedido)
-<<<<<<< HEAD
-                        <article class="order-card">
-=======
                         <article class="order-card" id="pedido-{{ $pedido->N_Pedido }}">
->>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
                             <div class="order-header">
                                 <strong>Pedido #{{ $pedido->N_Pedido }}</strong>
                                 <span class="status-pill ready">Listo</span>
@@ -126,11 +122,7 @@
                         <article class="order-card assigned">
                             <div class="order-header">
                                 <strong>Pedido #{{ $pedido->N_Pedido }}</strong>
-<<<<<<< HEAD
-                                <span class="status-pill assigned">Asignado</span>
-=======
                                 <span class="status-pill assigned">{{ $pedido->Estado_Entrega ? ucfirst(str_replace('_', ' ', $pedido->Estado_Entrega)) : 'Asignado' }}</span>
->>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
                             </div>
 
                             <div class="order-grid">
@@ -151,8 +143,6 @@
                                     </section>
                                 @endforeach
                             </div>
-<<<<<<< HEAD
-=======
                             @php
                                 $etapasEntrega = [
                                     'productos_recolectados' => 'El gaucho recogió todos sus productos',
@@ -201,7 +191,6 @@
                                     <button type="submit">Confirmar pedido entregado</button>
                                 </form>
                             @endif
->>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
                         </article>
                     @endforeach
                 </div>

@@ -7,10 +7,7 @@
     <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
     <link rel="stylesheet" href="{{ asset('css/home.css') }}">
     <link rel="stylesheet" href="{{ asset('css/restaurants.css') }}">
-<<<<<<< HEAD
-=======
     <link rel="stylesheet" href="{{ asset('css/notifications.css') }}">
->>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
     <title>Restaurantes | KRYMS</title>
 </head>
 <body class="home-page restaurants-page">
@@ -20,10 +17,7 @@
             <a class="restaurants-back-link" href="{{ route('home') }}">← Volver al inicio</a>
             <nav class="header-actions" aria-label="Acciones de cuenta">
                 @if ($esClienteRegistrado)<a class="cart-link" href="{{ route('carrito') }}" aria-label="Ver carrito"><span>🛒</span><b>Carrito</b></a>@endif
-<<<<<<< HEAD
-=======
                 @include('partials.notifications-menu')
->>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
                 <div class="profile-container"><button type="button" class="profile-button" aria-label="Abrir perfil" data-profile-toggle><span>◉</span><b>{{ $esClienteRegistrado ? 'Mi cuenta' : 'Ingresar' }}</b></button><div class="profile-menu" data-profile-menu><a href="{{ route('login') }}">{{ $esClienteRegistrado ? 'Mi cuenta' : 'Iniciar sesión' }}</a></div></div>
             </nav>
         </div>

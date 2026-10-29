@@ -56,6 +56,7 @@ class CartAndOrderFlowTest extends TestCase
             $table->text('Comentario')->nullable();
             $table->string('Estado_Moderacion')->default('Visible');
             $table->text('Motivo_Retiro')->nullable();
+            $table->unsignedBigInteger('N_Pedido')->nullable()->unique();
         });
 
         Schema::create('producto', function (Blueprint $table) {
@@ -89,11 +90,8 @@ class CartAndOrderFlowTest extends TestCase
             $table->decimal('Costo_de_envio', 10, 2)->nullable();
             $table->string('Metodo_de_pago')->nullable();
             $table->string('Ubicacion')->nullable();
-<<<<<<< HEAD
-=======
             $table->string('Estado_Entrega', 30)->nullable();
             $table->string('Codigo_Secreto', 16)->nullable()->unique();
->>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
             $table->decimal('latitud', 10, 7)->nullable();
             $table->decimal('longitud', 10, 7)->nullable();
             $table->decimal('Distancia_Local_Km', 10, 2)->nullable();
@@ -109,8 +107,6 @@ class CartAndOrderFlowTest extends TestCase
         Schema::create('repartidor', function (Blueprint $table) {
             $table->string('CI')->primary();
             $table->string('Email_Usuario')->nullable();
-<<<<<<< HEAD
-=======
             $table->string('Nombre')->nullable();
             $table->string('Apellido')->nullable();
             $table->string('Teléfono')->nullable();
@@ -132,7 +128,6 @@ class CartAndOrderFlowTest extends TestCase
             $table->timestamp('read_at')->nullable();
             $table->timestamps();
             $table->index(['recipient_type', 'recipient_id', 'read_at']);
->>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
         });
         Schema::create('subpedido', function (Blueprint $table) {
             $table->id('N_Subpedido');
@@ -232,12 +227,6 @@ class CartAndOrderFlowTest extends TestCase
             ->assertSessionHas('order_sent', 2);
 
         $pedidoId = DB::table('pedido')->value('N_Pedido');
-<<<<<<< HEAD
-        $this->assertSame(1, DB::table('pedido')->count());
-        $this->assertEquals(405, DB::table('pedido')->where('N_Pedido', $pedidoId)->value('Monto_Total'));
-        $this->assertSame(2, DB::table('subpedido')->where('N_Pedido', $pedidoId)->count());
-        $this->assertSame(3, DB::table('detalle_de_pedido')->count());
-=======
         $codigoSecreto = DB::table('pedido')->where('N_Pedido', $pedidoId)->value('Codigo_Secreto');
         $this->assertSame(1, DB::table('pedido')->count());
         $this->assertIsString($codigoSecreto);
@@ -246,7 +235,6 @@ class CartAndOrderFlowTest extends TestCase
         $this->assertSame(2, DB::table('subpedido')->where('N_Pedido', $pedidoId)->count());
         $this->assertSame(3, DB::table('detalle_de_pedido')->count());
         $this->assertSame(2, DB::table('app_notifications')->where('type', 'nuevo_pedido')->count());
->>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
 
         $respuestaLocal = $this->withSession([
             'tipo_usuario' => 'comercio',
@@ -268,13 +256,10 @@ class CartAndOrderFlowTest extends TestCase
             'usuario_id' => '87654321',
             'email' => 'repartidor@example.com',
         ];
-<<<<<<< HEAD
-=======
         DB::table('repartidor')->insert([
             ['CI' => '87654321', 'Email_Usuario' => 'repartidor@example.com', 'Nombre' => 'Luis', 'Apellido' => 'Pérez', 'Teléfono' => '099111222'],
             ['CI' => '12344321', 'Email_Usuario' => 'otro@example.com', 'Nombre' => 'Ana', 'Apellido' => 'Ríos', 'Teléfono' => '099333444'],
         ]);
->>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
 
         $this->withSession($sesionRepartidor)
             ->patch(route('repartidor.pedidos.estado', $pedidoId), ['estado' => 'aceptado'])
@@ -286,10 +271,7 @@ class CartAndOrderFlowTest extends TestCase
             ->assertDontSee('Pedido #'.$pedidoId);
 
         DB::table('subpedido')->where('N_Subpedido', $subpedidos[1]->N_Subpedido)->update(['Estado' => 'listo']);
-<<<<<<< HEAD
-=======
         DB::table('pedido')->where('N_Pedido', $pedidoId)->update(['Estado' => 'listo']);
->>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
 
         $response = $this->withSession($sesionRepartidor)
             ->get(route('dashboard.repartidor'))
@@ -303,11 +285,6 @@ class CartAndOrderFlowTest extends TestCase
         $this->assertSame(1, substr_count($response->getContent(), 'Pedido #'.$pedidoId));
 
         $this->withSession($sesionRepartidor)
-<<<<<<< HEAD
-            ->patch(route('repartidor.pedidos.estado', $pedidoId), ['estado' => 'aceptado'])
-            ->assertRedirect(route('dashboard.repartidor'));
-        $respuestaAsignada = $this->withSession($sesionRepartidor)
-=======
             ->patch(route('repartidor.pedidos.estado', $pedidoId), ['estado' => 'rechazado'])
             ->assertRedirect(route('dashboard.repartidor'));
         $this->assertDatabaseHas('pedido', ['N_Pedido' => $pedidoId, 'Estado' => 'listo', 'CI_Repartidor' => null]);
@@ -411,17 +388,12 @@ class CartAndOrderFlowTest extends TestCase
             ->assertSee('El gaucho está en tu puerta');
 
         $respuestaAsignada = $this->withSession($sesionSegundoRepartidor)
->>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
             ->get(route('dashboard.repartidor'))
             ->assertOk()
             ->assertSee('La Picantería')
             ->assertSee('Otro Local')
             ->assertSee('Milanesa')
             ->assertSee('Papas')
-<<<<<<< HEAD
-            ->assertSee('Bebida');
-        $this->assertSame(1, substr_count($respuestaAsignada->getContent(), 'Pedido #'.$pedidoId));
-=======
             ->assertSee('Bebida')
             ->assertSee('El gaucho recogió todos sus productos');
         $this->assertSame(1, substr_count($respuestaAsignada->getContent(), 'Pedido #'.$pedidoId));
@@ -453,7 +425,6 @@ class CartAndOrderFlowTest extends TestCase
             'type' => 'pedido_entregado',
             'order_id' => $pedidoId,
         ]);
->>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
     }
 
     public function test_client_can_view_only_their_own_order_history(): void
@@ -654,6 +625,82 @@ class CartAndOrderFlowTest extends TestCase
             ->assertSee($comentario);
     }
 
+    public function test_client_can_review_assigned_courier_after_order_is_delivered_once(): void
+    {
+        DB::table('cliente')->insert([
+            'CI' => '12345678',
+            'Email_Usuario' => 'ana@example.com',
+            'Nombre' => 'Ana',
+        ]);
+        DB::table('repartidor')->insert([
+            'CI' => '87654321',
+            'Nombre' => 'Luis',
+            'Apellido' => 'Gómez',
+        ]);
+        DB::table('pedido')->insert([
+            'N_Pedido' => 81,
+            'CI_Cliente' => '12345678',
+            'CI_Repartidor' => '87654321',
+            'Estado' => 'entregado',
+        ]);
+
+        $session = ['tipo_usuario' => 'cliente', 'usuario_id' => '12345678'];
+        $this->withSession($session)
+            ->post(route('pedidos.reviews.courier.store', 81), [
+                'puntuacion' => 5,
+                'comentario' => 'Entrega excelente',
+            ])
+            ->assertRedirect(route('cliente.pedidos'))
+            ->assertSessionHas('success', 'Gracias por reseñar a tu repartidor.');
+
+        $this->assertDatabaseHas('reseña', [
+            'CI_Cliente' => '12345678',
+            'RUT_Comercio' => null,
+            'CI_Repartidor' => '87654321',
+            'N_Pedido' => 81,
+            'Puntuacion' => 5,
+            'Comentario' => 'Entrega excelente',
+        ]);
+
+        $this->withSession($session)
+            ->post(route('pedidos.reviews.courier.store', 81), ['puntuacion' => 4])
+            ->assertStatus(409);
+
+        $this->withSession($session)
+            ->get(route('cliente.pedidos'))
+            ->assertOk()
+            ->assertSee('Tu reseña al repartidor')
+            ->assertSee('Entrega excelente')
+            ->assertDontSee('¿Cómo fue la entrega?');
+    }
+
+    public function test_courier_review_requires_ownership_and_a_delivered_order(): void
+    {
+        DB::table('cliente')->insert([
+            ['CI' => '12345678', 'Email_Usuario' => 'ana@example.com'],
+            ['CI' => '22222222', 'Email_Usuario' => 'otra@example.com'],
+        ]);
+        DB::table('repartidor')->insert(['CI' => '87654321']);
+        DB::table('pedido')->insert([
+            ['N_Pedido' => 81, 'CI_Cliente' => '12345678', 'CI_Repartidor' => '87654321', 'Estado' => 'entregado'],
+            ['N_Pedido' => 82, 'CI_Cliente' => '12345678', 'CI_Repartidor' => '87654321', 'Estado' => 'en_reparto'],
+            ['N_Pedido' => 83, 'CI_Cliente' => '22222222', 'CI_Repartidor' => '87654321', 'Estado' => 'entregado'],
+        ]);
+
+        $session = ['tipo_usuario' => 'cliente', 'usuario_id' => '12345678'];
+        $this->withSession($session)
+            ->post(route('pedidos.reviews.courier.store', 82), ['puntuacion' => 4])
+            ->assertStatus(409);
+        $this->withSession($session)
+            ->post(route('pedidos.reviews.courier.store', 83), ['puntuacion' => 4])
+            ->assertNotFound();
+        $this->withSession($session)
+            ->post(route('pedidos.reviews.courier.store', 81), ['puntuacion' => 6])
+            ->assertSessionHasErrors('puntuacion');
+
+        $this->assertSame(0, DB::table('reseña')->count());
+    }
+
     public function test_local_review_rejects_scores_outside_zero_to_five_and_long_comments(): void
     {
         DB::table('cliente')->insert(['CI' => '12345678', 'Email_Usuario' => 'ana@example.com']);
@@ -797,22 +844,17 @@ class CartAndOrderFlowTest extends TestCase
         $this->withSession($sesionSegundoLocal)
             ->patch(route('pedidos.status', 12), ['estado' => 'aceptado'])
             ->assertRedirect(route('dashboard.local'));
-<<<<<<< HEAD
-=======
         $this->assertDatabaseHas('app_notifications', [
             'recipient_type' => 'cliente',
             'recipient_id' => '12345678',
             'type' => 'respuesta_comercio',
             'order_id' => 5,
         ]);
->>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
         $this->withSession($sesionSegundoLocal)
             ->patch(route('pedidos.status', 12), ['estado' => 'listo'])
             ->assertRedirect(route('dashboard.local'));
 
         $this->assertDatabaseHas('pedido', ['N_Pedido' => 5, 'Estado' => 'listo']);
-<<<<<<< HEAD
-=======
         $this->assertDatabaseHas('app_notifications', [
             'recipient_type' => 'cliente',
             'recipient_id' => '12345678',
@@ -868,6 +910,26 @@ class CartAndOrderFlowTest extends TestCase
             2,
             DB::table('subpedido')->where('N_Pedido', 22)->where('Estado', 'cancelado')->count(),
         );
+
+        DB::table('repartidor')->insert([
+            'CI' => '87654321',
+            'Email_Usuario' => 'repartidor@example.com',
+            'Nombre' => 'Luis',
+        ]);
+        DB::table('subpedido')->where('N_Subpedido', 102)->update(['Estado' => 'listo']);
+        DB::table('pedido')->where('N_Pedido', 21)->update(['Estado' => 'listo']);
+
+        $this->withSession([
+            'tipo_usuario' => 'repartidor',
+            'usuario_id' => '87654321',
+            'email' => 'repartidor@example.com',
+        ])->get(route('dashboard.repartidor'))
+            ->assertOk()
+            ->assertSee('Pedido #21')
+            ->assertSee('Producto Dos')
+            ->assertDontSee('Producto Uno')
+            ->assertDontSee('Volver al inicio')
+            ->assertSee('href="'.route('dashboard.repartidor').'"', false);
     }
 
     public function test_notification_inbox_only_shows_and_marks_the_current_users_notifications(): void
@@ -916,6 +978,14 @@ class CartAndOrderFlowTest extends TestCase
             'recipient_id' => '12345678',
         ]);
         $this->assertNotNull(DB::table('app_notifications')->where('id', $notificationId)->value('read_at'));
->>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
+    }
+
+    public function test_repartidor_is_redirected_to_dashboard_instead_of_home(): void
+    {
+        $this->withSession([
+            'tipo_usuario' => 'repartidor',
+            'usuario_id' => '87654321',
+        ])->get(route('home'))
+            ->assertRedirect(route('dashboard.repartidor'));
     }
 }

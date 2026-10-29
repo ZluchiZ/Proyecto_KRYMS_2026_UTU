@@ -124,6 +124,17 @@
 .history-no-products { margin: .7rem 0 0; color: #718096; font-size: .75rem; }
 .history-store-total { display: flex; justify-content: space-between; gap: .8rem; margin: .7rem 0 0; padding-top: .65rem; border-top: 1px dashed #ead8c9; color: #718096; font-size: .72rem; }
 .history-store-total strong { color: #34251f; }
+.courier-review form { display: grid; gap: .55rem; margin-top: .75rem; }
+.courier-review form label { color: #52617c; font-size: .75rem; font-weight: 700; }
+.courier-review form select,
+.courier-review form textarea { width: 100%; padding: .65rem .75rem; border: 1px solid #e6c9bd; border-radius: 8px; background: #fff; color: #34251f; font: inherit; font-size: .8rem; }
+.courier-review form textarea { min-height: 76px; resize: vertical; }
+.courier-review form button { justify-self: start; padding: .65rem .9rem; border: 0; border-radius: 8px; background: #e28000; color: #fff; font: inherit; font-size: .78rem; font-weight: 700; cursor: pointer; }
+.courier-review-rating { color: #e28000; letter-spacing: .12em; }
+.review-field-error { color: #b84d4b; }
+.history-feedback { margin: 1rem 0; padding: .8rem 1rem; border-radius: 9px; font-size: .85rem; }
+.history-feedback-success { background: #e8f5e9; color: #256b36; }
+.history-feedback-error { background: #fff0ed; color: #a63d30; }
 
 .history-empty {
     display: grid;

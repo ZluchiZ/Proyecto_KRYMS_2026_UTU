@@ -1,13 +1,11 @@
 <header class="internal-header">
-    <a class="internal-brand" href="{{ route('home') }}" aria-label="El Gaucho Va, volver al inicio">
+    <a class="internal-brand" href="{{ session('tipo_usuario') === 'repartidor' ? route('dashboard.repartidor') : route('home') }}" aria-label="El Gaucho Va">
         <img src="{{ asset('img/LogoGaucho_png.png') }}" alt="El Gaucho Va">
     </a>
-<<<<<<< HEAD
-    <a class="internal-home-link" href="{{ route('home') }}">Volver al inicio</a>
-=======
     <div class="internal-header-actions">
         @include('partials.notifications-menu')
-        <a class="internal-home-link" href="{{ route('home') }}">Volver al inicio</a>
+        @if (session('tipo_usuario') !== 'repartidor')
+            <a class="internal-home-link" href="{{ route('home') }}">Volver al inicio</a>
+        @endif
     </div>
->>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
 </header>

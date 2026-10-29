@@ -3,19 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\RegistrationMailDeliveryException;
-<<<<<<< HEAD
-=======
 use App\Services\InAppNotificationService;
->>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
 use App\Services\RegistrationVerificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
-<<<<<<< HEAD
-=======
 use Illuminate\Validation\ValidationException;
->>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
 use Illuminate\Validation\Rule;
 
 class RepartidorController extends Controller
@@ -105,11 +99,7 @@ class RepartidorController extends Controller
         ]);
     }
 
-<<<<<<< HEAD
-    public function updatePedidoStatus(Request $request, int $pedido)
-=======
     public function updatePedidoStatus(Request $request, int $pedido, InAppNotificationService $notifications)
->>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
     {
         $email = session('email');
         $tipoUsuario = session('tipo_usuario');
@@ -157,66 +147,6 @@ class RepartidorController extends Controller
             'estado' => 'required|in:aceptado,rechazado',
         ]);
 
-<<<<<<< HEAD
-        $pedidoActual = DB::table('pedido')
-            ->where('N_Pedido', $pedido)
-            ->first(['N_Pedido', 'CI_Repartidor', 'Estado']);
-
-        abort_unless($pedidoActual, 404, 'El pedido no existe.');
-
-        $totalSubpedidos = DB::table('subpedido')->where('N_Pedido', $pedido)->count();
-        $subpedidosListos = DB::table('subpedido')
-            ->where('N_Pedido', $pedido)
-            ->where('Estado', 'listo')
-            ->count();
-        abort_if(
-            $totalSubpedidos === 0 || $subpedidosListos !== $totalSubpedidos,
-            409,
-            'El pedido solo se puede gestionar cuando todos los locales lo hayan finalizado.'
-        );
-        $decidido = false;
-
-        if (Schema::hasTable('pedido_repartidor_estado')) {
-            $decidido = DB::table('pedido_repartidor_estado')
-                ->where('N_Pedido', $pedido)
-                ->whereIn('Estado', ['aceptado', 'rechazado'])
-                ->exists();
-        }
-
-        abort_if($decidido && $validated['estado'] === 'aceptado', 409, 'Este pedido ya fue aceptado o rechazado por otro repartidor.');
-
-        if (Schema::hasTable('pedido_repartidor_estado')) {
-            DB::table('pedido_repartidor_estado')
-                ->updateOrInsert(
-                    ['N_Pedido' => $pedido, 'CI_Repartidor' => $repartidorId],
-                    ['Estado' => $validated['estado']]
-                );
-        }
-
-        if ($validated['estado'] === 'aceptado') {
-            abort_if($pedidoActual->CI_Repartidor !== null, 409, 'Este pedido ya tiene un repartidor asignado.');
-
-            DB::table('pedido')
-                ->where('N_Pedido', $pedido)
-                ->update(['CI_Repartidor' => $repartidorId, 'Estado' => 'en_reparto']);
-
-            DB::table('subpedido')
-                ->where('N_Pedido', $pedido)
-                ->update(['Estado' => 'en_reparto']);
-
-            return redirect()->route('dashboard.repartidor')->with('success', 'Entrega aceptada.');
-        }
-
-        DB::table('pedido')
-            ->where('N_Pedido', $pedido)
-            ->update(['Estado' => 'rechazado']);
-
-        DB::table('subpedido')
-            ->where('N_Pedido', $pedido)
-            ->update(['Estado' => 'rechazado']);
-
-        return redirect()->route('dashboard.repartidor')->with('success', 'Pedido rechazado.');
-=======
         abort_unless(
             Schema::hasTable('pedido_repartidor_estado'),
             409,
@@ -452,6 +382,5 @@ class RepartidorController extends Controller
         });
 
         return redirect()->route('dashboard.repartidor')->with('success', 'Entrega confirmada correctamente.');
->>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
     }
 }

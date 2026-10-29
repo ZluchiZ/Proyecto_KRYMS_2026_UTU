@@ -31,10 +31,7 @@
     <meta name="description" content="KRYMS: pedí lo que necesitás y recibilo donde estés.">
     <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
     <link rel="stylesheet" href="{{ asset('css/home.css') }}">
-<<<<<<< HEAD
-=======
     <link rel="stylesheet" href="{{ asset('css/notifications.css') }}">
->>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
     @if ($esClienteRegistrado)<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">@endif
     <title>KRYMS | Pedí cerca, recibí fácil</title>
 </head>
@@ -48,10 +45,7 @@
             @if ($esClienteRegistrado)<button type="button" class="delivery-location delivery-location-button" id="open-location-modal"><span class="location-pin">⌖</span><span class="delivery-location-copy"><small>Entregar en</small><strong id="delivery-location-value">{{ $direccionEntrega ?: 'Seleccionar dirección' }}</strong></span><span class="location-chevron">⌄</span></button>@endif
             <nav class="header-actions" aria-label="Acciones de cuenta">
                 @if ($esClienteRegistrado)<a class="cart-link" href="{{ route('carrito') }}" aria-label="Ver carrito"><span>🛒</span><b>Carrito</b><em>{{ $cantidadCarrito }}</em></a>@endif
-<<<<<<< HEAD
-=======
                 @include('partials.notifications-menu')
->>>>>>> 08917fc (Sistema de pedidos + Notificaciones + Ajustes en el repartidor (opciones para cambiar el estado del pedido e ingresar codigo de confirmacion de entrega))
                 <div class="profile-container"><button type="button" class="profile-button" aria-label="Abrir perfil" data-profile-toggle><span>◉</span><b>{{ $nombreUsuario ? 'Mi cuenta' : 'Ingresar' }}</b></button><div class="profile-menu" data-profile-menu>@if ($nombreUsuario)<strong>{{ $nombreUsuario }}</strong><span>{{ $tipoUsuario }}</span><small>{{ $correoUsuario }}</small>@if ($tipoUsuario === 'Cliente')<a href="{{ route('cliente.profile') }}">Ver mi perfil</a><a href="{{ route('cliente.pedidos') }}">Historial de pedidos</a>@else<a href="{{ route('profile.edit') }}">Mi perfil</a>@endif<form method="POST" action="{{ route('logout') }}">@csrf<button type="submit">Cerrar sesión</button></form>@else<a href="{{ route('login') }}">Iniciar sesión</a>@endif</div></div>
             </nav>
         </div>
