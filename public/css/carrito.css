@@ -172,6 +172,7 @@ a {
     resize: vertical;
 }
 
+<<<<<<< HEAD
 .simulated-card {
     display: grid;
     gap: .65rem;
@@ -213,6 +214,8 @@ a {
     padding: 0;
 }
 
+=======
+>>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
 .confirm {
     border: 0;
     min-height: 2.9rem;

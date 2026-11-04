@@ -90,6 +90,7 @@
                     <textarea name="referencias" id="referencias" maxlength="1000" placeholder="Apartamento, esquina u otra indicacion">{{ old('referencias') }}</textarea>
                     <label for="metodo-pago">Metodo de pago</label>
                     <select name="metodo_pago" id="metodo-pago" required>
+<<<<<<< HEAD
                         <option value="efectivo" @selected(old('metodo_pago', 'efectivo') === 'efectivo')>Efectivo contra entrega</option>
                         <option value="tarjeta" @selected(old('metodo_pago') === 'tarjeta')>Tarjeta</option>
                         @if ($metodosPagoGuardados->isNotEmpty())
@@ -130,6 +131,11 @@
                             @error('tarjeta_guardada_id')<small role="alert">{{ $message }}</small>@enderror
                         </fieldset>
                     @endif
+=======
+                        <option value="efectivo">Efectivo contra entrega</option>
+                        <option value="tarjeta">Tarjeta contra entrega</option>
+                    </select>
+>>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
                     <button type="submit" class="confirm">Confirmar todos los productos</button>
                 </form>
             </section>
@@ -138,6 +144,7 @@
     @if (session('order_sent'))
     <div class="toast" role="status" aria-live="polite">Pedido enviado a {{ session('order_sent') }} local(es). Cuando todos lo finalicen, aparecerá para el repartidor como una sola entrega. <a href="{{ route('cliente.pedidos') }}">Ver historial</a></div>
     @endif
+<<<<<<< HEAD
     <script>
         const metodoPago = document.getElementById('metodo-pago');
         const tarjetaSimulada = document.getElementById('tarjeta-simulada');
@@ -159,5 +166,7 @@
             actualizarFormularioTarjeta();
         }
     </script>
+=======
+>>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
 </body>
 </html>

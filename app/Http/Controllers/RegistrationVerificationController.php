@@ -38,6 +38,7 @@ class RegistrationVerificationController extends Controller
         } catch (HttpExceptionInterface $exception) {
             return back()
                 ->withInput($request->only('email'))
+<<<<<<< HEAD
                 ->withErrors(['code' => $this->verificationErrorMessage(
                     $exception,
                     [
@@ -48,6 +49,9 @@ class RegistrationVerificationController extends Controller
                     ],
                     'No pudimos verificar el código. Intentá nuevamente más tarde.',
                 )]);
+=======
+                ->withErrors(['code' => $exception->getMessage()]);
+>>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
         }
 
         if ($account['google_registration']) {
@@ -79,6 +83,7 @@ class RegistrationVerificationController extends Controller
         } catch (HttpExceptionInterface $exception) {
             return back()
                 ->withInput($request->only('email'))
+<<<<<<< HEAD
                 ->withErrors(['code' => $this->verificationErrorMessage(
                     $exception,
                     [
@@ -87,6 +92,9 @@ class RegistrationVerificationController extends Controller
                     ],
                     'No pudimos enviar otro código. Intentá nuevamente más tarde.',
                 )]);
+=======
+                ->withErrors(['code' => $exception->getMessage()]);
+>>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
         } catch (RegistrationMailDeliveryException $exception) {
             report($exception);
             Log::error('No se pudo reenviar un código de verificación de registro.', [
@@ -102,6 +110,7 @@ class RegistrationVerificationController extends Controller
             ->withInput($request->only('email'))
             ->with('success', 'Te enviamos un nuevo código de verificación.');
     }
+<<<<<<< HEAD
 
     private function verificationErrorMessage(
         HttpExceptionInterface $exception,
@@ -118,4 +127,6 @@ class RegistrationVerificationController extends Controller
 
         return $fallback;
     }
+=======
+>>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
 }

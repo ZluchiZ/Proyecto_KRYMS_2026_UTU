@@ -102,7 +102,10 @@ class CartAndOrderFlowTest extends TestCase
             $table->id('ID');
             $table->string('CI_Cliente');
             $table->string('Banco')->nullable();
+<<<<<<< HEAD
             $table->string('Ultimos_4', 4)->nullable();
+=======
+>>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
         });
 
         Schema::create('repartidor', function (Blueprint $table) {
@@ -432,7 +435,11 @@ class CartAndOrderFlowTest extends TestCase
         ]);
     }
 
+<<<<<<< HEAD
     public function test_checkout_simulates_card_payment_only_with_fictitious_data(): void
+=======
+    public function test_checkout_records_card_on_delivery_as_a_selected_method_only(): void
+>>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
     {
         DB::table('cliente')->insert([
             'id' => 9,
@@ -456,12 +463,17 @@ class CartAndOrderFlowTest extends TestCase
         $this->withSession($session)
             ->get(route('carrito'))
             ->assertOk()
+<<<<<<< HEAD
             ->assertSee('Tarjeta');
+=======
+            ->assertSee('Tarjeta contra entrega');
+>>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
 
         $this->withSession($session)
             ->post(route('carrito.confirm'), [
                 'direccion_envio' => 'Calle 1',
                 'metodo_pago' => 'tarjeta',
+<<<<<<< HEAD
                 'numero_tarjeta' => '4111 1111 1111 1111',
                 'vencimiento_tarjeta' => '12/30',
                 'cvv_tarjeta' => '123',
@@ -480,10 +492,13 @@ class CartAndOrderFlowTest extends TestCase
                 'numero_tarjeta' => '0000 0000 0000 0000',
                 'vencimiento_tarjeta' => '12/30',
                 'cvv_tarjeta' => '000',
+=======
+>>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
                 'latitud' => -34.9,
                 'longitud' => -56.2,
             ])
             ->assertRedirect(route('carrito'))
+<<<<<<< HEAD
             ->assertSessionHas('order_sent', 2)
             ->assertSessionHas('payment_simulated', true);
 
@@ -602,6 +617,19 @@ class CartAndOrderFlowTest extends TestCase
             ->assertSessionHasErrors('tarjeta_guardada_id');
 
         $this->assertSame(4, DB::table('pedido')->count());
+=======
+            ->assertSessionHas('order_sent', 2);
+
+        $this->assertDatabaseHas('pedido', [
+            'CI_Cliente' => '12345678',
+            'Metodo_de_pago' => 'tarjeta',
+        ]);
+        $this->assertDatabaseHas('tarjeta', [
+            'CI_Cliente' => '12345678',
+            'Banco' => null,
+        ]);
+        $this->assertSame(0, DB::table('tarjeta')->whereNotNull('Banco')->count());
+>>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
     }
 
     public function test_client_can_view_only_their_own_order_history(): void

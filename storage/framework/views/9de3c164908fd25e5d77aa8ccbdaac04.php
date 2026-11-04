@@ -5,9 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="<?php echo e(asset('css/carrito.css')); ?>">
     <link rel="stylesheet" href="<?php echo e(asset('css/internal.css')); ?>">
+<<<<<<< HEAD
     <link rel="stylesheet" href="<?php echo e(asset('css/notifications.css')); ?>">
     <title>Mi carrito | El Gaucho Va</title>
     <link rel="stylesheet" href="<?php echo e(asset('css/visual-refresh.css')); ?>">
+=======
+    <title>Mi carrito | El Gaucho Va</title>
+>>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
 </head>
 <body class="internal-page internal-cart">
     <?php echo $__env->make('partials.internal-header', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
@@ -90,6 +94,7 @@
                     <textarea name="referencias" id="referencias" maxlength="1000" placeholder="Apartamento, esquina u otra indicacion"><?php echo e(old('referencias')); ?></textarea>
                     <label for="metodo-pago">Metodo de pago</label>
                     <select name="metodo_pago" id="metodo-pago" required>
+<<<<<<< HEAD
                         <option value="efectivo" <?php if(old('metodo_pago', 'efectivo') === 'efectivo'): echo 'selected'; endif; ?>>Efectivo contra entrega</option>
                         <option value="tarjeta" <?php if(old('metodo_pago') === 'tarjeta'): echo 'selected'; endif; ?>>Tarjeta</option>
                         <?php if($metodosPagoGuardados->isNotEmpty()): ?>
@@ -160,6 +165,11 @@ endif;
 unset($__errorArgs, $__bag); ?>
                         </fieldset>
                     <?php endif; ?>
+=======
+                        <option value="efectivo">Efectivo contra entrega</option>
+                        <option value="tarjeta">Tarjeta contra entrega</option>
+                    </select>
+>>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
                     <button type="submit" class="confirm">Confirmar todos los productos</button>
                 </form>
             </section>
@@ -168,6 +178,7 @@ unset($__errorArgs, $__bag); ?>
     <?php if(session('order_sent')): ?>
     <div class="toast" role="status" aria-live="polite">Pedido enviado a <?php echo e(session('order_sent')); ?> local(es). Cuando todos lo finalicen, aparecerá para el repartidor como una sola entrega. <a href="<?php echo e(route('cliente.pedidos')); ?>">Ver historial</a></div>
     <?php endif; ?>
+<<<<<<< HEAD
     <script>
         const metodoPago = document.getElementById('metodo-pago');
         const tarjetaSimulada = document.getElementById('tarjeta-simulada');
@@ -189,5 +200,7 @@ unset($__errorArgs, $__bag); ?>
             actualizarFormularioTarjeta();
         }
     </script>
+=======
+>>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
 </body>
 </html><?php /**PATH /home/gsivoplas/htdocs/Proyecto_KRYMS_2026_UTU-main/resources/views/Cliente/CarritoNuevo.blade.php ENDPATH**/ ?>

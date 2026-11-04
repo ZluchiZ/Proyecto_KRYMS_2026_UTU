@@ -3,12 +3,18 @@
 namespace Tests\Feature;
 
 use App\Mail\RegistrationVerificationCode;
+<<<<<<< HEAD
 use App\Services\RegistrationVerificationService;
+=======
+>>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+<<<<<<< HEAD
 use Symfony\Component\HttpKernel\Exception\HttpException;
+=======
+>>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
 use Tests\Concerns\CreatesRegistrationTables;
 use Tests\TestCase;
 
@@ -165,9 +171,13 @@ class ClienteRegistrationTest extends TestCase
                 'email' => 'ana@example.com',
                 'code' => $wrongCode,
             ])
+<<<<<<< HEAD
             ->assertSessionHasErrors([
                 'code' => 'El código no es válido o venció.',
             ]);
+=======
+            ->assertSessionHasErrors('code');
+>>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
 
         $this->assertDatabaseMissing('cliente', ['Email_Usuario' => 'ana@example.com']);
         $this->assertDatabaseHas('registration_verifications', [
@@ -176,6 +186,7 @@ class ClienteRegistrationTest extends TestCase
         ]);
     }
 
+<<<<<<< HEAD
     public function test_registration_verification_does_not_expose_internal_exception_messages(): void
     {
         $technicalMessage = 'SQLSTATE[HY000]: Unknown database secret_database';
@@ -196,6 +207,8 @@ class ClienteRegistrationTest extends TestCase
             ->assertSessionDoesntHaveErrors(['code' => $technicalMessage]);
     }
 
+=======
+>>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
     public function test_an_active_pending_registration_cannot_be_replaced_by_a_new_submission(): void
     {
         $registration = [

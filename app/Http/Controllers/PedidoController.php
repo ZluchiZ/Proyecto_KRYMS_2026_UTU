@@ -7,8 +7,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
+<<<<<<< HEAD
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+=======
+>>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
 
 class PedidoController extends Controller
 {
@@ -176,6 +179,7 @@ class PedidoController extends Controller
         });
 
         $cliente = DB::table('cliente')->where('CI', session('usuario_id'))->first();
+<<<<<<< HEAD
         $metodosPagoGuardados = DB::table('tarjeta')
             ->where('CI_Cliente', session('usuario_id'))
             ->orderBy('ID')
@@ -184,6 +188,11 @@ class PedidoController extends Controller
         return view('Cliente.CarritoNuevo', [
             'items' => $items,
             'metodosPagoGuardados' => $metodosPagoGuardados,
+=======
+
+        return view('Cliente.CarritoNuevo', [
+            'items' => $items,
+>>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
             'totalCarrito' => round($items->sum('Subtotal'), 2),
             'telefonoUsuario' => $cliente?->{'Teléfono'},
             'direccionEntrega' => $cliente?->direccion ?? $cliente?->Direccion_Entrega,
@@ -273,6 +282,7 @@ class PedidoController extends Controller
     {
         $this->requireClient();
 
+<<<<<<< HEAD
         $validator = Validator::make($request->all(), [
             'direccion_envio' => 'required|string|max:500',
             'telefono_contacto' => 'nullable|string|max:30',
@@ -297,6 +307,16 @@ class PedidoController extends Controller
                 ->withInput($request->except(['numero_tarjeta', 'vencimiento_tarjeta', 'cvv_tarjeta']));
         }
         $validated = $validator->validated();
+=======
+        $validated = $request->validate([
+            'direccion_envio' => 'required|string|max:500',
+            'telefono_contacto' => 'nullable|string|max:30',
+            'referencias' => 'nullable|string|max:1000',
+            'metodo_pago' => 'required|in:efectivo,tarjeta',
+            'latitud' => 'nullable|numeric|between:-90,90',
+            'longitud' => 'nullable|numeric|between:-180,180',
+        ]);
+>>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
 
         $coordenadas = [
             'latitud' => $validated['latitud'] ?? null,
@@ -349,10 +369,14 @@ class PedidoController extends Controller
             return count($productosPorLocal);
         });
 
+<<<<<<< HEAD
         return redirect()
             ->route('carrito')
             ->with('order_sent', $locales)
             ->with('payment_simulated', $validated['metodo_pago'] === 'tarjeta');
+=======
+        return redirect()->route('carrito')->with('order_sent', $locales);
+>>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
     }
 
     public function updateStatus(Request $request, int $pedido, InAppNotificationService $notifications)
@@ -578,6 +602,7 @@ class PedidoController extends Controller
             }
         }
 
+<<<<<<< HEAD
         $tarjeta = null;
         if ($validated['metodo_pago'] === 'tarjeta_guardada') {
             $tarjeta = DB::table('tarjeta')
@@ -609,6 +634,15 @@ class PedidoController extends Controller
                 ]);
             }
         }
+=======
+        $tarjeta = DB::table('tarjeta')
+            ->where('CI_Cliente', session('usuario_id'))
+            ->value('ID');
+        $tarjeta ??= DB::table('tarjeta')->insertGetId([
+            'CI_Cliente' => session('usuario_id'),
+            'Banco' => null,
+        ]);
+>>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
 
         $pedido = DB::table('pedido')->insertGetId([
             'CI_Cliente' => session('usuario_id'),
@@ -622,9 +656,13 @@ class PedidoController extends Controller
             'longitud' => $coordenadas['longitud'],
             'Distancia_Local_Km' => $distancia,
             'Monto_Total' => $totalPedido,
+<<<<<<< HEAD
             'Metodo_de_pago' => in_array($validated['metodo_pago'], ['tarjeta', 'tarjeta_guardada'], true)
                 ? 'tarjeta_simulada'
                 : 'efectivo',
+=======
+            'Metodo_de_pago' => $validated['metodo_pago'],
+>>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
             'Codigo_Secreto' => $this->generateDeliveryCode(),
         ], 'N_Pedido');
 

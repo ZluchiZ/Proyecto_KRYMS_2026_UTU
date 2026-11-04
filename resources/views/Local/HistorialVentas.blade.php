@@ -58,7 +58,11 @@
                                 @endif
                             </div>
                             <div><span>Entrega</span><strong>{{ $venta->Ubicacion ?: 'No indicada' }}</strong></div>
+<<<<<<< HEAD
                             <div><span>Pago</span><strong>{{ ($venta->Metodo_de_pago ?? '') === 'tarjeta_simulada' ? 'Tarjeta' : ucfirst($venta->Metodo_de_pago ?? 'No indicado') }}</strong></div>
+=======
+                            <div><span>Pago</span><strong>{{ ucfirst($venta->Metodo_de_pago ?? 'No indicado') }}</strong></div>
+>>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
                             <div><span>Total</span><strong>$U {{ number_format((float) ($venta->Total_Local ?? 0), 2, ',', '.') }}</strong></div>
                         </div>
 

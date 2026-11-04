@@ -34,7 +34,10 @@
     <link rel="stylesheet" href="<?php echo e(asset('css/notifications.css')); ?>">
     <?php if($esClienteRegistrado): ?><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><?php endif; ?>
     <title>KRYMS | Pedí cerca, recibí fácil</title>
+<<<<<<< HEAD
     <link rel="stylesheet" href="<?php echo e(asset('css/visual-refresh.css')); ?>">
+=======
+>>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
 </head>
 <body class="home-page">
     <?php if(session('success')): ?>

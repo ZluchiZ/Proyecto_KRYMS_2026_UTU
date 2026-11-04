@@ -79,7 +79,11 @@
                             @endforeach
                             <p><strong>Envío:</strong> {{ $pedido->Direccion_Envio ?? $pedido->Ubicacion }}</p>
                             <p><strong>Total:</strong> $U {{ number_format($pedido->Total_Local ?? $pedido->Monto_Total, 2, ',', '.') }}</p>
+<<<<<<< HEAD
                             <p><strong>Pago:</strong> {{ ($pedido->Metodo_Pago ?? $pedido->Metodo_de_pago ?? '') === 'tarjeta_simulada' ? 'Tarjeta' : ucfirst($pedido->Metodo_Pago ?? $pedido->Metodo_de_pago ?? 'No indicado') }}</p>
+=======
+                            <p><strong>Pago:</strong> {{ ucfirst($pedido->Metodo_Pago ?? $pedido->Metodo_de_pago ?? 'No indicado') }}</p>
+>>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
                             @if ($pedido->Telefono_Cliente)
                                 <p><strong>Teléfono:</strong> {{ $pedido->Telefono_Cliente }}</p>
                             @endif

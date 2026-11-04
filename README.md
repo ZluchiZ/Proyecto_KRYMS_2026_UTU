@@ -69,6 +69,7 @@ Después de copiar `.env.example` a `.env`, ejecutá `php artisan migrate` para 
 
 Las contraseñas se almacenan mediante hash seguro con los mecanismos de Laravel (`Hash::make`) y se verifican con `Hash::check`. Un hash no es cifrado: no se revierte para recuperar la contraseña original. Los datos personales como cédula, teléfono y dirección no son contraseñas y no se protegen convirtiéndolos en hashes; su tratamiento depende de controles de acceso, minimización y protección de la base de datos.
 
+<<<<<<< HEAD
 Los errores inesperados se reportan en los registros de Laravel y se muestran al usuario con mensajes controlados, sin detalles de consultas o excepciones. En cualquier despliegue accesible desde fuera del equipo local, configurá `APP_ENV=production` y `APP_DEBUG=false` para evitar que Laravel renderice trazas de errores no capturados.
 
 ## Métodos de pago del prototipo
@@ -76,6 +77,13 @@ Los errores inesperados se reportan en los registros de Laravel y se muestran al
 En el carrito, el cliente puede seleccionar **efectivo contra entrega** o **tarjeta**. El pago con tarjeta se simula sin cargo y solo acepta los datos `0000 0000 0000 0000`, vencimiento `12/30` y código `000`. La casilla **Guardar método de pago** crea una referencia de tarjeta para el cliente y la asocia al pedido; en carritos futuros esa referencia puede seleccionarse y se muestra enmascarada con sus últimos cuatro dígitos. Si se elige efectivo o no se marca la casilla, no se crea ni asocia una referencia nueva. Solo se guardan los últimos cuatro dígitos, no el número completo, vencimiento ni código; los datos ingresados tampoco se recuperan como datos anteriores si falla la validación. Solo se guarda `tarjeta_simulada` en `Pedido.Metodo_de_pago`. No ingreses datos de tarjetas reales.
 
 Esto no es una pasarela de pago: no hay conexión con un banco o proveedor, ni autorización, cargo, captura o liquidación de dinero. La tabla `Tarjeta` conserva únicamente una referencia al cliente; no almacena número, vencimiento, titular ni código de seguridad. Para procesar pagos electrónicos en una versión futura habrá que integrar un proveedor de pagos y usar su tokenización, sin almacenar credenciales de tarjeta en la aplicación.
+=======
+## Métodos de pago del prototipo
+
+En el carrito, el cliente puede seleccionar **efectivo contra entrega** o **tarjeta contra entrega**. La selección se guarda en `Pedido.Metodo_de_pago`; es una simulación del método elegido y no procesa un pago. El proyecto no integra una pasarela, autorización, captura ni liquidación de transacciones.
+
+La tabla `Tarjeta` se conserva como referencia técnica del prototipo y no almacena número, vencimiento, titular ni código de seguridad. El checkout crea únicamente una referencia asociada al cliente, sin datos bancarios. No ingreses tarjetas reales. Para procesar pagos electrónicos en una versión futura habrá que integrar un proveedor de pagos y usar su tokenización, sin almacenar credenciales de tarjeta en la aplicación.
+>>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
 
 ## Pruebas automatizadas
 
