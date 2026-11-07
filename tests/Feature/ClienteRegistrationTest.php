@@ -1,0 +1,278 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Mail\RegistrationVerificationCode;
+<<<<<<< HEAD
+use App\Services\RegistrationVerificationService;
+=======
+>>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
+<<<<<<< HEAD
+use Symfony\Component\HttpKernel\Exception\HttpException;
+=======
+>>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
+use Tests\Concerns\CreatesRegistrationTables;
+use Tests\TestCase;
+
+class ClienteRegistrationTest extends TestCase
+{
+    use CreatesRegistrationTables;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->createRegistrationTables();
+        Mail::fake();
+    }
+
+    public function test_registration_creates_a_cliente_record(): void
+    {
+        Http::fake();
+
+        $response = $this->post(route('cliente.store'), [
+            'cedula' => '12345678',
+            'nombre' => 'Ana',
+            'apellido' => 'Pérez',
+            'email' => 'ana@example.com',
+            'Numero' => '099123456',
+            'password' => 'password123',
+            'password2' => 'password123',
+            'nacimiento' => '1990-01-02',
+            'opciones' => 'opcion1',
+        ]);
+
+        $response->assertRedirect(route('registration.verify.form', ['email' => 'ana@example.com']));
+
+        $this->assertDatabaseHas('registration_verifications', ['email' => 'ana@example.com']);
+        $this->assertDatabaseMissing('cliente', ['Email_Usuario' => 'ana@example.com']);
+        $this->get(route('registration.verify.form', ['email' => 'ana@example.com']))
+            ->assertOk()
+            ->assertSee('Código de verificación')
+            ->assertSee('name="code"', false);
+        $pendingPayload = DB::table('registration_verifications')->where('email', 'ana@example.com')->value('payload');
+        $this->assertStringNotContainsString('password123', $pendingPayload);
+
+        $code = null;
+        Mail::assertSent(RegistrationVerificationCode::class, function (RegistrationVerificationCode $mail) use (&$code): bool {
+            $code = $mail->code;
+
+            return true;
+        });
+        $this->assertNotSame($code, DB::table('registration_verifications')->where('email', 'ana@example.com')->value('code_hash'));
+
+        $this->post(route('registration.verify'), [
+            'email' => 'ana@example.com',
+            'code' => $code,
+        ])->assertRedirect(route('login'));
+
+        $this->assertDatabaseHas('cliente', [
+            'CI' => '12345678',
+            'Email_Usuario' => 'ana@example.com',
+        ]);
+        $this->assertDatabaseMissing('registration_verifications', [
+            'email' => 'ana@example.com',
+        ]);
+        $this->assertDatabaseHas('usuario', [
+            'Email' => 'ana@example.com',
+            'Tipo_Usuario' => 'cliente',
+        ]);
+        $this->assertTrue(Hash::check(
+            'password123',
+            DB::table('cliente')->where('Email_Usuario', 'ana@example.com')->value('Contraseña')
+        ));
+        $this->assertTrue(Hash::check(
+            'password123',
+            DB::table('usuario')->where('Email', 'ana@example.com')->value('Contraseña')
+        ));
+    }
+
+    public function test_registered_client_can_log_in_with_the_hashed_password(): void
+    {
+        $passwordHash = Hash::make('password123');
+        DB::table('usuario')->insert([
+            'Email' => 'ana@example.com',
+            'Nombre_de_Usuario' => 'Ana',
+            'Contraseña' => $passwordHash,
+            'Tipo_Usuario' => 'cliente',
+        ]);
+        DB::table('cliente')->insert([
+            'CI' => '12345678',
+            'Email_Usuario' => 'ana@example.com',
+            'Contraseña' => $passwordHash,
+            'Fecha_nacimiento' => '1990-01-02',
+            'Nombre' => 'Ana',
+            'Apellido' => 'Pérez',
+            'Teléfono' => '099123456',
+        ]);
+
+        $this->post(route('login.post'), [
+            'email' => 'ana@example.com',
+            'password' => 'password123',
+        ])->assertRedirect(route('home'))
+            ->assertSessionHas('tipo_usuario', 'cliente')
+            ->assertSessionHas('usuario_id', '12345678');
+    }
+
+    public function test_client_login_rejects_an_incorrect_password(): void
+    {
+        $passwordHash = Hash::make('password123');
+        DB::table('usuario')->insert([
+            'Email' => 'ana@example.com',
+            'Nombre_de_Usuario' => 'Ana',
+            'Contraseña' => $passwordHash,
+            'Tipo_Usuario' => 'cliente',
+        ]);
+        DB::table('cliente')->insert([
+            'CI' => '12345678',
+            'Email_Usuario' => 'ana@example.com',
+            'Contraseña' => $passwordHash,
+            'Fecha_nacimiento' => '1990-01-02',
+            'Nombre' => 'Ana',
+            'Apellido' => 'Pérez',
+            'Teléfono' => '099123456',
+        ]);
+
+        $this->from(route('login'))
+            ->post(route('login.post'), [
+                'email' => 'ana@example.com',
+                'password' => 'incorrecta',
+            ])
+            ->assertRedirect(route('login'))
+            ->assertSessionHas('error', 'Correo o contraseña incorrectos.');
+    }
+
+    public function test_wrong_code_does_not_create_an_account_and_counts_an_attempt(): void
+    {
+        $this->post(route('cliente.store'), [
+            'cedula' => '12345678',
+            'nombre' => 'Ana',
+            'apellido' => 'Pérez',
+            'email' => 'ana@example.com',
+            'Numero' => '099123456',
+            'password' => 'password123',
+            'password2' => 'password123',
+            'nacimiento' => '1990-01-02',
+        ]);
+
+        $code = null;
+        Mail::assertSent(RegistrationVerificationCode::class, function (RegistrationVerificationCode $mail) use (&$code): bool {
+            $code = $mail->code;
+
+            return true;
+        });
+
+        $wrongCode = $code === '000000' ? '000001' : '000000';
+        $this->from(route('registration.verify.form', ['email' => 'ana@example.com']))
+            ->post(route('registration.verify'), [
+                'email' => 'ana@example.com',
+                'code' => $wrongCode,
+            ])
+<<<<<<< HEAD
+            ->assertSessionHasErrors([
+                'code' => 'El código no es válido o venció.',
+            ]);
+=======
+            ->assertSessionHasErrors('code');
+>>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
+
+        $this->assertDatabaseMissing('cliente', ['Email_Usuario' => 'ana@example.com']);
+        $this->assertDatabaseHas('registration_verifications', [
+            'email' => 'ana@example.com',
+            'attempts' => 1,
+        ]);
+    }
+
+<<<<<<< HEAD
+    public function test_registration_verification_does_not_expose_internal_exception_messages(): void
+    {
+        $technicalMessage = 'SQLSTATE[HY000]: Unknown database secret_database';
+        $this->mock(RegistrationVerificationService::class)
+            ->shouldReceive('verify')
+            ->once()
+            ->with('ana@example.com', '123456')
+            ->andThrow(new HttpException(500, $technicalMessage));
+
+        $this->from(route('registration.verify.form', ['email' => 'ana@example.com']))
+            ->post(route('registration.verify'), [
+                'email' => 'ana@example.com',
+                'code' => '123456',
+            ])
+            ->assertSessionHasErrors([
+                'code' => 'No pudimos verificar el código. Intentá nuevamente más tarde.',
+            ])
+            ->assertSessionDoesntHaveErrors(['code' => $technicalMessage]);
+    }
+
+=======
+>>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
+    public function test_an_active_pending_registration_cannot_be_replaced_by_a_new_submission(): void
+    {
+        $registration = [
+            'cedula' => '12345678',
+            'nombre' => 'Ana',
+            'apellido' => 'Pérez',
+            'email' => 'ana@example.com',
+            'Numero' => '099123456',
+            'password' => 'password123',
+            'password2' => 'password123',
+            'nacimiento' => '1990-01-02',
+        ];
+
+        $this->post(route('cliente.store'), $registration)
+            ->assertRedirect(route('registration.verify.form', ['email' => 'ana@example.com']));
+
+        $registration['nombre'] = 'Otra persona';
+        $this->post(route('cliente.store'), $registration)
+            ->assertRedirect(route('registration.verify.form', ['email' => 'ana@example.com']));
+
+        $pending = DB::table('registration_verifications')->where('email', 'ana@example.com')->first();
+        $payload = json_decode($pending->payload, true, 512, JSON_THROW_ON_ERROR);
+
+        $this->assertSame('Ana', $payload['name']);
+        Mail::assertSent(RegistrationVerificationCode::class, 1);
+    }
+
+    public function test_expired_code_can_be_resent_and_the_new_code_completes_registration(): void
+    {
+        $this->post(route('cliente.store'), [
+            'cedula' => '12345678',
+            'nombre' => 'Ana',
+            'apellido' => 'Pérez',
+            'email' => 'ana@example.com',
+            'Numero' => '099123456',
+            'password' => 'password123',
+            'password2' => 'password123',
+            'nacimiento' => '1990-01-02',
+        ]);
+
+        DB::table('registration_verifications')
+            ->where('email', 'ana@example.com')
+            ->update([
+                'created_at' => now()->subSeconds(61),
+                'expires_at' => now()->subMinute(),
+            ]);
+
+        $this->from(route('registration.verify.form', ['email' => 'ana@example.com']))
+            ->post(route('registration.verify.resend'), ['email' => 'ana@example.com'])
+            ->assertRedirect(route('registration.verify.form', ['email' => 'ana@example.com']))
+            ->assertSessionHas('success');
+
+        $codes = [];
+        Mail::assertSent(RegistrationVerificationCode::class, function (RegistrationVerificationCode $mail) use (&$codes): bool {
+            $codes[] = $mail->code;
+
+            return true;
+        }, 2);
+
+        $this->post(route('registration.verify'), [
+            'email' => 'ana@example.com',
+            'code' => end($codes),
+        ])->assertRedirect(route('login'));
+
+        $this->assertDatabaseHas('cliente', ['Email_Usuario' => 'ana@example.com']);
+    }
+}

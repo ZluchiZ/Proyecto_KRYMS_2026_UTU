@@ -1,0 +1,226 @@
+:root {
+    --palette-orange: #f76e11;
+    --palette-orange-light: #ff9f45;
+    --palette-peach: #ffbc80;
+    --palette-coral: #fc4f4f;
+    --palette-red: #fe2323;
+    --palette-ink: #392317;
+    --palette-muted: #795b47;
+    --palette-canvas: #fff8f1;
+    --palette-surface: #fff;
+    --palette-border: #ffbc80;
+    --navy: var(--palette-ink);
+    --blue: var(--palette-orange-light);
+    --coral: var(--palette-orange);
+    --mint: rgb(255 188 128 / 22%);
+    --cream: var(--palette-canvas);
+    --line: var(--palette-border);
+    --muted: var(--palette-muted);
+    --white: var(--palette-surface);
+    --internal-navy: var(--palette-ink);
+    --internal-blue: var(--palette-orange-light);
+    --internal-coral: var(--palette-orange);
+    --internal-peach: var(--palette-peach);
+    --internal-pink: rgb(252 79 79 / 12%);
+    --internal-cream: var(--palette-canvas);
+    --internal-white: var(--palette-surface);
+    --internal-line: var(--palette-border);
+    --internal-muted: var(--palette-muted);
+    --internal-border: var(--palette-border);
+    --ink: var(--palette-ink);
+    --muted: var(--palette-muted);
+    --surface: var(--palette-surface);
+    --canvas: var(--palette-canvas);
+    --app-ink: var(--palette-ink);
+    --app-muted: var(--palette-muted);
+    --app-canvas: var(--palette-canvas);
+    --app-surface: var(--palette-surface);
+    --app-line: var(--palette-border);
+    --app-primary: var(--palette-orange);
+    --app-primary-hover: var(--palette-coral);
+    --app-secondary: var(--palette-orange-light);
+    --app-gold: var(--palette-peach);
+    --color-ink: var(--palette-ink);
+    --color-muted: var(--palette-muted);
+    --color-surface: var(--palette-surface);
+    --color-background: var(--palette-canvas);
+    --color-accent: var(--palette-orange);
+    --color-accent-dark: var(--palette-coral);
+    --color-border: var(--palette-border);
+    --primary: var(--palette-orange);
+    --primary-dark: var(--palette-coral);
+    --internal-coral: var(--palette-orange);
+    --internal-salmon: var(--palette-orange);
+    --internal-salmon-dark: var(--palette-coral);
+}
+
+body,
+body.home-page,
+body.internal-page {
+    background: var(--palette-canvas) !important;
+    color: var(--palette-ink);
+}
+
+button:not(.notifications-toggle):not(.carousel-controls button):not(.close):not(.purchase-close):not(.secondary):not(.logout):not(.leaflet-control button),
+input[type='submit'],
+input[type='button'],
+.primary-button,
+.profile-primary-action,
+.empty-cart-action,
+.history-primary-link,
+.btn-registrar-local,
+.btn-registrar-repartidor,
+.purchase-trigger,
+.internal-home-link {
+    border-color: var(--palette-orange) !important;
+    background-color: var(--palette-orange) !important;
+    color: #321806 !important;
+}
+
+button:not(.notifications-toggle):not(.carousel-controls button):not(.close):not(.purchase-close):not(.secondary):not(.logout):not(.leaflet-control button):hover:not(:disabled),
+input[type='submit']:hover,
+input[type='button']:hover,
+.primary-button:hover,
+.profile-primary-action:hover,
+.empty-cart-action:hover,
+.history-primary-link:hover,
+.btn-registrar-local:hover,
+.btn-registrar-repartidor:hover,
+.purchase-trigger:hover,
+.internal-home-link:hover {
+    border-color: var(--palette-coral) !important;
+    background-color: var(--palette-coral) !important;
+    color: #321806 !important;
+}
+
+button.secondary,
+.secondary,
+.location-current-button,
+.profile-secondary-action {
+    border-color: var(--palette-peach) !important;
+    background-color: var(--palette-peach) !important;
+    color: var(--palette-ink) !important;
+}
+
+button.secondary:hover:not(:disabled),
+.secondary:hover,
+.location-current-button:hover,
+.profile-secondary-action:hover {
+    border-color: var(--palette-orange-light) !important;
+    background-color: var(--palette-orange-light) !important;
+    color: var(--palette-ink) !important;
+}
+
+:where(a) {
+    text-decoration-color: var(--palette-orange-light);
+}
+
+:where(input:not([type='checkbox']):not([type='radio']), select, textarea):focus,
+:where(input:not([type='checkbox']):not([type='radio']), select, textarea):focus-visible {
+    border-color: var(--palette-orange) !important;
+    outline-color: rgb(247 110 17 / 30%) !important;
+}
+
+:where(a, button, input, select, textarea):focus-visible {
+    outline-color: rgb(247 110 17 / 55%);
+}
+
+:is(
+    .category-item,
+    .local-card,
+    .product-card,
+    .restaurant-card,
+    .offer-card,
+    .restaurant-directory-card,
+    .catalog-product-card,
+    .internal-cart .item,
+    .internal-cart .checkout,
+    .history-card,
+    .history-empty,
+    .customer-profile-card,
+    .location-page-card,
+    .login-card,
+    .formularioregistro,
+    .local-register-card,
+    .rider-register-card,
+    .google-register-card,
+    .registration-verification-card,
+    .profile,
+    .dashboard-panel,
+    .order-card,
+    .order,
+    .product,
+    .local-review-item,
+    .metric,
+    .data-panel,
+    .notification-item,
+    .notification-record,
+    .notification-card
+) {
+    border-color: var(--palette-border) !important;
+    background-color: var(--palette-surface) !important;
+}
+
+:is(.eyebrow, .section-heading a, .location-modal-kicker, .profile-info span, .dashboard-profile-link, .local-profile-link) {
+    color: var(--palette-orange) !important;
+}
+
+:is(.notifications-count, .nav-badge, .status-pill, .status-badge, .history-status, .order-status) {
+    border-color: var(--palette-peach) !important;
+    background-color: rgb(255 188 128 / 30%) !important;
+    color: #63300e !important;
+}
+
+:is(.error, .alert-danger, .error-message, .form-error, .validation-error) {
+    border-color: var(--palette-red) !important;
+    background-color: rgb(252 79 79 / 12%) !important;
+    color: #7d1717 !important;
+}
+
+:is(.success, .alert-success, .success-message, .form-success) {
+    border-color: var(--palette-peach) !important;
+    background-color: rgb(255 188 128 / 22%) !important;
+    color: #63300e !important;
+}
+
+.admin-layout .sidebar .nav-link.active {
+    border-color: var(--palette-orange);
+    background-color: var(--palette-orange);
+    color: #321806;
+}
+
+.internal-header,
+.site-header,
+.topbar {
+    border-color: var(--palette-border) !important;
+    background-color: var(--palette-surface) !important;
+}
+
+.internal-header-actions .internal-home-link {
+    border-color: var(--palette-orange-light) !important;
+    background-color: var(--palette-orange-light) !important;
+    color: #321806 !important;
+}
+
+.category-item.is-active,
+.nav-link.active,
+.filter-chip.active,
+.tab.active {
+    border-color: var(--palette-orange) !important;
+    background-color: var(--palette-orange) !important;
+    color: #321806 !important;
+}
+
+.hero-section,
+.promo-banner {
+    border-color: var(--palette-border) !important;
+    background-color: rgb(255 188 128 / 24%) !important;
+}
+
+.admin-layout .sidebar .nav-link:hover {
+    background-color: rgb(255 159 69 / 20%);
+}
+
+.admin-layout .live-indicator::before {
+    background-color: var(--palette-orange);
+}
