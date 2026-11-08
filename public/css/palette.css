@@ -61,7 +61,7 @@ body.internal-page {
     color: var(--palette-ink);
 }
 
-button:not(.notifications-toggle):not(.carousel-controls button):not(.close):not(.purchase-close):not(.secondary):not(.logout):not(.leaflet-control button),
+button:not(.notifications-toggle):not(.carousel-controls button):not(.close):not(.purchase-close):not(.secondary):not(.logout):not(.profile-logout-button):not(.leaflet-control button):not(.search-submit),
 input[type='submit'],
 input[type='button'],
 .primary-button,
@@ -77,7 +77,7 @@ input[type='button'],
     color: #321806 !important;
 }
 
-button:not(.notifications-toggle):not(.carousel-controls button):not(.close):not(.purchase-close):not(.secondary):not(.logout):not(.leaflet-control button):hover:not(:disabled),
+button:not(.notifications-toggle):not(.carousel-controls button):not(.close):not(.purchase-close):not(.secondary):not(.logout):not(.profile-logout-button):not(.leaflet-control button):not(.search-submit):hover:not(:disabled),
 input[type='submit']:hover,
 input[type='button']:hover,
 .primary-button:hover,

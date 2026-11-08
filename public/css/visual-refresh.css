@@ -685,3 +685,201 @@
         flex-wrap: wrap;
     }
 }
+
+.home-page .local-card,
+.home-page .product-card,
+.home-page .restaurant-card {
+    min-width: 0;
+    overflow: hidden;
+    border-radius: 16px;
+    box-shadow: 0 8px 22px rgba(37, 51, 47, .08);
+}
+
+.home-page .product-card,
+.home-page .local-card,
+.home-page .restaurant-card {
+    height: 100%;
+}
+
+.home-page .product-image-wrap,
+.home-page .local-image {
+    height: auto;
+    aspect-ratio: 1.35;
+    flex: 0 0 auto;
+    background: #edf1ed;
+}
+
+.home-page .product-image-wrap img,
+.home-page .local-image img,
+.home-page .restaurant-card > img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.home-page .product-card-body,
+.home-page .local-card-body {
+    min-height: 0;
+    flex: 1;
+    padding: .9rem;
+}
+
+.home-page .product-card h3,
+.home-page .local-card h3,
+.home-page .restaurant-card h3 {
+    display: -webkit-box;
+    overflow: hidden;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.home-page .product-category,
+.home-page .restaurant-type {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.home-page .product-store,
+.home-page .local-card-body > p,
+.home-page .restaurant-card p {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.home-page .product-footer {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 40px;
+    align-items: center;
+    gap: .5rem;
+    margin-top: .75rem;
+}
+
+.home-page .product-pricing {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .08rem;
+    overflow-wrap: anywhere;
+}
+
+.home-page .product-pricing strong,
+.home-page .product-price-discounted {
+    color: var(--app-ink, var(--navy));
+    font-size: .92rem;
+    font-weight: 800;
+    line-height: 1.25;
+}
+
+.home-page .product-price-original {
+    color: var(--app-muted, var(--muted));
+    font-size: .72rem;
+    text-decoration: line-through;
+}
+
+.home-page .product-footer .add-button {
+    width: 40px;
+    height: 40px;
+    min-height: 40px;
+    margin: 0;
+    border-radius: 12px;
+}
+
+.home-page .local-card {
+    display: flex;
+    flex: 0 0 clamp(250px, 30vw, 320px);
+    width: clamp(250px, 30vw, 320px);
+    flex-direction: column;
+    scroll-snap-align: start;
+}
+
+.home-page .local-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: .3rem;
+}
+
+.home-page .local-card-body .card-meta {
+    gap: .4rem .7rem;
+    margin-top: auto;
+    padding-top: .7rem;
+}
+
+.home-page .product-grid {
+    align-items: stretch;
+    gap: clamp(.65rem, 1.8vw, 1.1rem);
+}
+
+.home-page .restaurant-card > img {
+    aspect-ratio: 1.35;
+    height: auto;
+    flex: 0 0 auto;
+}
+
+.products-page .products-list-section .product-grid {
+    align-items: stretch;
+}
+
+.products-page .products-list-heading {
+    flex-wrap: wrap;
+}
+
+.products-page .products-count {
+    padding-bottom: .35rem;
+}
+
+@media (max-width: 760px) {
+    .home-page .local-card {
+        flex-basis: min(320px, 84vw);
+        width: min(320px, 84vw);
+    }
+
+    .home-page .carousel-track .product-card {
+        flex-basis: min(290px, 82vw);
+        width: min(290px, 82vw);
+    }
+
+    .home-page .restaurant-grid {
+        gap: .75rem;
+    }
+
+    .home-page .restaurant-card > div {
+        min-width: 0;
+        padding: .8rem;
+    }
+
+    .products-page .products-hero {
+        border-radius: 18px;
+    }
+}
+
+@media (max-width: 520px) {
+    .home-page .brand .logo {
+        width: 56px;
+        height: 56px;
+        object-fit: contain;
+        mix-blend-mode: normal;
+    }
+}
+
+@media (max-width: 380px) {
+    .products-page .products-list-section .product-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: .85rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .home-page .local-card,
+    .home-page .product-card,
+    .home-page .restaurant-card {
+        scroll-behavior: auto;
+        transition: none;
+    }
+}

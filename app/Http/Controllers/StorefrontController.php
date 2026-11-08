@@ -73,35 +73,29 @@ class StorefrontController extends Controller
             }
         }
 
-        $productos = DB::table('producto')
-            ->leftJoin('comercio', 'producto.RUT_Comercio', '=', 'comercio.RUT')
-            ->select('producto.*', 'comercio.Nombre_Comercio', 'comercio.Logo', 'comercio.Dirección', 'comercio.Abierto')
+        $this->validateSearchRequest($request);
+        $busqueda = trim($request->string('q')->toString());
+        $productos = $this->searchProductsQuery($request, $busqueda)
             ->when($identificadorComercio, function ($query) use ($identificadorComercio) {
-                $query->where('RUT_Comercio', $identificadorComercio);
+                $query->where('producto.RUT_Comercio', $identificadorComercio);
             })
-            ->when($request->filled('categoria'), function ($query) use ($request) {
-                $query->where('Categoria', $request->string('categoria')->toString());
-            })
-            ->when($request->filled('q'), function ($query) use ($request) {
-                $busqueda = trim($request->string('q')->toString());
-
-                if ($busqueda === '') {
-                    return;
-                }
-
-                $query->where(function ($query) use ($busqueda) {
-                    $query->where('Nombre_Producto', 'like', "%{$busqueda}%")
-                        ->orWhere('Categoria', 'like', "%{$busqueda}%")
-                        ->orWhere('comercio.Nombre_Comercio', 'like', "%{$busqueda}%");
-                });
-            })
-            ->orderByDesc('ID_Producto')
+            ->orderByDesc('producto.ID_Producto')
             ->get();
 
         $locales = DB::table('comercio')
             ->whereNotNull('RUT')
             ->orderBy('Nombre_Comercio')
             ->get(['RUT', 'Nombre_Comercio', 'Logo', 'Dirección', 'Horario', 'Abierto']);
+        $busquedaActiva = $busqueda !== '' || $this->hasSearchFilters($request);
+        $localesBusqueda = $busquedaActiva
+            ? $this->searchStoresQuery($request, $busqueda)->get()
+            : collect();
+        $categoriasBusqueda = DB::table('producto')
+            ->whereNotNull('Categoria')
+            ->where('Categoria', '!=', '')
+            ->distinct()
+            ->orderBy('Categoria')
+            ->pluck('Categoria');
 
         $localesSuscriptos = collect();
         if (Schema::hasColumn('comercio', 'Suscripcion_Activa')) {
@@ -144,6 +138,8 @@ class StorefrontController extends Controller
             'esClienteRegistrado' => session('tipo_usuario') === 'cliente' && session('usuario_id'),
             'productos' => $productos,
             'locales' => $locales,
+            'localesBusqueda' => $localesBusqueda,
+            'categoriasBusqueda' => $categoriasBusqueda,
             'localesSuscriptos' => $localesSuscriptos,
             'cantidadCarrito' => $cantidadCarrito,
         ]);
@@ -151,25 +147,129 @@ class StorefrontController extends Controller
 
     public function searchProducts(Request $request)
     {
+        $this->validateSearchRequest($request);
         $busqueda = trim($request->string('q')->toString());
-        $productos = DB::table('producto')
-            ->leftJoin('comercio', 'producto.RUT_Comercio', '=', 'comercio.RUT')
-            ->select('producto.*', 'comercio.Nombre_Comercio', 'comercio.Logo', 'comercio.Dirección', 'comercio.Abierto')
-            ->where(function ($query) use ($busqueda) {
-                $query->where('producto.Nombre_Producto', 'like', "%{$busqueda}%")
-                    ->orWhere('producto.Categoria', 'like', "%{$busqueda}%")
-                    ->orWhere('comercio.Nombre_Comercio', 'like', "%{$busqueda}%");
-            })
+        $productos = $this->searchProductsQuery($request, $busqueda)
             ->orderByDesc('producto.ID_Producto')
             ->get();
+        $locales = $this->searchStoresQuery($request, $busqueda)->get();
 
         return response()
             ->view('partials.home-search-results', [
                 'productos' => $productos,
+                'locales' => $locales,
                 'busqueda' => $busqueda,
                 'esClienteRegistrado' => session('tipo_usuario') === 'cliente' && session('usuario_id'),
             ])
             ->header('Cache-Control', 'no-store');
+    }
+
+    private function validateSearchRequest(Request $request): void
+    {
+        $request->validate([
+            'q' => ['nullable', 'string', 'max:100'],
+            'categoria' => ['nullable', 'string', 'max:100'],
+            'min_price' => ['nullable', 'numeric', 'min:0'],
+            'max_price' => ['nullable', 'numeric', 'min:0', 'gte:min_price'],
+            'offers' => ['nullable', 'boolean'],
+            'available' => ['nullable', 'boolean'],
+        ]);
+    }
+
+    private function searchProductsQuery(Request $request, string $busqueda)
+    {
+        $query = DB::table('producto')
+            ->leftJoin('comercio', 'producto.RUT_Comercio', '=', 'comercio.RUT')
+            ->select('producto.*', 'comercio.Nombre_Comercio', 'comercio.Logo', 'comercio.Dirección', 'comercio.Abierto');
+
+        if ($busqueda !== '') {
+            $query->where(function ($query) use ($busqueda) {
+                $this->applyProductTextSearch($query, $busqueda);
+                $query->orWhere('comercio.Nombre_Comercio', 'like', "%{$busqueda}%");
+            });
+        }
+
+        $this->applySearchFilters($query, $request);
+
+        return $query;
+    }
+
+    private function searchStoresQuery(Request $request, string $busqueda)
+    {
+        $query = DB::table('comercio')
+            ->whereNotNull('comercio.RUT')
+            ->select('comercio.RUT', 'comercio.Nombre_Comercio', 'comercio.Logo', 'comercio.Dirección', 'comercio.Horario', 'comercio.Abierto');
+
+        if ($busqueda !== '') {
+            $query->where(function ($query) use ($busqueda, $request) {
+                $query->where('comercio.Nombre_Comercio', 'like', "%{$busqueda}%")
+                    ->orWhereExists(function ($products) use ($busqueda, $request) {
+                        $products->selectRaw('1')
+                            ->from('producto')
+                            ->whereColumn('producto.RUT_Comercio', 'comercio.RUT')
+                            ->where(function ($products) use ($busqueda) {
+                                $this->applyProductTextSearch($products, $busqueda);
+                            });
+                        $this->applySearchFilters($products, $request);
+                    });
+            });
+        }
+
+        if ($this->hasSearchFilters($request)) {
+            $query->whereExists(function ($products) use ($request) {
+                $products->selectRaw('1')
+                    ->from('producto')
+                    ->whereColumn('producto.RUT_Comercio', 'comercio.RUT');
+                $this->applySearchFilters($products, $request);
+            });
+        }
+
+        return $query->orderBy('comercio.Nombre_Comercio');
+    }
+
+    private function applyProductTextSearch($query, string $busqueda): void
+    {
+        $query->where('producto.Nombre_Producto', 'like', "%{$busqueda}%")
+            ->orWhere('producto.Categoria', 'like', "%{$busqueda}%");
+    }
+
+    private function applySearchFilters($query, Request $request): void
+    {
+        if ($request->filled('categoria')) {
+            $query->where('producto.Categoria', $request->string('categoria')->toString());
+        }
+
+        if ($request->filled('min_price')) {
+            $query->whereRaw(
+                'COALESCE(producto.Precio, 0) * (1 - COALESCE(producto.Descuento_Porcentaje, 0) / 100.0) >= CAST(? AS DECIMAL(10, 2))',
+                [(float) $request->input('min_price')],
+            );
+        }
+
+        if ($request->filled('max_price')) {
+            $query->whereRaw(
+                'COALESCE(producto.Precio, 0) * (1 - COALESCE(producto.Descuento_Porcentaje, 0) / 100.0) <= CAST(? AS DECIMAL(10, 2))',
+                [(float) $request->input('max_price')],
+            );
+        }
+
+        if ($request->boolean('offers')) {
+            $query->where('producto.Descuento_Porcentaje', '>', 0);
+        }
+
+        if ($request->boolean('available')) {
+            $query->where('producto.Disponible', true)
+                ->where('comercio.Abierto', true);
+        }
+    }
+
+    private function hasSearchFilters(Request $request): bool
+    {
+        return $request->filled('categoria')
+            || $request->filled('min_price')
+            || $request->filled('max_price')
+            || $request->boolean('offers')
+            || $request->boolean('available');
     }
 
     public function restaurants()

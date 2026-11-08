@@ -3,18 +3,12 @@
 namespace Tests\Feature;
 
 use App\Mail\RegistrationVerificationCode;
-<<<<<<< HEAD
 use App\Services\RegistrationVerificationService;
-=======
->>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
-<<<<<<< HEAD
 use Symfony\Component\HttpKernel\Exception\HttpException;
-=======
->>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
 use Tests\Concerns\CreatesRegistrationTables;
 use Tests\TestCase;
 
@@ -39,8 +33,8 @@ class ClienteRegistrationTest extends TestCase
             'apellido' => 'Pérez',
             'email' => 'ana@example.com',
             'Numero' => '099123456',
-            'password' => 'password123',
-            'password2' => 'password123',
+            'password' => 'Password123!',
+            'password2' => 'Password123!',
             'nacimiento' => '1990-01-02',
             'opciones' => 'opcion1',
         ]);
@@ -54,7 +48,7 @@ class ClienteRegistrationTest extends TestCase
             ->assertSee('Código de verificación')
             ->assertSee('name="code"', false);
         $pendingPayload = DB::table('registration_verifications')->where('email', 'ana@example.com')->value('payload');
-        $this->assertStringNotContainsString('password123', $pendingPayload);
+        $this->assertStringNotContainsString('Password123!', $pendingPayload);
 
         $code = null;
         Mail::assertSent(RegistrationVerificationCode::class, function (RegistrationVerificationCode $mail) use (&$code): bool {
@@ -81,11 +75,11 @@ class ClienteRegistrationTest extends TestCase
             'Tipo_Usuario' => 'cliente',
         ]);
         $this->assertTrue(Hash::check(
-            'password123',
+            'Password123!',
             DB::table('cliente')->where('Email_Usuario', 'ana@example.com')->value('Contraseña')
         ));
         $this->assertTrue(Hash::check(
-            'password123',
+            'Password123!',
             DB::table('usuario')->where('Email', 'ana@example.com')->value('Contraseña')
         ));
     }
@@ -153,8 +147,8 @@ class ClienteRegistrationTest extends TestCase
             'apellido' => 'Pérez',
             'email' => 'ana@example.com',
             'Numero' => '099123456',
-            'password' => 'password123',
-            'password2' => 'password123',
+            'password' => 'Password123!',
+            'password2' => 'Password123!',
             'nacimiento' => '1990-01-02',
         ]);
 
@@ -171,13 +165,9 @@ class ClienteRegistrationTest extends TestCase
                 'email' => 'ana@example.com',
                 'code' => $wrongCode,
             ])
-<<<<<<< HEAD
             ->assertSessionHasErrors([
                 'code' => 'El código no es válido o venció.',
             ]);
-=======
-            ->assertSessionHasErrors('code');
->>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
 
         $this->assertDatabaseMissing('cliente', ['Email_Usuario' => 'ana@example.com']);
         $this->assertDatabaseHas('registration_verifications', [
@@ -186,7 +176,6 @@ class ClienteRegistrationTest extends TestCase
         ]);
     }
 
-<<<<<<< HEAD
     public function test_registration_verification_does_not_expose_internal_exception_messages(): void
     {
         $technicalMessage = 'SQLSTATE[HY000]: Unknown database secret_database';
@@ -207,8 +196,6 @@ class ClienteRegistrationTest extends TestCase
             ->assertSessionDoesntHaveErrors(['code' => $technicalMessage]);
     }
 
-=======
->>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
     public function test_an_active_pending_registration_cannot_be_replaced_by_a_new_submission(): void
     {
         $registration = [
@@ -217,8 +204,8 @@ class ClienteRegistrationTest extends TestCase
             'apellido' => 'Pérez',
             'email' => 'ana@example.com',
             'Numero' => '099123456',
-            'password' => 'password123',
-            'password2' => 'password123',
+            'password' => 'Password123!',
+            'password2' => 'Password123!',
             'nacimiento' => '1990-01-02',
         ];
 
@@ -244,8 +231,8 @@ class ClienteRegistrationTest extends TestCase
             'apellido' => 'Pérez',
             'email' => 'ana@example.com',
             'Numero' => '099123456',
-            'password' => 'password123',
-            'password2' => 'password123',
+            'password' => 'Password123!',
+            'password2' => 'Password123!',
             'nacimiento' => '1990-01-02',
         ]);
 

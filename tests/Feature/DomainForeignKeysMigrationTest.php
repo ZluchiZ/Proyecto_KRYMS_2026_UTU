@@ -49,8 +49,13 @@ class DomainForeignKeysMigrationTest extends TestCase
         $migration = require base_path('database/migrations/2026_10_29_000005_add_domain_foreign_keys.php');
         $migration->up();
 
-        $this->assertTrue(Schema::hasForeignKey('carrito', 'fk_carrito_cliente'));
-        $this->assertTrue(Schema::hasForeignKey('carrito', 'fk_carrito_producto'));
-        $this->assertCount(2, Schema::getForeignKeys('carrito'));
+        $foreignKeys = collect(Schema::getForeignKeys('carrito'))
+            ->map(fn (array $foreignKey): string => $foreignKey['columns'][0].'->'.$foreignKey['foreign_table'].'.'.$foreignKey['foreign_columns'][0])
+            ->all();
+
+        $this->assertEqualsCanonicalizing([
+            'CI_Cliente->cliente.CI',
+            'ID_Producto->producto.ID_Producto',
+        ], $foreignKeys);
     }
 }

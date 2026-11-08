@@ -208,9 +208,11 @@
 }
 
 .notifications-bell {
+    display: block;
     width: 19px;
     height: 19px;
     flex: 0 0 19px;
+    overflow: visible;
     stroke: currentColor;
     stroke-linecap: round;
     stroke-linejoin: round;
@@ -394,7 +396,8 @@
     background: #f4f8f4;
 }
 
-.home-page .notifications-panel {
+.home-page .notifications-panel,
+.home-notifications-panel {
     position: fixed;
     top: 86px;
     right: max(1rem, calc((100vw - 1240px) / 2));
@@ -432,11 +435,12 @@
     }
 
     .home-page .notifications-panel,
+    .home-notifications-panel,
     .internal-header .notifications-panel,
     .admin-layout .notifications-panel {
         top: 72px;
         right: 12px;
-        width: min(390px, calc(100vw - 24px));
+        width: min(390px, calc(100% - 24px));
         max-height: min(70vh, 500px);
         border-radius: 14px;
     }

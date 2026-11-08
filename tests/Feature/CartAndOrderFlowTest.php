@@ -102,10 +102,7 @@ class CartAndOrderFlowTest extends TestCase
             $table->id('ID');
             $table->string('CI_Cliente');
             $table->string('Banco')->nullable();
-<<<<<<< HEAD
             $table->string('Ultimos_4', 4)->nullable();
-=======
->>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
         });
 
         Schema::create('repartidor', function (Blueprint $table) {
@@ -196,8 +193,12 @@ class CartAndOrderFlowTest extends TestCase
         ])->get(route('carrito'));
 
         $response->assertOk();
-        $response->assertSee('Total del carrito');
+        $response->assertSee('Subtotal de productos');
+        $response->assertSee('Comisión por servicio');
+        $response->assertSee('Total a pagar');
         $response->assertSee('$U 360,00');
+        $response->assertSee('$U 50,00');
+        $response->assertSee('$U 410,00');
     }
 
     public function test_cart_across_locals_creates_one_delivery_visible_only_when_all_are_ready(): void
@@ -239,7 +240,7 @@ class CartAndOrderFlowTest extends TestCase
         $this->assertSame(1, DB::table('pedido')->count());
         $this->assertIsString($codigoSecreto);
         $this->assertSame(12, strlen($codigoSecreto));
-        $this->assertEquals(405, DB::table('pedido')->where('N_Pedido', $pedidoId)->value('Monto_Total'));
+        $this->assertEquals(455, DB::table('pedido')->where('N_Pedido', $pedidoId)->value('Monto_Total'));
         $this->assertSame(2, DB::table('subpedido')->where('N_Pedido', $pedidoId)->count());
         $this->assertSame(3, DB::table('detalle_de_pedido')->count());
         $this->assertSame(2, DB::table('app_notifications')->where('type', 'nuevo_pedido')->count());
@@ -353,7 +354,11 @@ class CartAndOrderFlowTest extends TestCase
             ->get(route('dashboard.repartidor'))
             ->assertOk()
             ->assertDontSee($codigoSecreto);
-        $this->withSession(['tipo_usuario' => 'cliente', 'usuario_id' => '12345678'])
+        $this->withSession([
+            'tipo_usuario' => 'cliente',
+            'usuario_id' => '12345678',
+            'email' => 'cliente@example.com',
+        ])
             ->get(route('cliente.pedidos'))
             ->assertOk()
             ->assertSee('Código secreto de entrega')
@@ -389,7 +394,11 @@ class CartAndOrderFlowTest extends TestCase
         $this->withSession($sesionSegundoRepartidor)
             ->patch(route('repartidor.pedidos.progreso', $pedidoId), ['estado_entrega' => 'en_camino'])
             ->assertStatus(409);
-        $this->withSession(['tipo_usuario' => 'cliente', 'usuario_id' => '12345678'])
+        $this->withSession([
+            'tipo_usuario' => 'cliente',
+            'usuario_id' => '12345678',
+            'email' => 'cliente@example.com',
+        ])
             ->get(route('cliente.pedidos'))
             ->assertOk()
             ->assertSee('Seguimiento de entrega')
@@ -435,11 +444,7 @@ class CartAndOrderFlowTest extends TestCase
         ]);
     }
 
-<<<<<<< HEAD
     public function test_checkout_simulates_card_payment_only_with_fictitious_data(): void
-=======
-    public function test_checkout_records_card_on_delivery_as_a_selected_method_only(): void
->>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
     {
         DB::table('cliente')->insert([
             'id' => 9,
@@ -463,17 +468,12 @@ class CartAndOrderFlowTest extends TestCase
         $this->withSession($session)
             ->get(route('carrito'))
             ->assertOk()
-<<<<<<< HEAD
             ->assertSee('Tarjeta');
-=======
-            ->assertSee('Tarjeta contra entrega');
->>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
 
         $this->withSession($session)
             ->post(route('carrito.confirm'), [
                 'direccion_envio' => 'Calle 1',
                 'metodo_pago' => 'tarjeta',
-<<<<<<< HEAD
                 'numero_tarjeta' => '4111 1111 1111 1111',
                 'vencimiento_tarjeta' => '12/30',
                 'cvv_tarjeta' => '123',
@@ -492,13 +492,10 @@ class CartAndOrderFlowTest extends TestCase
                 'numero_tarjeta' => '0000 0000 0000 0000',
                 'vencimiento_tarjeta' => '12/30',
                 'cvv_tarjeta' => '000',
-=======
->>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
                 'latitud' => -34.9,
                 'longitud' => -56.2,
             ])
             ->assertRedirect(route('carrito'))
-<<<<<<< HEAD
             ->assertSessionHas('order_sent', 2)
             ->assertSessionHas('payment_simulated', true);
 
@@ -617,19 +614,6 @@ class CartAndOrderFlowTest extends TestCase
             ->assertSessionHasErrors('tarjeta_guardada_id');
 
         $this->assertSame(4, DB::table('pedido')->count());
-=======
-            ->assertSessionHas('order_sent', 2);
-
-        $this->assertDatabaseHas('pedido', [
-            'CI_Cliente' => '12345678',
-            'Metodo_de_pago' => 'tarjeta',
-        ]);
-        $this->assertDatabaseHas('tarjeta', [
-            'CI_Cliente' => '12345678',
-            'Banco' => null,
-        ]);
-        $this->assertSame(0, DB::table('tarjeta')->whereNotNull('Banco')->count());
->>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
     }
 
     public function test_client_can_view_only_their_own_order_history(): void
@@ -1161,7 +1145,7 @@ class CartAndOrderFlowTest extends TestCase
             ['ID_Producto' => 11, 'RUT_Comercio' => '222222222222', 'Nombre_Producto' => 'Producto Dos', 'Precio' => 200],
         ]);
         DB::table('pedido')->insert([
-            ['N_Pedido' => 21, 'CI_Cliente' => '12345678', 'Estado' => 'requiere_decision_cliente', 'Monto_Total' => 300],
+            ['N_Pedido' => 21, 'CI_Cliente' => '12345678', 'Estado' => 'requiere_decision_cliente', 'Monto_Total' => 350],
             ['N_Pedido' => 22, 'CI_Cliente' => '12345678', 'Estado' => 'requiere_decision_cliente', 'Monto_Total' => 300],
         ]);
         DB::table('subpedido')->insert([
@@ -1182,7 +1166,7 @@ class CartAndOrderFlowTest extends TestCase
             ->patch(route('pedidos.client-decision', 21), ['decision' => 'continuar'])
             ->assertRedirect(route('cliente.pedidos'));
         $this->assertDatabaseHas('subpedido', ['N_Subpedido' => 101, 'Estado' => 'omitido']);
-        $this->assertDatabaseHas('pedido', ['N_Pedido' => 21, 'Estado' => 'aceptado', 'Monto_Total' => 200]);
+        $this->assertDatabaseHas('pedido', ['N_Pedido' => 21, 'Estado' => 'aceptado', 'Monto_Total' => 250]);
 
         $this->withSession($session)
             ->patch(route('pedidos.client-decision', 22), ['decision' => 'cancelar'])
@@ -1317,6 +1301,10 @@ class CartAndOrderFlowTest extends TestCase
             ->assertOk()
             ->assertSee('Resultados para “Milanesa”')
             ->assertSee('Milanesa especial')
+            ->assertSee('Explora los locales disponibles')
+            ->assertDontSee('¿Qué necesitás?')
+            ->assertDontSee('Restaurantes destacados')
+            ->assertDontSee('href="#restaurantes"', false)
             ->assertSee('data-live-search', false)
             ->assertSee(route('search.products'), false);
 
@@ -1327,9 +1315,9 @@ class CartAndOrderFlowTest extends TestCase
             'The product search field should appear before its search results.',
         );
         $this->assertLessThan(
-            strpos($content, '<section class="category-section"'),
+            strpos($content, 'Explora los locales disponibles'),
             strpos($content, 'Resultados para “Milanesa”'),
-            'Search results should appear before the category section.',
+            'Search results should appear before the available stores section.',
         );
     }
 
@@ -1367,5 +1355,56 @@ class CartAndOrderFlowTest extends TestCase
             ->assertSee('Milanesa especial')
             ->assertDontSee('Papas fritas')
             ->assertDontSee('<html', false);
+    }
+
+    public function test_search_filters_products_and_stores_by_category_price_offer_and_availability(): void
+    {
+        DB::table('comercio')->insert([
+            ['RUT' => '111111111111', 'Email_Usuario' => 'uno@example.com', 'Nombre_Comercio' => 'La Picantería', 'Abierto' => true],
+            ['RUT' => '222222222222', 'Email_Usuario' => 'dos@example.com', 'Nombre_Comercio' => 'Local Cerrado', 'Abierto' => false],
+        ]);
+        DB::table('producto')->insert([
+            [
+                'ID_Producto' => 10,
+                'RUT_Comercio' => '111111111111',
+                'Nombre_Producto' => 'Milanesa especial',
+                'Categoria' => 'Restaurantes',
+                'Precio' => 200,
+                'Descuento_Porcentaje' => 20,
+                'Disponible' => true,
+            ],
+            [
+                'ID_Producto' => 11,
+                'RUT_Comercio' => '111111111111',
+                'Nombre_Producto' => 'Papas fritas',
+                'Categoria' => 'Restaurantes',
+                'Precio' => 100,
+                'Descuento_Porcentaje' => 0,
+                'Disponible' => true,
+            ],
+            [
+                'ID_Producto' => 12,
+                'RUT_Comercio' => '222222222222',
+                'Nombre_Producto' => 'Milanesa cerrada',
+                'Categoria' => 'Restaurantes',
+                'Precio' => 200,
+                'Descuento_Porcentaje' => 20,
+                'Disponible' => true,
+            ],
+        ]);
+        $this->get(route('search.products', [
+            'categoria' => 'Restaurantes',
+            'min_price' => 150,
+            'max_price' => 170,
+            'offers' => 1,
+            'available' => 1,
+        ]))
+            ->assertOk()
+            ->assertSee('Resultados filtrados')
+            ->assertSee('Milanesa especial')
+            ->assertSee('La Picantería')
+            ->assertDontSee('Papas fritas')
+            ->assertDontSee('Milanesa cerrada')
+            ->assertDontSee('Local Cerrado');
     }
 }

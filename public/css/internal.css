@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap');
+@import url('notifications.css');
 
 :root {
     --internal-navy: #34251f;
@@ -20,6 +21,29 @@ body.internal-page {
     color: var(--internal-navy);
     font-family: 'DM Sans', sans-serif;
     line-height: 1.45;
+}
+
+.customer-profile-page .internal-header-actions .internal-home-link {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    border: 1px solid var(--internal-line) !important;
+    border-radius: 12px;
+    background-color: #fff !important;
+    box-shadow: 0 3px 10px rgba(18, 38, 77, .06);
+    color: var(--internal-navy) !important;
+}
+
+.customer-profile-page .internal-header-actions .internal-home-link::before {
+    color: var(--internal-blue);
+    content: '\2190';
+    font-size: .9rem;
+}
+
+.customer-profile-page .internal-header-actions .internal-home-link:hover {
+    border-color: var(--internal-coral) !important;
+    background-color: var(--internal-cream) !important;
+    transform: translateY(-1px);
 }
 
 .internal-header {
@@ -455,6 +479,21 @@ body.internal-cart {
     box-shadow: var(--internal-shadow);
 }
 
+.customer-profile-page .internal-header .notifications-bell {
+    display: block;
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
+    overflow: visible;
+    stroke: currentColor;
+    stroke-width: 1.7;
+}
+
+.customer-profile-page .internal-header .notifications-label {
+    display: inline;
+    white-space: nowrap;
+}
+
 .customer-profile-cover {
     display: flex;
     align-items: center;
@@ -487,6 +526,7 @@ body.internal-cart {
 .customer-profile-cover h1 {
     margin: .3rem 0;
     font-size: clamp(1.5rem, 4vw, 2.2rem);
+    color: var(--internal-white);
 }
 
 .customer-profile-cover p {
@@ -527,6 +567,7 @@ body.internal-cart {
 
 .customer-profile-actions {
     display: flex;
+    align-items: center;
     flex-wrap: wrap;
     gap: .65rem;
     padding: 0 1.5rem 1.5rem;
@@ -546,14 +587,37 @@ body.internal-cart {
     text-decoration: none;
 }
 
+.customer-profile-page .customer-profile-actions a {
+    box-sizing: border-box;
+    min-height: 46px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    line-height: 1.25;
+    transition: background .18s ease, border-color .18s ease, color .18s ease, transform .18s ease;
+}
+
 .profile-primary-action {
-    background: var(--internal-blue);
+    border-color: var(--palette-orange) !important;
+    background: var(--palette-orange) !important;
     color: var(--internal-white) !important;
 }
 
+.customer-profile-page .customer-profile-actions .profile-primary-action:hover {
+    border-color: var(--palette-coral) !important;
+    background: var(--palette-coral) !important;
+    transform: translateY(-1px);
+}
+
 .profile-secondary-action {
-    background: var(--internal-pink);
+    border-color: #f0d7c3 !important;
+    background: #fffaf6 !important;
     color: var(--internal-navy) !important;
+}
+
+.customer-profile-page .customer-profile-actions .profile-secondary-action:hover {
+    border-color: #e7b78e !important;
+    background: #fff1e5 !important;
+    transform: translateY(-1px);
 }
 
 .customer-profile-actions form {
@@ -563,6 +627,22 @@ body.internal-cart {
 .customer-profile-actions form button {
     background: transparent;
     color: var(--internal-coral);
+}
+
+.customer-profile-page .customer-profile-actions .profile-logout-button {
+    border: 1px solid #f0c6b8;
+    border-radius: 10px;
+    background: #fff5f1;
+    color: #9b3d2c;
+    transition: background .18s ease, border-color .18s ease, color .18s ease;
+}
+
+.customer-profile-page .customer-profile-actions .profile-logout-button:hover {
+    border-color: #dfa99b;
+    background: #fce9e3;
+    color: #873426;
+    box-shadow: none;
+    transform: translateY(-1px);
 }
 
 .profile-form-message {
@@ -582,6 +662,7 @@ body.internal-cart {
 
 .profile-edit-field {
     display: grid;
+    min-width: 0;
     gap: .4rem;
 }
 
@@ -594,7 +675,9 @@ body.internal-cart {
 .profile-edit-field input,
 .profile-edit-field textarea {
     width: 100%;
+    min-width: 0;
     min-height: 2.75rem;
+    box-sizing: border-box;
     padding: .7rem .8rem;
 }
 
@@ -806,11 +889,83 @@ body.internal-cart {
 
 @media (max-width: 640px) {
     .customer-profile-page {
-        padding: 5.75rem .75rem 1rem;
+        box-sizing: border-box;
+        width: 100%;
+        min-width: 0;
+        padding: 5.5rem .75rem 1.25rem;
+    }
+
+    .customer-profile-page .internal-header {
+        min-height: 64px;
+        gap: .5rem;
+        padding: .45rem max(.75rem, env(safe-area-inset-left));
+    }
+
+    .customer-profile-page .internal-brand,
+    .customer-profile-page .internal-header-actions {
+        flex: 0 0 auto;
+    }
+
+    .customer-profile-page .internal-brand img {
+        width: 72px;
+        height: 40px;
+    }
+
+    .customer-profile-page .internal-header-actions {
+        gap: .5rem;
+    }
+
+    .customer-profile-page .internal-header-actions .internal-home-link {
+        min-height: 40px;
+        justify-content: center;
+        gap: .3rem;
+        padding: .45rem .55rem;
+        font-size: .7rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .customer-profile-page .internal-header-actions .internal-home-link:hover {
+        transform: none;
+    }
+
+    .customer-profile-page .customer-profile-cover h1 {
+        color: #fff;
+    }
+
+    .customer-profile-main {
+        width: 100%;
     }
 
     .customer-profile-cover {
-        padding: 1.35rem;
+        align-items: flex-start;
+        gap: .85rem;
+        padding: 1.15rem;
+    }
+
+    .customer-profile-cover > div {
+        min-width: 0;
+    }
+
+    .customer-profile-cover h1 {
+        font-size: clamp(1.35rem, 6vw, 1.8rem);
+        overflow-wrap: anywhere;
+    }
+
+    .customer-profile-cover p {
+        overflow-wrap: anywhere;
+    }
+
+    .customer-avatar {
+        width: 54px;
+        height: 54px;
+        flex-basis: 54px;
+        border-radius: 16px;
+        font-size: 1.5rem;
+    }
+
+    .profile-form-message {
+        margin: 1rem 1rem 0;
     }
 
     .customer-profile-grid {
@@ -840,12 +995,48 @@ body.internal-cart {
     .profile-edit-form {
         grid-template-columns: 1fr;
         padding: 1rem;
+        gap: .85rem;
+    }
+
+    .profile-edit-field input,
+    .profile-edit-field textarea {
+        font-size: 16px;
+    }
+
+    .profile-edit-note {
+        line-height: 1.5;
+    }
+
+    .profile-edit-actions button {
+        width: 100%;
+        min-height: 2.9rem;
     }
 
     .profile-edit-field-wide,
     .profile-edit-note,
     .profile-edit-actions {
         grid-column: auto;
+    }
+
+    .customer-profile-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: stretch;
+        gap: .55rem;
+    }
+
+    .customer-profile-actions a,
+    .customer-profile-actions form {
+        box-sizing: border-box;
+        width: 100%;
+        min-width: 0;
+        margin: 0;
+    }
+
+    .customer-profile-actions form button {
+        box-sizing: border-box;
+        width: 100%;
+        min-height: 46px;
     }
 
     .registration-verification-card {
@@ -1105,6 +1296,24 @@ body.internal-cart {
     body.internal-dashboard,
     body.internal-cart {
         padding: 5.75rem .75rem 1rem;
+    }
+}
+
+@media (min-width: 641px) {
+    .customer-profile-page .internal-header .notifications-toggle {
+        display: inline-flex;
+        width: auto;
+        min-width: 44px;
+        height: 42px;
+        min-height: 42px;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+        padding: .5rem .85rem;
+    }
+
+    .customer-profile-page .internal-header .notifications-label {
+        display: inline;
     }
 }
 

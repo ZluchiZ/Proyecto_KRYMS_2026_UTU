@@ -151,6 +151,7 @@ class ProfileEditingTest extends TestCase
             ->assertSee('Guardar cambios')
             ->assertSee('name="nombre"', false)
             ->assertSee('name="direccion"', false)
+            ->assertSee('home-notifications-panel')
             ->assertDontSee('Editar perfil');
     }
 

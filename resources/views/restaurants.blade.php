@@ -14,7 +14,7 @@
 <body class="home-page restaurants-page">
     <header class="site-header">
         <div class="header-inner">
-            <a class="brand" href="{{ route('home') }}" aria-label="Volver al inicio"><img src="{{ asset('img/Logo_GauchoVA.jpeg') }}" alt="El Gaucho Va" class="logo"></a>
+            <a class="brand" href="{{ route('home') }}" aria-label="Volver al inicio"><img src="{{ asset('img/LogoGaucho_png.png') }}" alt="El Gaucho Va" class="logo"></a>
             <nav class="header-actions" aria-label="Acciones de cuenta">
                 @if ($esClienteRegistrado)<a class="cart-link" href="{{ route('carrito') }}" aria-label="Ver carrito"><span>🛒</span><b>Carrito</b></a>@endif
                 @include('partials.notifications-menu')

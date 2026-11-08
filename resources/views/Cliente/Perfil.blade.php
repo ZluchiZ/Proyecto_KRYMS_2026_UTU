@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ asset('css/internal.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/internal.css') }}?v={{ filemtime(public_path('css/internal.css')) }}">
     <title>Mi perfil | El Gaucho Va</title>
-    <link rel="stylesheet" href="{{ asset('css/visual-refresh.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/visual-refresh.css') }}?v={{ filemtime(public_path('css/visual-refresh.css')) }}">
 </head>
 <body class="internal-page customer-profile-page">
     @include('partials.internal-header')
@@ -62,11 +62,8 @@
             </form>
 
             <div class="customer-profile-actions">
-                <a class="profile-primary-action" href="{{ route('cliente.location.form') }}">Editar ubicación</a>
-                <a class="profile-secondary-action" href="{{ route('carrito') }}">Ver mi carrito</a>
-                <a class="profile-secondary-action" href="{{ route('cliente.pedidos') }}">Historial de pedidos</a>
                 <a class="profile-secondary-action" href="{{ route('cliente.reportes.index') }}">Mis reportes</a>
-                <form method="POST" action="{{ route('logout') }}">@csrf<button type="submit">Cerrar sesión</button></form>
+                <form method="POST" action="{{ route('logout') }}" onsubmit="return confirm('¿Estás seguro de que querés cerrar sesión?');">@csrf<button class="profile-logout-button" type="submit">Cerrar sesión</button></form>
             </div>
         </section>
     </main>

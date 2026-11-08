@@ -1,10 +1,48 @@
 .order-history-page {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
     min-height: 100vh;
     background: #fff6f0;
 }
 
+
+
+.order-history-page .internal-header-actions .internal-home-link {
+    display: inline-flex;
+    box-sizing: border-box;
+    min-height: 42px;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    padding: .5rem .75rem;
+    border: 1px solid #e4e8f0 !important;
+    border-radius: 10px;
+    background: #fff !important;
+    box-shadow: 0 3px 10px rgba(18, 38, 77, .06);
+    color: #34251f !important;
+    font-size: .75rem;
+    line-height: 1.2;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background .2s ease, border-color .2s ease, transform .2s ease;
+}
+
+.order-history-page .internal-header-actions .internal-home-link::before {
+    color: #e28000;
+    content: '\2190';
+    font-size: .9rem;
+}
+
+.order-history-page .internal-header-actions .internal-home-link:hover {
+    border-color: #ff6f61 !important;
+    background: #f7f8fb !important;
+    transform: translateY(-1px);
+}
+
 .order-history-main {
     width: min(100%, 880px);
+    min-width: 0;
     margin: 0 auto;
 }
 
@@ -177,10 +215,71 @@
 .history-pagination a:hover { color: #ff6f61 !important; }
 
 @media (max-width: 600px) {
-    .order-history-heading { align-items: flex-start; }
+    .order-history-heading {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: .65rem;
+        margin: .25rem 0 1rem;
+    }
+
+    .order-history-heading > div,
+    .history-card,
+    .history-card-heading,
+    .history-summary,
+    .history-store {
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
+    .order-history-heading h1 {
+        font-size: clamp(1.5rem, 7vw, 2rem);
+        overflow-wrap: anywhere;
+    }
+
+    .history-card-heading,
+    .history-summary,
+    .history-store {
+        padding: .85rem;
+    }
+
     .history-summary { grid-template-columns: 1fr 1fr; }
     .local-sales-history-page .history-summary { grid-template-columns: 1fr 1fr; }
     .history-summary div:first-child { grid-column: 1 / -1; }
-    .history-card-heading, .history-store-heading { align-items: flex-start; }
+    .history-card-heading,
+    .history-store-heading {
+        align-items: flex-start;
+        gap: .6rem;
+    }
+
+    .history-card-heading > div,
+    .history-store-heading h2 {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .history-status,
+    .history-store-heading > span {
+        flex: 0 0 auto;
+    }
+
+    .history-products li {
+        min-width: 0;
+        gap: .5rem;
+    }
+
+    .history-products li > span {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .history-store-total {
+        gap: .5rem;
+        font-size: .68rem;
+    }
+
+    .history-store-total strong {
+        flex: 0 0 auto;
+    }
+
     .history-pagination { font-size: .68rem; }
 }

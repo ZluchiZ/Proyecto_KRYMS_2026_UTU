@@ -5,12 +5,12 @@
                 <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
                 <path d="M10 21h4" />
             </svg>
-            <span>Notificaciones</span>
+            <span class="notifications-label">Notificaciones</span>
             @if (($notificationSummary['unread'] ?? 0) > 0)
                 <span class="notifications-count">{{ $notificationSummary['unread'] }}</span>
             @endif
         </button>
-        <div class="notifications-panel" id="notifications-panel" data-notifications-panel aria-label="Notificaciones recientes" hidden>
+        <div class="notifications-panel {{ request()->routeIs('cliente.profile') ? 'home-notifications-panel' : '' }}" id="notifications-panel" data-notifications-panel aria-label="Notificaciones recientes" hidden>
             <div class="notifications-heading">
                 <div class="notifications-heading-copy">
                     <strong>Notificaciones</strong>

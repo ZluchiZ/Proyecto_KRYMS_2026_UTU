@@ -1,21 +1,18 @@
 <?php
-    $categorias = [
-        ['nombre' => 'Restaurantes', 'icono' => '🍔', 'filtro' => 'Restaurantes'],
-        ['nombre' => 'Supermercados', 'icono' => '🛒', 'filtro' => 'Supermercados'],
-        ['nombre' => 'Farmacia', 'icono' => '💊', 'filtro' => 'Farmacia'],
-        ['nombre' => 'Kioscos', 'icono' => '🏪', 'filtro' => 'Kioscos'],
-        ['nombre' => 'Bebidas', 'icono' => '🥤', 'filtro' => 'Bebidas'],
-        ['nombre' => 'Mascotas', 'icono' => '🐶', 'filtro' => 'Mascotas'],
-        ['nombre' => 'Otros', 'icono' => '✦', 'filtro' => 'Otros'],
-        ['nombre' => 'Supermercado', 'icono' => '🛍️', 'filtro' => 'Supermercado'],
-        ['nombre' => 'Ferretería', 'icono' => '🛠️', 'filtro' => 'Ferretería'],
-        ['nombre' => 'Rotisería', 'icono' => '🍽️', 'filtro' => 'Rotisería'],
-    ];
     $productosVisibles = $productos->where('Disponible', true);
     $ofertas = $productosVisibles->filter(fn ($producto) => (float) ($producto->Descuento_Porcentaje ?? 0) > 0)->take(4);
     $productosSinDescuento = $productosVisibles->filter(fn ($producto) => (float) ($producto->Descuento_Porcentaje ?? 0) <= 0);
     $populares = $productosSinDescuento->sortByDesc('ID_Producto')->take(6);
-    $restaurantes = $productosVisibles->groupBy('RUT_Comercio')->take(8);
+    $busquedaActiva = request()->filled('q')
+        || request()->filled('min_price')
+        || request()->filled('max_price')
+        || request()->boolean('offers')
+        || request()->boolean('available');
+    $filtrosBusquedaActivos = request()->filled('categoria')
+        || request()->filled('min_price')
+        || request()->filled('max_price')
+        || request()->boolean('offers')
+        || request()->boolean('available');
     $categoriasConProductos = $productosVisibles->pluck('Categoria')->filter(fn ($categoria) => trim((string) $categoria) !== '')->map(fn ($categoria) => trim((string) $categoria))->unique()->values();
     $productosPorCategoria = $categoriasConProductos->mapWithKeys(function ($categoria) use ($productosSinDescuento) {
         $productosCategoria = $productosSinDescuento->filter(fn ($producto) => strcasecmp(trim((string) $producto->Categoria), $categoria) === 0)->take(12);
@@ -42,13 +39,13 @@
     <?php endif; ?>
     <header class="site-header">
         <div class="header-inner">
-            <a class="brand" href="<?php echo e(route('home')); ?>" aria-label="El Gaucho Va inicio"><img src="<?php echo e(asset('img/LogoGaucho_png.png')); ?>" alt="El Gaucho Va" class="logo"></a>
+            <a class="brand" href="<?php echo e(route('home')); ?>" aria-label="El Gaucho Va inicio"><img src="<?php echo e(asset('img/LogoGaucho_png.png')); ?>" alt="El Gaucho Va" class="logo" fetchpriority="high"></a>
             <?php if($esClienteRegistrado): ?><button type="button" class="delivery-location delivery-location-button" id="open-location-modal"><span class="location-pin">⌖</span><span class="delivery-location-copy"><small>Entregar en</small><strong id="delivery-location-value"><?php echo e($direccionEntrega ?: 'Seleccionar dirección'); ?></strong></span><span class="location-chevron">⌄</span></button><?php endif; ?>
             <nav class="header-actions" aria-label="Acciones de cuenta">
                 <?php if($esClienteRegistrado): ?><a class="cart-link" href="<?php echo e(route('carrito')); ?>" aria-label="Ver carrito"><span>🛒</span><b>Carrito</b><em><?php echo e($cantidadCarrito); ?></em></a><?php endif; ?>
                 <?php echo $__env->make('partials.notifications-menu', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
                 <?php if($nombreUsuario): ?>
-                    <div class="profile-container"><button type="button" class="profile-button" aria-label="Abrir perfil" data-profile-toggle><span>◉</span><b>Mi cuenta</b></button><div class="profile-menu" data-profile-menu><strong><?php echo e($nombreUsuario); ?></strong><span><?php echo e($tipoUsuario); ?></span><small><?php echo e($correoUsuario); ?></small><?php if($tipoUsuario === 'Cliente'): ?><a href="<?php echo e(route('cliente.profile')); ?>">Ver mi perfil</a><a href="<?php echo e(route('cliente.pedidos')); ?>">Historial de pedidos</a><?php else: ?><a href="<?php echo e(route('profile.edit')); ?>">Mi perfil</a><?php endif; ?><form method="POST" action="<?php echo e(route('logout')); ?>"><?php echo csrf_field(); ?><button type="submit">Cerrar sesión</button></form></div></div>
+                    <div class="profile-container"><button type="button" class="profile-button" aria-label="Abrir perfil" data-profile-toggle><span>◉</span><b>Mi cuenta</b></button><div class="profile-menu" data-profile-menu><strong><?php echo e($nombreUsuario); ?></strong><span><?php echo e($tipoUsuario); ?></span><small><?php echo e($correoUsuario); ?></small><?php if($tipoUsuario === 'Cliente'): ?><a href="<?php echo e(route('cliente.profile')); ?>">Ver mi perfil</a><a href="<?php echo e(route('cliente.pedidos')); ?>">Historial de pedidos</a><?php else: ?><a href="<?php echo e(route('profile.edit')); ?>">Mi perfil</a><?php endif; ?></div></div>
                 <?php else: ?>
                     <a class="profile-button" aria-label="Ingresar" href="<?php echo e(route('login')); ?>" data-native-navigation><span>◉</span><b>Ingresar</b></a>
                 <?php endif; ?>
@@ -57,22 +54,67 @@
     </header>
 
     <main class="home-main">
-        <section class="hero-section" aria-labelledby="hero-title"><div class="hero-copy"><p class="eyebrow">Tu día, resuelto</p><h1 id="hero-title">Todo lo que querés,<br><span>más cerca.</span></h1><p class="hero-description">Comida, compras y antojos de tus locales favoritos en un solo lugar.</p></div><div class="hero-art" aria-hidden="true"><video autoplay muted loop playsinline><source src="<?php echo e(asset('img/Video_corto.mp4')); ?>" type="video/mp4"></video></div></section>
+        <section class="hero-section" aria-labelledby="hero-title"><div class="hero-copy"><p class="eyebrow">Tu día, resuelto</p><h1 id="hero-title">Todo lo que querés,<br><span>más cerca.</span></h1><p class="hero-description">Comida, compras y antojos de tus locales favoritos en un solo lugar.</p></div><div class="hero-art" aria-hidden="true"><video autoplay muted loop playsinline preload="metadata"><source src="<?php echo e(asset('img/Video_corto.mp4')); ?>" type="video/mp4"></video></div></section>
 
         <form class="search-form home-search-form" method="GET" action="<?php echo e(route('home')); ?>" data-live-search data-results-url="<?php echo e(route('search.products')); ?>">
-            <label class="sr-only" for="campo-busqueda">Buscar productos o locales</label>
-            <span class="search-icon">⌕</span>
-            <input type="search" id="campo-busqueda" name="q" value="<?php echo e(request('q')); ?>" placeholder="¿Qué estás buscando hoy?">
-            <button type="submit">Buscar</button>
+            <div class="home-search-field">
+                <label class="sr-only" for="campo-busqueda">Buscar productos o locales</label>
+                <span class="search-icon" aria-hidden="true">⌕</span>
+                <input type="search" id="campo-busqueda" name="q" value="<?php echo e(request('q')); ?>" placeholder="¿Qué estás buscando hoy?">
+                <button type="submit" class="search-submit">Buscar</button>
+                <button
+                    type="button"
+                    class="search-filter-toggle secondary"
+                    data-search-filters-toggle
+                    aria-controls="home-search-filters"
+                    aria-expanded="<?php echo e($filtrosBusquedaActivos ? 'true' : 'false'); ?>"
+                >
+                    <svg aria-hidden="true" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 4h14l-5.5 6.2v4.3l-3 1.5v-5.8L3 4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+                    </svg>
+                    <span>Filtros</span>
+                </button>
+            </div>
+            <div
+                class="home-search-filters"
+                id="home-search-filters"
+                role="group"
+                aria-label="Filtros de búsqueda"
+                <?php if (! ($filtrosBusquedaActivos)): ?> hidden <?php endif; ?>
+            >
+                <label class="home-search-filter home-search-category">
+                    <span>Categoría</span>
+                    <select name="categoria" data-live-search-filter>
+                        <option value="">Todas</option>
+                        <?php $__currentLoopData = $categoriasBusqueda; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $categoriaBusqueda): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option value="<?php echo e($categoriaBusqueda); ?>" <?php if(request('categoria') === $categoriaBusqueda): echo 'selected'; endif; ?>><?php echo e($categoriaBusqueda); ?></option>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    </select>
+                </label>
+                <label class="home-search-filter">
+                    <span>Precio mínimo</span>
+                    <input type="number" name="min_price" min="0" step="0.01" value="<?php echo e(request('min_price')); ?>" placeholder="$U 0" data-live-search-filter>
+                </label>
+                <label class="home-search-filter">
+                    <span>Precio máximo</span>
+                    <input type="number" name="max_price" min="0" step="0.01" value="<?php echo e(request('max_price')); ?>" placeholder="Sin límite" data-live-search-filter>
+                </label>
+                <label class="home-search-check">
+                    <input type="checkbox" name="offers" value="1" <?php if(request()->boolean('offers')): echo 'checked'; endif; ?> data-live-search-filter>
+                    <span>En oferta</span>
+                </label>
+                <label class="home-search-check">
+                    <input type="checkbox" name="available" value="1" <?php if(request()->boolean('available')): echo 'checked'; endif; ?> data-live-search-filter>
+                    <span>Disponibles ahora</span>
+                </label>
+            </div>
         </form>
 
         <div id="search-results-container" aria-live="polite">
-            <?php if(request()->filled('q')): ?>
-                <?php echo $__env->make('partials.home-search-results', ['productos' => $productos, 'busqueda' => request('q')], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+            <?php if($busquedaActiva): ?>
+                <?php echo $__env->make('partials.home-search-results', ['productos' => $productos, 'locales' => $localesBusqueda, 'busqueda' => request('q', '')], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
             <?php endif; ?>
         </div>
-
-        <section class="category-section" aria-labelledby="category-title"><div class="section-heading"><div><p class="eyebrow">Explorá</p><h2 id="category-title">¿Qué necesitás?</h2></div><a href="#cerca">Ver todo <span>→</span></a></div><div class="carousel-row category-carousel" data-carousel><div class="carousel-track"><?php $__currentLoopData = $categorias; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $categoria): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><a class="category-item <?php echo e(request('categoria') === $categoria['filtro'] ? 'is-active' : ''); ?>" href="<?php echo e($categoria['filtro'] ? route('home', ['categoria' => $categoria['filtro']]) : '#cerca'); ?>"><span class="category-icon"><?php echo e($categoria['icono']); ?></span><span><?php echo e($categoria['nombre']); ?></span></a><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?></div><div class="carousel-controls"><button type="button" data-carousel-prev aria-label="Ver categorías anteriores">←</button><button type="button" data-carousel-next aria-label="Ver más categorías">→</button></div></div></section>
 
         <?php if($localesSuscriptos->isNotEmpty()): ?>
             <section class="recommended-section" aria-labelledby="recommended-title">
@@ -88,7 +130,7 @@
                         <?php $__currentLoopData = $localesSuscriptos; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $local): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <a class="recommended-card" href="<?php echo e(route('local.profile', $local->RUT)); ?>">
                                 <div class="recommended-card-image">
-                                    <img src="<?php echo e($local->Logo ?: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=700&q=80'); ?>" alt="<?php echo e($local->Nombre_Comercio ?: 'Local destacado'); ?>">
+                                    <img src="<?php echo e($local->Logo ?: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=700&q=80'); ?>" alt="<?php echo e($local->Nombre_Comercio ?: 'Local destacado'); ?>" loading="lazy" decoding="async">
                                     <span class="recommended-badge">Destacado</span>
                                     <span class="recommended-status <?php echo e($local->Abierto ? 'is-open' : 'is-closed'); ?>">
                                         <?php echo e($local->Abierto ? 'Abierto' : 'Cerrado'); ?>
@@ -112,12 +154,14 @@
             </section>
         <?php endif; ?>
 
-        <?php if(request()->filled('categoria') && !request()->filled('q')): ?>
-            <section class="results-section" id="cerca"><div class="section-heading"><div><p class="eyebrow">Encontramos</p><h2>Resultados <?php echo e(request('q') ? 'para “'.request('q').'”' : 'de '.request('categoria')); ?></h2></div><span class="result-count"><?php echo e($productos->count()); ?> productos</span></div><?php if($productos->isNotEmpty()): ?><div class="product-grid"><?php $__currentLoopData = $productos; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $producto): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?> <?php echo $__env->make('home-product-card', ['producto' => $producto], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?> <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?></div><?php else: ?><p class="empty-state">No encontramos productos con esos filtros.</p><?php endif; ?></section>
+        <?php if(request()->filled('categoria') && !request()->filled('q') && !request()->filled('min_price') && !request()->filled('max_price') && !request()->boolean('offers') && !request()->boolean('available')): ?>
+            <section id="category-search-results">
+                <?php echo $__env->make('partials.home-search-results', ['productos' => $productos, 'locales' => $localesBusqueda, 'busqueda' => ''], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+            </section>
         <?php else: ?>
-            <section class="content-section" id="cerca"><div class="section-heading"><div><p class="eyebrow">Todos los comercios</p><h2>Explora los locales disponibles</h2></div><a href="<?php echo e(route('restaurants')); ?>">Ver todos <span>→</span></a></div><div class="carousel-row local-carousel" data-carousel><div class="carousel-track"><?php $__empty_1 = true; $__currentLoopData = $locales; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $local): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><a class="local-card" href="<?php echo e(route('local.profile', $local->RUT)); ?>"><div class="local-image"><img src="<?php echo e($local->Logo ?: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=700&q=80'); ?>" alt="<?php echo e($local->Nombre_Comercio ?: 'Local'); ?>"><span class="status-pill <?php echo e($local->Abierto ? '' : 'closed-status'); ?>">● <?php echo e($local->Abierto ? 'Abierto' : 'Cerrado'); ?></span></div><div class="local-card-body"><h3><?php echo e($local->Nombre_Comercio ?: 'Local sin nombre'); ?></h3><p><?php echo e($local->Horario ?: 'Horario no informado'); ?></p><div class="card-meta"><span>Ver perfil</span><span>⌁ 25-35 min</span><span>Envío $U 80</span></div></div></a><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><p class="empty-state">Todavía no hay locales registrados.</p><?php endif; ?></div><div class="carousel-controls"><button type="button" data-carousel-prev aria-label="Ver locales anteriores">←</button><button type="button" data-carousel-next aria-label="Ver más locales">→</button></div></div></section>
+            <section class="content-section" id="cerca"><div class="section-heading"><div><p class="eyebrow">Todos los comercios</p><h2>Explora los locales disponibles</h2></div><a href="<?php echo e(route('restaurants')); ?>">Ver todos <span>→</span></a></div><div class="carousel-row local-carousel" data-carousel><div class="carousel-track"><?php $__empty_1 = true; $__currentLoopData = $locales; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $local): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><a class="local-card" href="<?php echo e(route('local.profile', $local->RUT)); ?>"><div class="local-image"><img src="<?php echo e($local->Logo ?: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=700&q=80'); ?>" alt="<?php echo e($local->Nombre_Comercio ?: 'Local'); ?>" loading="lazy" decoding="async"><span class="status-pill <?php echo e($local->Abierto ? '' : 'closed-status'); ?>">● <?php echo e($local->Abierto ? 'Abierto' : 'Cerrado'); ?></span></div><div class="local-card-body"><h3><?php echo e($local->Nombre_Comercio ?: 'Local sin nombre'); ?></h3><p><?php echo e($local->Horario ?: 'Horario no informado'); ?></p><div class="card-meta"><span>Ver perfil</span><span>⌁ 25-35 min</span><span>Envío $U 80</span></div></div></a><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><p class="empty-state">Todavía no hay locales registrados.</p><?php endif; ?></div><div class="carousel-controls"><button type="button" data-carousel-prev aria-label="Ver locales anteriores">←</button><button type="button" data-carousel-next aria-label="Ver más locales">→</button></div></div></section>
 
-            <section class="content-section offers-section"><div class="section-heading"><div><p class="eyebrow">Aprovechá hoy</p><h2>Ofertas para vos</h2></div></div><div class="carousel-row offer-carousel" data-carousel><div class="carousel-track"><?php $__empty_1 = true; $__currentLoopData = $ofertas; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $oferta): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><article class="offer-card"><div class="offer-copy"><span class="offer-tag"><?php echo e(number_format($oferta->Descuento_Porcentaje, 0)); ?>% OFF</span><h3><?php echo e($oferta->Nombre_Producto); ?></h3><p><?php echo e($oferta->Nombre_Comercio ?: 'Local adherido'); ?></p><?php if(!$oferta->Abierto): ?><span class="unavailable-label closed-status">Cerrado</span><?php elseif($esClienteRegistrado): ?><button type="button" class="purchase-trigger offer-buy-button" data-product-id="<?php echo e($oferta->ID_Producto); ?>" data-product-name="<?php echo e($oferta->Nombre_Producto); ?>" data-product-price="$U <?php echo e(number_format($oferta->Precio, 2, ',', '.')); ?>" data-product-local="<?php echo e($oferta->Nombre_Comercio ?: 'Local adherido'); ?>">Comprar oferta</button><?php else: ?><a class="offer-buy-button" href="<?php echo e(route('login')); ?>" data-native-navigation>Iniciar sesión para comprar</a><?php endif; ?></div><img src="<?php echo e($oferta->Foto_Producto ?: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=500&q=80'); ?>" alt="<?php echo e($oferta->Nombre_Producto); ?>"></article><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><article class="offer-card offer-placeholder"><div class="offer-copy"><span class="offer-tag">NUEVO</span><h3>Las mejores promos<br>llegan pronto</h3><p>Prepará tu próxima compra.</p></div><span class="offer-mark">%</span></article><?php endif; ?></div><div class="carousel-controls"><button type="button" data-carousel-prev aria-label="Ver ofertas anteriores">←</button><button type="button" data-carousel-next aria-label="Ver más ofertas">→</button></div></div></section>
+            <section class="content-section offers-section"><div class="section-heading"><div><p class="eyebrow">Aprovechá hoy</p><h2>Ofertas para vos</h2></div></div><div class="carousel-row offer-carousel" data-carousel><div class="carousel-track"><?php $__empty_1 = true; $__currentLoopData = $ofertas; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $oferta): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><article class="offer-card"><div class="offer-copy"><span class="offer-tag"><?php echo e(number_format($oferta->Descuento_Porcentaje, 0)); ?>% OFF</span><h3><?php echo e($oferta->Nombre_Producto); ?></h3><p><?php echo e($oferta->Nombre_Comercio ?: 'Local adherido'); ?></p><?php if(!$oferta->Abierto): ?><span class="unavailable-label closed-status">Cerrado</span><?php elseif($esClienteRegistrado): ?><button type="button" class="purchase-trigger offer-buy-button" data-product-id="<?php echo e($oferta->ID_Producto); ?>" data-product-name="<?php echo e($oferta->Nombre_Producto); ?>" data-product-price="$U <?php echo e(number_format($oferta->Precio, 2, ',', '.')); ?>" data-product-local="<?php echo e($oferta->Nombre_Comercio ?: 'Local adherido'); ?>">Comprar oferta</button><?php else: ?><a class="offer-buy-button" href="<?php echo e(route('login')); ?>" data-native-navigation>Iniciar sesión para comprar</a><?php endif; ?></div><img src="<?php echo e($oferta->Foto_Producto ?: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=500&q=80'); ?>" alt="<?php echo e($oferta->Nombre_Producto); ?>" loading="lazy" decoding="async"></article><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><article class="offer-card offer-placeholder"><div class="offer-copy"><span class="offer-tag">NUEVO</span><h3>Las mejores promos<br>llegan pronto</h3><p>Prepará tu próxima compra.</p></div><span class="offer-mark">%</span></article><?php endif; ?></div><div class="carousel-controls"><button type="button" data-carousel-prev aria-label="Ver ofertas anteriores">←</button><button type="button" data-carousel-next aria-label="Ver más ofertas">→</button></div></div></section>
 
             <section class="content-section popular-section"><div class="section-heading"><div><p class="eyebrow">Lo que más sale</p><h2>Más pedidos</h2></div><a href="<?php echo e(route('products')); ?>">Ver todos <span>→</span></a></div><div class="carousel-row" data-carousel><div class="carousel-track"><?php $__empty_1 = true; $__currentLoopData = $populares; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $producto): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?> <?php echo $__env->make('home-product-card', ['producto' => $producto], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?> <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><p class="empty-state">Aún no hay productos publicados.</p><?php endif; ?></div><div class="carousel-controls"><button type="button" data-carousel-prev aria-label="Ver productos anteriores">←</button><button type="button" data-carousel-next aria-label="Ver más productos">→</button></div></div></section>
 
@@ -130,14 +174,12 @@
                 <?php endif; ?>
             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 
-            <section class="content-section restaurants-section" id="restaurantes"><div class="section-heading"><div><p class="eyebrow">Para elegir sin vueltas</p><h2>Restaurantes destacados</h2></div><a href="<?php echo e(route('restaurants')); ?>">Ver todos <span>→</span></a></div><div class="restaurant-grid"><?php $__empty_1 = true; $__currentLoopData = $restaurantes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $productosLocal): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?> <?php ($restaurante = $productosLocal->first()); ?><a class="restaurant-card" href="<?php echo e(route('local.profile', $restaurante->RUT_Comercio)); ?>"><img src="<?php echo e($restaurante->Logo ?: ($restaurante->Foto_Producto ?: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=700&q=80')); ?>" alt="<?php echo e($restaurante->Nombre_Comercio ?: 'Restaurante'); ?>"><div><span class="restaurant-type"><?php echo e($restaurante->Categoria ?: 'Cocina local'); ?></span><h3><?php echo e($restaurante->Nombre_Comercio ?: 'Restaurante destacado'); ?></h3><p>★ 4.7 · 30-40 min · Envío $U 80</p></div></a><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><p class="empty-state">Pronto vas a ver restaurantes destacados.</p><?php endif; ?></div></section>
-            <section class="content-section restaurants-section" id="restaurantes"><div class="section-heading"><div><p class="eyebrow">Para elegir sin vueltas</p><h2>Restaurantes destacados</h2></div><a href="<?php echo e(route('restaurants')); ?>">Ver todos <span>→</span></a></div><div class="restaurant-grid"><?php $__empty_1 = true; $__currentLoopData = $restaurantes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $productosLocal): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?> <?php ($restaurante = $productosLocal->first()); ?><a class="restaurant-card" href="<?php echo e(route('local.profile', $restaurante->RUT_Comercio)); ?>"><img src="<?php echo e($restaurante->Logo ?: ($restaurante->Foto_Producto ?: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=700&q=80')); ?>" alt="<?php echo e($restaurante->Nombre_Comercio ?: 'Restaurante'); ?>"><div><span class="restaurant-type"><?php echo e($restaurante->Categoria ?: 'Cocina local'); ?></span><h3><?php echo e($restaurante->Nombre_Comercio ?: 'Restaurante destacado'); ?></h3><p>★ 4.7 · 30-40 min · Envío $U 80</p></div></a><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><p class="empty-state">Pronto vas a ver restaurantes destacados.</p><?php endif; ?></div></section>
         <?php endif; ?>
     </main>
 
     <?php if($esClienteRegistrado): ?><dialog id="purchase-modal" class="purchase-modal"><div class="purchase-content"><div class="purchase-header"><h2>Agregar al carrito</h2><button type="button" class="purchase-close" id="close-purchase-modal" aria-label="Cerrar">×</button></div><div class="purchase-details"><strong id="purchase-product-name"></strong><p id="purchase-product-local"></p><p id="purchase-product-price"></p></div><form method="POST" action="<?php echo e(route('carrito.add')); ?>" class="purchase-form"><?php echo csrf_field(); ?><input type="hidden" name="producto_id" id="purchase-product-id"><label for="purchase-quantity">Cantidad</label><input type="number" name="cantidad" id="purchase-quantity" min="1" value="1" required><button type="submit">Agregar al carrito</button></form></div></dialog><dialog id="location-modal" class="location-modal"><div class="location-modal-content"><div class="purchase-header"><div><span class="location-modal-kicker">Zona de entrega</span><h2>¿Dónde te entregamos?</h2></div><button type="button" class="purchase-close" id="close-location-modal" aria-label="Cerrar">×</button></div><p class="location-modal-help">Escribí una dirección o usá tu ubicación actual.</p><form method="POST" action="<?php echo e(route('cliente.location.update')); ?>" class="location-form"><?php echo csrf_field(); ?> <?php echo method_field('PATCH'); ?><label for="direccion-entrega">Dirección de entrega</label><input type="text" name="direccion" id="direccion-entrega" value="<?php echo e($direccionEntrega); ?>" maxlength="500" placeholder="Calle, número y ciudad" required><div class="location-map-heading"><span class="location-map-icon">⌖</span><span><strong>Seleccioná el punto en el mapa</strong><small>Tocá el mapa o mové el marcador para ajustar tu dirección.</small></span><a href="<?php echo e(route('cliente.location.form')); ?>" class="location-map-link">Abrir mapa completo</a></div><div id="header-map" class="header-map"></div><p class="location-status" id="location-status" role="status">Podés mover el marcador o tocar el mapa para corregirlo.</p><input type="hidden" name="latitud" id="header-latitud" value="<?php echo e($latitudUsuario); ?>"><input type="hidden" name="longitud" id="header-longitud" value="<?php echo e($longitudUsuario); ?>"><button type="button" class="location-current-button" id="use-current-location">⌖ Usar mi ubicación actual</button><button type="submit">Guardar ubicación</button></form></div></dialog><?php endif; ?>
 
-    <footer class="site-footer"><div class="footer-inner"><div class="footer-brand"><strong>KRYMS</strong><p>Lo que necesitás,<br>más cerca.</p></div><div><h3>Descubrí</h3><a href="#cerca">Locales</a><a href="#restaurantes">Restaurantes</a><a href="#">Ofertas</a></div><div><h3>Ayuda</h3><a href="#">Preguntas frecuentes</a><a href="#">Contacto</a><a href="#">Términos y privacidad</a></div><div class="footer-social"><h3>Seguinos</h3><a href="#" aria-label="Instagram">◎</a><a href="#" aria-label="Facebook">f</a><a href="#" aria-label="TikTok">♪</a></div></div><div class="footer-bottom"><span>© <?php echo e(date('Y')); ?> KRYMS. Todos los derechos reservados.</span><span>Hecho para moverte mejor.</span></div></footer>
+    <footer class="site-footer"><div class="footer-inner"><div class="footer-brand"><strong>KRYMS</strong><p>Lo que necesitás,<br>más cerca.</p></div><div><h3>Descubrí</h3><a href="#cerca">Locales</a><a href="#">Ofertas</a></div><div><h3>Ayuda</h3><a href="#">Preguntas frecuentes</a><a href="#">Contacto</a><a href="#">Términos y privacidad</a></div><div class="footer-social"><h3>Seguinos</h3><a href="#" aria-label="Instagram">◎</a><a href="#" aria-label="Facebook">f</a><a href="#" aria-label="TikTok">♪</a></div></div><div class="footer-bottom"><span>© <?php echo e(date('Y')); ?> KRYMS. Todos los derechos reservados.</span><span>Hecho para moverte mejor.</span></div></footer>
 
     <?php if($esClienteRegistrado): ?><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><?php endif; ?>
     <script>

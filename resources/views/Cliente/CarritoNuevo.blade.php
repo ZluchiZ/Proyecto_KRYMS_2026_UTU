@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ asset('css/carrito.css') }}">
     <link rel="stylesheet" href="{{ asset('css/internal.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/notifications.css') }}">
     <title>Mi carrito | El Gaucho Va</title>
     <link rel="stylesheet" href="{{ asset('css/visual-refresh.css') }}">
 </head>
@@ -71,9 +70,19 @@
                 @endforeach
             </section>
             <section class="checkout">
-                <div class="cart-total-box">
-                    <span>Total del carrito</span>
-                    <strong>$U {{ number_format($totalCarrito, 2, ',', '.') }}</strong>
+                <div class="cart-total-box" aria-label="Desglose del pedido">
+                    <div class="cart-total-row">
+                        <span>Subtotal de productos</span>
+                        <strong>$U {{ number_format($subtotalCarrito, 2, ',', '.') }}</strong>
+                    </div>
+                    <div class="cart-total-row">
+                        <span>Comisión por servicio</span>
+                        <strong>$U {{ number_format($comisionServicio, 2, ',', '.') }}</strong>
+                    </div>
+                    <div class="cart-total-row cart-total-final">
+                        <span>Total a pagar</span>
+                        <strong>$U {{ number_format($totalCarrito, 2, ',', '.') }}</strong>
+                    </div>
                 </div>
                 <div class="checkout-heading">
                     <span class="cart-eyebrow">Ultimo paso</span>
@@ -90,7 +99,6 @@
                     <textarea name="referencias" id="referencias" maxlength="1000" placeholder="Apartamento, esquina u otra indicacion">{{ old('referencias') }}</textarea>
                     <label for="metodo-pago">Metodo de pago</label>
                     <select name="metodo_pago" id="metodo-pago" required>
-<<<<<<< HEAD
                         <option value="efectivo" @selected(old('metodo_pago', 'efectivo') === 'efectivo')>Efectivo contra entrega</option>
                         <option value="tarjeta" @selected(old('metodo_pago') === 'tarjeta')>Tarjeta</option>
                         @if ($metodosPagoGuardados->isNotEmpty())
@@ -131,11 +139,6 @@
                             @error('tarjeta_guardada_id')<small role="alert">{{ $message }}</small>@enderror
                         </fieldset>
                     @endif
-=======
-                        <option value="efectivo">Efectivo contra entrega</option>
-                        <option value="tarjeta">Tarjeta contra entrega</option>
-                    </select>
->>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
                     <button type="submit" class="confirm">Confirmar todos los productos</button>
                 </form>
             </section>
@@ -144,7 +147,6 @@
     @if (session('order_sent'))
     <div class="toast" role="status" aria-live="polite">Pedido enviado a {{ session('order_sent') }} local(es). Cuando todos lo finalicen, aparecerá para el repartidor como una sola entrega. <a href="{{ route('cliente.pedidos') }}">Ver historial</a></div>
     @endif
-<<<<<<< HEAD
     <script>
         const metodoPago = document.getElementById('metodo-pago');
         const tarjetaSimulada = document.getElementById('tarjeta-simulada');
@@ -166,7 +168,5 @@
             actualizarFormularioTarjeta();
         }
     </script>
-=======
->>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
 </body>
 </html>

@@ -101,11 +101,7 @@ class EmailVerificationController extends Controller
 
             return back()->with(
                 'error',
-<<<<<<< HEAD
                 'No pudimos enviar el código de verificación. Intentá nuevamente más tarde.'
-=======
-                'Gmail rechazó el envío. Revisá que MAIL_USERNAME sea la cuenta remitente y MAIL_PASSWORD su contraseña de aplicación; luego ejecutá php artisan config:clear e intentá de nuevo.'
->>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
             );
         }
 

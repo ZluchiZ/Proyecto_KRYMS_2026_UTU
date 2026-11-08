@@ -59,11 +59,7 @@
 
                         <div class="history-summary">
                             <div><span>Entrega en</span><strong>{{ $pedido->Ubicacion ?: 'Dirección no disponible' }}</strong></div>
-<<<<<<< HEAD
                             <div><span>Pago</span><strong>{{ ($pedido->Metodo_de_pago ?? '') === 'tarjeta_simulada' ? 'Tarjeta' : ucfirst($pedido->Metodo_de_pago ?? 'No indicado') }}</strong></div>
-=======
-                            <div><span>Pago</span><strong>{{ ucfirst($pedido->Metodo_de_pago ?? 'No indicado') }}</strong></div>
->>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
                             <div><span>Total</span><strong>$U {{ number_format((float) ($pedido->Monto_Total ?? 0), 2, ',', '.') }}</strong></div>
                         </div>
 

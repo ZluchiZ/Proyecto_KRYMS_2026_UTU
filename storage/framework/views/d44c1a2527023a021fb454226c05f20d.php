@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="<?php echo e(asset('css/internal.css')); ?>">
+    <link rel="stylesheet" href="<?php echo e(asset('css/internal.css')); ?>?v=<?php echo e(filemtime(public_path('css/internal.css'))); ?>">
     <title>Mi perfil | El Gaucho Va</title>
-    <link rel="stylesheet" href="<?php echo e(asset('css/visual-refresh.css')); ?>">
+    <link rel="stylesheet" href="<?php echo e(asset('css/visual-refresh.css')); ?>?v=<?php echo e(filemtime(public_path('css/visual-refresh.css'))); ?>">
 </head>
 <body class="internal-page customer-profile-page">
     <?php echo $__env->make('partials.internal-header', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
@@ -62,11 +62,8 @@
             </form>
 
             <div class="customer-profile-actions">
-                <a class="profile-primary-action" href="<?php echo e(route('cliente.location.form')); ?>">Editar ubicación</a>
-                <a class="profile-secondary-action" href="<?php echo e(route('carrito')); ?>">Ver mi carrito</a>
-                <a class="profile-secondary-action" href="<?php echo e(route('cliente.pedidos')); ?>">Historial de pedidos</a>
                 <a class="profile-secondary-action" href="<?php echo e(route('cliente.reportes.index')); ?>">Mis reportes</a>
-                <form method="POST" action="<?php echo e(route('logout')); ?>"><?php echo csrf_field(); ?><button type="submit">Cerrar sesión</button></form>
+                <form method="POST" action="<?php echo e(route('logout')); ?>" onsubmit="return confirm('¿Estás seguro de que querés cerrar sesión?');"><?php echo csrf_field(); ?><button class="profile-logout-button" type="submit">Cerrar sesión</button></form>
             </div>
         </section>
     </main>

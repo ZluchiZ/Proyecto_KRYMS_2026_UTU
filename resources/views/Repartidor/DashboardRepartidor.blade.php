@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="{{ asset('css/dashboard-repartidor.css') }}">
     <link rel="stylesheet" href="{{ asset('css/internal.css') }}">
     <link rel="stylesheet" href="{{ asset('css/visual-refresh.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/notifications.css') }}">
     <title>Dashboard repartidor</title>
 </head>
 <body class="internal-page internal-dashboard courier-dashboard-page">

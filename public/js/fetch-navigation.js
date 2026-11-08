@@ -156,22 +156,50 @@
         const resultsUrl = form.dataset.resultsUrl;
         if (!input || !resultsContainer || !resultsUrl) return;
 
+        const minPrice = form.elements.namedItem('min_price');
+        const maxPrice = form.elements.namedItem('max_price');
+        if (minPrice instanceof HTMLInputElement && maxPrice instanceof HTMLInputElement) {
+            maxPrice.setCustomValidity(
+                minPrice.value !== '' && maxPrice.value !== '' && Number(maxPrice.value) < Number(minPrice.value)
+                    ? 'El precio máximo debe ser igual o mayor al precio mínimo.'
+                    : '',
+            );
+            if (!form.reportValidity()) return;
+        }
+
         const query = input.value.trim();
+        const formData = new FormData(form);
+        const searchParams = new URLSearchParams();
+        for (const [name, value] of formData.entries()) {
+            if (typeof value === 'string' && value.trim() !== '') searchParams.append(name, value);
+        }
+        const hasFilters = Array.from(form.querySelectorAll('[data-live-search-filter]'))
+            .some((control) => control.type === 'checkbox' ? control.checked : control.value.trim() !== '');
         const searchId = ++latestSearchId;
         activeSearchController?.abort();
 
-        if (!query) {
+        if (!query && !hasFilters) {
+            if (document.getElementById('category-search-results') || form.dataset.categorySearchActive === 'true') {
+                const url = new URL(form.action, window.location.href);
+                for (const key of ['q', 'categoria', 'min_price', 'max_price', 'offers', 'available']) {
+                    url.searchParams.delete(key);
+                }
+                requestPage(url, { method: 'GET' }, 'replace');
+                return;
+            }
             resultsContainer.replaceChildren();
             if (updateUrl) {
                 const url = new URL(form.action, window.location.href);
-                url.searchParams.delete('q');
+                for (const key of ['q', 'categoria', 'min_price', 'max_price', 'offers', 'available']) {
+                    url.searchParams.delete(key);
+                }
                 history.replaceState(history.state, '', url);
             }
             return;
         }
 
         const url = new URL(resultsUrl, window.location.href);
-        url.searchParams.set('q', query);
+        url.search = searchParams.toString();
         activeSearchController = new AbortController();
         resultsContainer.setAttribute('aria-busy', 'true');
 
@@ -192,10 +220,21 @@
             const results = parsedResults.querySelector('#search-results');
             if (!results) throw new Error('La respuesta de búsqueda no contiene resultados válidos.');
 
-            resultsContainer.replaceChildren(results);
+            const categoryResults = document.getElementById('category-search-results');
+            if (categoryResults) {
+                form.dataset.categorySearchActive = 'true';
+                categoryResults.replaceWith(results);
+            } else {
+                resultsContainer.replaceChildren(results);
+            }
             if (updateUrl) {
-                const currentUrl = new URL(window.location.href);
-                currentUrl.searchParams.set('q', query);
+                const currentUrl = new URL(form.action, window.location.href);
+                for (const key of ['q', 'categoria', 'min_price', 'max_price', 'offers', 'available']) {
+                    currentUrl.searchParams.delete(key);
+                }
+                for (const [name, value] of searchParams.entries()) {
+                    currentUrl.searchParams.append(name, value);
+                }
                 history.replaceState(history.state, '', currentUrl);
             }
             document.dispatchEvent(new Event('app:search-results-updated'));
@@ -253,23 +292,47 @@
 
     document.addEventListener('input', (event) => {
         const input = event.target;
-        if (!(input instanceof HTMLInputElement) || input.type !== 'search') return;
+        if (!(input instanceof HTMLInputElement)) return;
         const form = input.form;
         if (!form || form.method.toUpperCase() !== 'GET' || !isEligibleForm(form)) return;
 
         clearTimeout(searchTimer);
         if (form.matches('[data-live-search]')) {
+            if (input.type !== 'search' && !input.matches('[data-live-search-filter]')) return;
             searchTimer = setTimeout(() => updateLiveSearch(form), 180);
             return;
         }
+        if (input.type !== 'search') return;
         searchTimer = setTimeout(() => {
             if (form.reportValidity()) form.requestSubmit();
         }, 350);
     });
 
+    document.addEventListener('change', (event) => {
+        const control = event.target;
+        if (!(control instanceof HTMLSelectElement || control instanceof HTMLInputElement)
+            || !control.matches('[data-live-search-filter]')) return;
+
+        const form = control.form;
+        if (!form?.matches('[data-live-search]') || !isEligibleForm(form)) return;
+        clearTimeout(searchTimer);
+        updateLiveSearch(form);
+    });
+
     document.addEventListener('click', (event) => {
         if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
         const target = event.target instanceof Element ? event.target : null;
+        const searchFiltersToggle = target?.closest('[data-search-filters-toggle]');
+        if (searchFiltersToggle) {
+            const filters = document.getElementById(searchFiltersToggle.getAttribute('aria-controls'));
+            if (filters) {
+                const isExpanded = searchFiltersToggle.getAttribute('aria-expanded') === 'true';
+                searchFiltersToggle.setAttribute('aria-expanded', String(!isExpanded));
+                filters.hidden = isExpanded;
+            }
+            return;
+        }
+
         const notificationToggle = target?.closest('[data-notifications-toggle]');
         if (notificationToggle) {
             const menu = notificationToggle.closest('[data-notifications]');
@@ -317,6 +380,12 @@
 
     document.addEventListener('keydown', (event) => {
         if (event.key !== 'Escape') return;
+        document.querySelectorAll('[data-search-filters-toggle][aria-expanded="true"]').forEach((toggle) => {
+            toggle.setAttribute('aria-expanded', 'false');
+            const filters = document.getElementById(toggle.getAttribute('aria-controls'));
+            if (filters) filters.hidden = true;
+            toggle.focus();
+        });
         document.querySelectorAll('[data-notifications]').forEach((menu) => {
             const toggle = menu.querySelector('[data-notifications-toggle]');
             const panel = menu.querySelector('[data-notifications-panel]');
