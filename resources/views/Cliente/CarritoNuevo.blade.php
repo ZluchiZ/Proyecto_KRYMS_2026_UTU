@@ -88,6 +88,15 @@
                     <span class="cart-eyebrow">Ultimo paso</span>
                     <h2>Confirmar pedido</h2>
                     <p>Completa los datos para recibir tu pedido.</p>
+                    <p
+                        class="courier-availability"
+                        role="status"
+                        data-live-fragment="courier-count"
+                        data-live-url="{{ route('carrito.repartidores-activos') }}"
+                    >
+                        <strong data-courier-count>{{ $repartidoresActivos }}</strong>
+                        <span data-courier-label>{{ $repartidoresActivos === 1 ? 'repartidor conectado' : 'repartidores conectados' }} ahora.</span>
+                    </p>
                 </div>
                 <form method="POST" action="{{ route('carrito.confirm') }}">
                     @csrf

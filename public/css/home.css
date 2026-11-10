@@ -395,12 +395,12 @@
     margin: 0 0 3.8rem;
     padding: clamp(1.25rem, 3.2vw, 2.5rem);
     overflow: hidden;
-    border: 1px solid #6c3b25;
+    border: 1px solid #f0b2a7;
     border-radius: 24px;
     background:
-        radial-gradient(circle at 100% 0, rgb(252 79 79 / 28%), transparent 34%),
-        linear-gradient(125deg, #392317, #51301f 65%, #71341f);
-    box-shadow: 0 22px 48px rgb(57 35 23 / 18%);
+        radial-gradient(circle at 100% 0, rgb(242 139 123 / 24%), transparent 34%),
+        linear-gradient(125deg, #fff4ef, #ffe7df 65%, #ffddd3);
+    box-shadow: 0 18px 42px rgb(155 75 58 / 12%);
 }
 
 .recommended-section::before {
@@ -409,7 +409,7 @@
     right: 20%;
     width: 250px;
     aspect-ratio: 1;
-    border: 1px solid rgb(255 188 128 / 18%);
+    border: 1px solid rgb(185 79 49 / 14%);
     border-radius: 50%;
     content: '';
     pointer-events: none;
@@ -430,7 +430,7 @@
     align-items: center;
     gap: .4rem;
     margin-bottom: .6rem;
-    color: #ffbc80;
+    color: #a84735;
     font-size: .72rem;
     font-weight: 800;
     letter-spacing: .12em;
@@ -438,20 +438,20 @@
 }
 
 .recommended-kicker > span {
-    color: #ff9f45;
+    color: #e47a68;
     font-size: 1rem;
 }
 
 .recommended-heading h2 {
     max-width: 680px;
-    color: #fff8f1;
+    color: #392317;
     font-size: clamp(1.45rem, 3.2vw, 2.2rem);
     line-height: 1.12;
 }
 
 .recommended-heading p {
     margin: .55rem 0 0;
-    color: #f4d8c3;
+    color: #795b47;
     font-size: .88rem;
 }
 
@@ -463,16 +463,16 @@
 .recommended-carousel .carousel-track {
     gap: 1rem;
     padding: .25rem .15rem 1rem;
-    scrollbar-color: #ff9f45 rgb(255 255 255 / 12%);
+    scrollbar-color: #e58b7c rgb(255 255 255 / 72%);
 }
 
 .recommended-carousel .carousel-track::-webkit-scrollbar-track {
     border-radius: 999px;
-    background: rgb(255 255 255 / 12%);
+    background: rgb(185 79 49 / 10%);
 }
 
 .recommended-carousel .carousel-track::-webkit-scrollbar-thumb {
-    background: #ff9f45;
+    background: #e58b7c;
 }
 
 .recommended-card {
@@ -482,10 +482,10 @@
     min-width: 0;
     flex-direction: column;
     overflow: hidden;
-    border: 1px solid rgb(255 188 128 / 65%);
+    border: 1px solid #f3c4bb;
     border-radius: 16px;
     background: #fffaf5;
-    box-shadow: 0 12px 26px rgb(20 11 7 / 22%);
+    box-shadow: 0 10px 24px rgb(120 58 43 / 12%);
     color: #392317;
     text-decoration: none;
     transition: transform .22s ease, box-shadow .22s ease;
@@ -493,7 +493,7 @@
 }
 
 .recommended-card:hover {
-    box-shadow: 0 18px 34px rgb(20 11 7 / 30%);
+    box-shadow: 0 16px 30px rgb(120 58 43 / 18%);
     color: #392317;
     transform: translateY(-4px);
 }
@@ -502,7 +502,7 @@
     position: relative;
     height: clamp(135px, 18vw, 180px);
     overflow: hidden;
-    background: linear-gradient(135deg, #ffbc80, #fc4f4f);
+    background: linear-gradient(135deg, #f8b1a2, #ed7d70);
 }
 
 .recommended-card-image::after {
@@ -540,8 +540,8 @@
 
 .recommended-badge {
     left: .7rem;
-    background: #f76e11;
-    color: #321806;
+    background: #f28f80;
+    color: #49251d;
 }
 
 .recommended-status {
@@ -568,7 +568,7 @@
 }
 
 .recommended-card-label {
-    color: #a4471e;
+    color: #a84735;
     font-size: .64rem;
     font-weight: 800;
     letter-spacing: .08em;
@@ -599,7 +599,7 @@
     align-items: center;
     gap: .4rem;
     margin-top: auto;
-    color: #a4471e;
+    color: #a84735;
     font-size: .75rem;
     font-weight: 800;
 }
@@ -613,16 +613,16 @@
 .recommended-carousel .carousel-controls button {
     width: 40px;
     height: 40px;
-    border-color: rgb(255 188 128 / 55%);
+    border-color: #edb3a8;
     border-radius: 12px;
-    background: rgb(255 248 241 / 12%);
-    color: #fff8f1;
+    background: rgb(255 255 255 / 72%);
+    color: #713e34;
     box-shadow: none;
 }
 
 .recommended-carousel .carousel-controls button:hover:not(:disabled) {
-    border-color: #ff9f45;
-    background: #ff9f45;
+    border-color: #e58b7c;
+    background: #e58b7c;
     color: #392317;
 }
 

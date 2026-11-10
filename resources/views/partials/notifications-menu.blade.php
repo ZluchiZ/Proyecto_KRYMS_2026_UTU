@@ -1,5 +1,5 @@
 @if (session('tipo_usuario') && session('usuario_id'))
-    <div class="notifications" data-notifications>
+    <div class="notifications" data-notifications data-live-fragment="notifications" aria-live="polite">
         <button class="notifications-toggle" type="button" aria-label="Notificaciones" aria-expanded="false" aria-controls="notifications-panel" data-notifications-toggle>
             <svg class="notifications-bell" aria-hidden="true" viewBox="0 0 24 24" fill="none">
                 <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />

@@ -17,9 +17,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->appendToGroup('web', InjectFetchNavigation::class);
         $middleware->alias(['user.type' => EnsureUserType::class]);
+        $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->expectsJson() || $request->is('api/*'),
         );
     })->create();
+
+  

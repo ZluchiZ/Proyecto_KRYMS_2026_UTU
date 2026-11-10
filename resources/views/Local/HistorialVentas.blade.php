@@ -18,17 +18,18 @@
                 <h1>Historial de ventas</h1>
                 <p>Consultá los pedidos recibidos, sus productos y sus clientes.</p>
             </div>
-            <span class="order-history-count">{{ $ventas->total() }} {{ $ventas->total() === 1 ? 'venta' : 'ventas' }}</span>
+            <span class="order-history-count" data-live-fragment="sales-count">{{ $ventas->total() }} {{ $ventas->total() === 1 ? 'venta' : 'ventas' }}</span>
         </header>
 
-        @if ($ventas->isEmpty())
-            <section class="history-empty">
-                <span class="history-empty-mark" aria-hidden="true">↗</span>
-                <h2>Todavía no hay ventas</h2>
-                <p>Cuando recibas pedidos, van a aparecer en este historial.</p>
-            </section>
-        @else
-            <section class="history-list" aria-label="Ventas anteriores">
+        <div data-live-fragment="sales-orders" aria-live="polite">
+            @if ($ventas->isEmpty())
+                <section class="history-empty">
+                    <span class="history-empty-mark" aria-hidden="true">↗</span>
+                    <h2>Todavía no hay ventas</h2>
+                    <p>Cuando recibas pedidos, van a aparecer en este historial.</p>
+                </section>
+            @else
+                <section class="history-list" aria-label="Ventas anteriores">
                 @foreach ($ventas as $venta)
                     @php
                         $estadoVenta = strtolower($venta->Estado ?? 'pendiente');
@@ -80,24 +81,25 @@
                         </section>
                     </article>
                 @endforeach
-            </section>
+                </section>
 
-            @if ($ventas->hasPages())
-                <nav class="history-pagination" aria-label="Paginación de ventas">
-                    @if ($ventas->previousPageUrl())
-                        <a href="{{ $ventas->previousPageUrl() }}" rel="prev">&larr; Más recientes</a>
-                    @else
-                        <span></span>
-                    @endif
-                    <span>Página {{ $ventas->currentPage() }} de {{ $ventas->lastPage() }}</span>
-                    @if ($ventas->nextPageUrl())
-                        <a href="{{ $ventas->nextPageUrl() }}" rel="next">Anteriores &rarr;</a>
-                    @else
-                        <span></span>
-                    @endif
-                </nav>
+                @if ($ventas->hasPages())
+                    <nav class="history-pagination" aria-label="Paginación de ventas">
+                        @if ($ventas->previousPageUrl())
+                            <a href="{{ $ventas->previousPageUrl() }}" rel="prev">&larr; Más recientes</a>
+                        @else
+                            <span></span>
+                        @endif
+                        <span>Página {{ $ventas->currentPage() }} de {{ $ventas->lastPage() }}</span>
+                        @if ($ventas->nextPageUrl())
+                            <a href="{{ $ventas->nextPageUrl() }}" rel="next">Anteriores &rarr;</a>
+                        @else
+                            <span></span>
+                        @endif
+                    </nav>
+                @endif
             @endif
-        @endif
+        </div>
     </main>
 </body>
 </html>

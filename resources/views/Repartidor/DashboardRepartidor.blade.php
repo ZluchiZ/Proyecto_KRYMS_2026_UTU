@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="{{ asset('css/dashboard-repartidor.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/dashboard-repartidor.css') }}?v={{ filemtime(public_path('css/dashboard-repartidor.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/internal.css') }}">
     <link rel="stylesheet" href="{{ asset('css/visual-refresh.css') }}">
     <title>Dashboard repartidor</title>
@@ -28,6 +28,26 @@
             <div class="success">{{ session('success') }}</div>
         @endif
 
+        <section class="dashboard-panel courier-availability-panel" data-live-fragment="courier-availability" aria-live="polite">
+            <div>
+                <p class="eyebrow">Disponibilidad</p>
+                <h2>Estado: {{ $repartidorConectado ? 'Conectado' : 'Desconectado' }}</h2>
+                <p class="availability-description">
+                    {{ $repartidorConectado
+                        ? 'Los clientes pueden ver que hay un repartidor disponible.'
+                        : 'Conéctate cuando estés listo para recibir pedidos.' }}
+                </p>
+            </div>
+            <form method="POST" action="{{ route('repartidor.disponibilidad') }}">
+                @csrf
+                @method('PATCH')
+                <input type="hidden" name="estado" value="{{ $repartidorConectado ? 'Desconectado' : 'Conectado' }}">
+                <button type="submit" class="courier-availability-toggle">
+                    {{ $repartidorConectado ? 'Desconectarme' : 'Conectarme' }}
+                </button>
+            </form>
+        </section>
+
         <section class="dashboard-panel courier-location-panel">
             <div class="panel-header location-header">
                 <div>
@@ -49,7 +69,7 @@
             ></div>
         </section>
 
-        <section class="dashboard-panel">
+        <section class="dashboard-panel" data-live-fragment="courier-ready-orders" aria-live="polite">
             <div class="panel-header">
                 <div>
                     <p class="eyebrow">Entrega</p>
@@ -107,7 +127,7 @@
             @endif
         </section>
 
-        <section class="dashboard-panel my-delivery">
+        <section class="dashboard-panel my-delivery" data-live-fragment="courier-assigned-orders" aria-live="polite">
             <div class="panel-header">
                 <div>
                     <p class="eyebrow">Mi entrega</p>

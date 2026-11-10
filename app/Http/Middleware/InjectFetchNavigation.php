@@ -40,6 +40,11 @@ class InjectFetchNavigation
         $scriptVersion = filemtime(public_path('js/fetch-navigation.js'));
         $scriptUrl = htmlspecialchars(asset('js/fetch-navigation.js').'?v='.$scriptVersion, ENT_QUOTES, 'UTF-8');
         $script = '<script src="'.$scriptUrl.'" data-fetch-navigation></script>';
+        if (str_contains($content, 'data-live-fragment=')) {
+            $liveScriptVersion = filemtime(public_path('js/live-fragments.js'));
+            $liveScriptUrl = htmlspecialchars(asset('js/live-fragments.js').'?v='.$liveScriptVersion, ENT_QUOTES, 'UTF-8');
+            $script .= '<script src="'.$liveScriptUrl.'"></script>';
+        }
         $content = substr_replace($content, $script.'</body>', $closingBodyPosition, strlen('</body>'));
 
         $response->setContent($content);

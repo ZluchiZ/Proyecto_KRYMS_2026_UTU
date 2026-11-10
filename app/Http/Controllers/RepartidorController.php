@@ -112,6 +112,47 @@ class RepartidorController extends Controller
         ]);
     }
 
+    public function updateAvailability(Request $request)
+    {
+        abort_unless(
+            Schema::hasColumn('repartidor', 'Estado_Repartidor'),
+            409,
+            'La disponibilidad todavía no está habilitada en la base de datos. Ejecutá las migraciones de Laravel.'
+        );
+
+        $validated = $request->validate([
+            'estado' => ['required', Rule::in(['Conectado', 'Desconectado'])],
+        ]);
+        $columns = ['CI'];
+        foreach (['Estado_Adhesion', 'Estado_Cuenta'] as $column) {
+            if (Schema::hasColumn('repartidor', $column)) {
+                $columns[] = $column;
+            }
+        }
+        $repartidor = DB::table('repartidor')
+            ->where('CI', (string) session('usuario_id'))
+            ->first($columns);
+
+        abort_unless($repartidor, 403, 'El repartidor no está registrado.');
+        abort_unless(
+            strtolower((string) ($repartidor->Estado_Adhesion ?? 'Aceptada')) === 'aceptada'
+                && strtolower((string) ($repartidor->Estado_Cuenta ?? 'Activa')) === 'activa',
+            403,
+            'Tu cuenta no está habilitada para conectarse.'
+        );
+
+        DB::table('repartidor')
+            ->where('CI', (string) session('usuario_id'))
+            ->update(['Estado_Repartidor' => $validated['estado']]);
+
+        return redirect()->route('dashboard.repartidor')->with(
+            'success',
+            $validated['estado'] === 'Conectado'
+                ? 'Ahora estás conectado y disponible para recibir pedidos.'
+                : 'Te desconectaste y ya no aparecerás como disponible.'
+        );
+    }
+
     public function updatePedidoStatus(Request $request, int $pedido, InAppNotificationService $notifications)
     {
         $email = session('email');

@@ -18,7 +18,7 @@
                 <h1>Historial de pedidos</h1>
                 <p>Consultá el estado y los detalles de tus compras.</p>
             </div>
-            <span class="order-history-count">{{ $pedidos->total() }} {{ $pedidos->total() === 1 ? 'pedido' : 'pedidos' }}</span>
+            <span class="order-history-count" data-live-fragment="customer-order-count">{{ $pedidos->total() }} {{ $pedidos->total() === 1 ? 'pedido' : 'pedidos' }}</span>
         </header>
 
         @if (session('success'))
@@ -28,15 +28,16 @@
             <p class="history-feedback history-feedback-error" role="alert">Revisá los datos de la reseña e intentá nuevamente.</p>
         @endif
 
-        @if ($pedidos->isEmpty())
-            <section class="history-empty">
-                <span class="history-empty-mark" aria-hidden="true">↗</span>
-                <h2>Todavía no tenés pedidos</h2>
-                <p>Cuando hagas una compra, vas a poder seguirla desde acá.</p>
-                <a class="history-primary-link" href="{{ route('home') }}">Explorar productos</a>
-            </section>
-        @else
-            <section class="history-list" aria-label="Pedidos anteriores">
+        <div data-live-fragment="customer-orders" aria-live="polite">
+            @if ($pedidos->isEmpty())
+                <section class="history-empty">
+                    <span class="history-empty-mark" aria-hidden="true">↗</span>
+                    <h2>Todavía no tenés pedidos</h2>
+                    <p>Cuando hagas una compra, vas a poder seguirla desde acá.</p>
+                    <a class="history-primary-link" href="{{ route('home') }}">Explorar productos</a>
+                </section>
+            @else
+                <section class="history-list" aria-label="Pedidos anteriores">
                 @foreach ($pedidos as $pedido)
                     @php
                         $estadoPedido = strtolower($pedido->Estado ?? 'pendiente');
@@ -171,24 +172,25 @@
                         @endforeach
                     </article>
                 @endforeach
-            </section>
+                </section>
 
-            @if ($pedidos->hasPages())
-                <nav class="history-pagination" aria-label="Paginación de pedidos">
-                    @if ($pedidos->previousPageUrl())
-                        <a href="{{ $pedidos->previousPageUrl() }}" rel="prev">&larr; Más recientes</a>
-                    @else
-                        <span></span>
-                    @endif
-                    <span>Página {{ $pedidos->currentPage() }} de {{ $pedidos->lastPage() }}</span>
-                    @if ($pedidos->nextPageUrl())
-                        <a href="{{ $pedidos->nextPageUrl() }}" rel="next">Anteriores &rarr;</a>
-                    @else
-                        <span></span>
-                    @endif
-                </nav>
+                @if ($pedidos->hasPages())
+                    <nav class="history-pagination" aria-label="Paginación de pedidos">
+                        @if ($pedidos->previousPageUrl())
+                            <a href="{{ $pedidos->previousPageUrl() }}" rel="prev">&larr; Más recientes</a>
+                        @else
+                            <span></span>
+                        @endif
+                        <span>Página {{ $pedidos->currentPage() }} de {{ $pedidos->lastPage() }}</span>
+                        @if ($pedidos->nextPageUrl())
+                            <a href="{{ $pedidos->nextPageUrl() }}" rel="next">Anteriores &rarr;</a>
+                        @else
+                            <span></span>
+                        @endif
+                    </nav>
+                @endif
             @endif
-        @endif
+        </div>
     </main>
 </body>
 </html>

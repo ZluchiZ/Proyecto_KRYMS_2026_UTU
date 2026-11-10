@@ -142,6 +142,58 @@ h1, h2 {
     text-align: center;
 }
 
+.courier-dashboard-page .courier-availability-toggle {
+    display: inline-flex;
+    width: auto;
+    min-height: 42px;
+    align-items: center;
+    justify-content: center;
+    padding: .65rem 1rem;
+    border: 0;
+    border-radius: 9px;
+    background: #e98272;
+    color: #fff;
+    font-size: .85rem;
+    font-weight: 700;
+    cursor: pointer;
+    visibility: visible;
+    opacity: 1;
+}
+
+.courier-dashboard-page .courier-availability-toggle:hover {
+    background: #c96358;
+}
+
+.courier-dashboard-page .courier-availability-panel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem;
+    border: 2px solid #35685a;
+    background: #f5faf6;
+}
+
+.courier-dashboard-page .courier-availability-panel h2 {
+    margin: 0;
+    color: #26332f;
+}
+
+.courier-dashboard-page .availability-description {
+    margin: .4rem 0 0;
+    color: #52635a;
+}
+
+.courier-dashboard-page .courier-availability-panel form {
+    flex: 0 0 auto;
+    margin: 0;
+}
+
+.courier-dashboard-page .courier-availability-panel .courier-availability-toggle {
+    min-width: 180px;
+    min-height: 52px;
+    font-size: 1rem;
+}
+
 .order-list {
     display: grid;
     gap: 1rem;
@@ -572,6 +624,16 @@ h1, h2 {
     .courier-dashboard-page .location-header {
         align-items: flex-start;
         flex-direction: column;
+    }
+
+    .courier-dashboard-page .courier-availability-panel {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .courier-dashboard-page .courier-availability-panel form,
+    .courier-dashboard-page .courier-availability-panel .courier-availability-toggle {
+        width: 100%;
     }
 
     .courier-dashboard-page .location-actions {

@@ -114,6 +114,9 @@ class CartAndOrderFlowTest extends TestCase
             $table->string('Nombre')->nullable();
             $table->string('Apellido')->nullable();
             $table->string('Teléfono')->nullable();
+            $table->string('Estado_Repartidor')->nullable();
+            $table->string('Estado_Adhesion')->default('Aceptada');
+            $table->string('Estado_Cuenta')->default('Activa');
         });
         Schema::create('administrador', function (Blueprint $table) {
             $table->string('Email_Usuario')->primary();
@@ -157,6 +160,39 @@ class CartAndOrderFlowTest extends TestCase
 
     public function test_cart_shows_discounted_total_for_the_cart(): void
     {
+        $this->get(route('carrito.repartidores-activos'))->assertForbidden();
+
+        DB::table('repartidor')->insert([
+            [
+                'CI' => '87654321',
+                'Email_Usuario' => 'repartidor1@example.com',
+                'Estado_Repartidor' => 'Conectado',
+                'Estado_Cuenta' => 'Activa',
+                'Estado_Adhesion' => 'Aceptada',
+            ],
+            [
+                'CI' => '87654322',
+                'Email_Usuario' => 'repartidor2@example.com',
+                'Estado_Repartidor' => 'Desconectado',
+                'Estado_Cuenta' => 'Activa',
+                'Estado_Adhesion' => 'Aceptada',
+            ],
+            [
+                'CI' => '87654323',
+                'Email_Usuario' => 'repartidor3@example.com',
+                'Estado_Repartidor' => 'Conectado',
+                'Estado_Cuenta' => 'Suspendida',
+                'Estado_Adhesion' => 'Aceptada',
+            ],
+            [
+                'CI' => '87654324',
+                'Email_Usuario' => 'repartidor4@example.com',
+                'Estado_Repartidor' => 'Conectado',
+                'Estado_Cuenta' => 'Activa',
+                'Estado_Adhesion' => 'Pendiente',
+            ],
+        ]);
+
         DB::table('cliente')->insert([
             'id' => 9,
             'CI' => '12345678',
@@ -202,6 +238,32 @@ class CartAndOrderFlowTest extends TestCase
         $response->assertSee('$U 360,00');
         $response->assertSee('$U 50,00');
         $response->assertSee('$U 410,00');
+        $response->assertSee('data-live-fragment="courier-count"', false)
+            ->assertSee('data-live-url="'.route('carrito.repartidores-activos').'"', false);
+        $response->assertSee('js/live-fragments.js?v='.filemtime(public_path('js/live-fragments.js')));
+        $response->assertSee('data-courier-count>1</strong>', false)
+            ->assertSee('repartidor conectado ahora.')
+            ->assertDontSee('repartidores conectados ahora.');
+
+        $session = ['tipo_usuario' => 'cliente', 'usuario_id' => '12345678'];
+        $this->withSession($session)
+            ->getJson(route('carrito.repartidores-activos'))
+            ->assertOk()
+            ->assertJsonPath('count', 1);
+
+        DB::table('repartidor')->where('CI', '87654321')->update(['Estado_Repartidor' => 'Desconectado']);
+
+        $this->withSession($session)
+            ->getJson(route('carrito.repartidores-activos'))
+            ->assertOk()
+            ->assertJsonPath('count', 0);
+
+        DB::table('repartidor')->where('CI', '87654321')->update(['Estado_Repartidor' => 'Conectado']);
+
+        $this->withSession($session)
+            ->getJson(route('carrito.repartidores-activos'))
+            ->assertOk()
+            ->assertJsonPath('count', 1);
     }
 
     public function test_local_can_add_a_product_with_its_image(): void
@@ -359,6 +421,14 @@ class CartAndOrderFlowTest extends TestCase
         $this->withSession($sesionRepartidor)
             ->get(route('dashboard.repartidor'))
             ->assertOk()
+            ->assertSee('data-live-fragment="courier-ready-orders"', false)
+            ->assertSee('data-live-fragment="courier-assigned-orders"', false)
+            ->assertSee('data-live-fragment="courier-availability"', false)
+            ->assertSee('courier-availability-panel', false)
+            ->assertSee('Desconectado')
+            ->assertSee('class="courier-availability-toggle"', false)
+            ->assertSee('action="'.route('repartidor.disponibilidad').'"', false)
+            ->assertSee('Conectarme')
             ->assertDontSee('Pedido #'.$pedidoId);
 
         DB::table('subpedido')->where('N_Subpedido', $subpedidos[1]->N_Subpedido)->update(['Estado' => 'listo']);
@@ -758,6 +828,8 @@ class CartAndOrderFlowTest extends TestCase
             'usuario_id' => '12345678',
         ])->get(route('cliente.pedidos'))
             ->assertOk()
+            ->assertSee('data-live-fragment="customer-orders"', false)
+            ->assertSee('data-live-fragment="customer-order-count"', false)
             ->assertSee('Pedido #5')
             ->assertSee('La Picantería')
             ->assertSee('Milanesa')
@@ -817,6 +889,8 @@ class CartAndOrderFlowTest extends TestCase
             'email' => 'local@example.com',
         ])->get(route('local.sales-history'))
             ->assertOk()
+            ->assertSee('data-live-fragment="sales-orders"', false)
+            ->assertSee('data-live-fragment="sales-count"', false)
             ->assertSee('Historial de ventas')
             ->assertSee('Pedido #41')
             ->assertSee('2026-10-14')
@@ -935,6 +1009,8 @@ class CartAndOrderFlowTest extends TestCase
             'email' => 'local@example.com',
         ])->get(route('dashboard.local'))
             ->assertOk()
+            ->assertSee('data-live-fragment="local-orders"', false)
+            ->assertSee('data-live-fragment="local-availability"', false)
             ->assertSee('Reseñas de clientes')
             ->assertSee('Ana')
             ->assertSee($comentario);

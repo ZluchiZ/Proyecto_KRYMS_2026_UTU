@@ -87,6 +87,9 @@ Route::get('/dashboard-repartidor', [DashboardController::class, 'courier'])
     ->middleware('user.type:repartidor')
     ->name('dashboard.repartidor');
 
+Route::patch('/repartidor/disponibilidad', [RepartidorController::class, 'updateAvailability'])
+    ->middleware('user.type:repartidor')
+    ->name('repartidor.disponibilidad');
 Route::patch('/repartidor/ubicacion', [RepartidorController::class, 'updateLocation'])
     ->middleware('user.type:repartidor')
     ->name('repartidor.ubicacion');
@@ -127,6 +130,9 @@ Route::delete('/productos/{producto}', [LocalController::class, 'destroyProducto
 Route::post('/carrito/agregar', [PedidoController::class, 'addToCart'])->middleware('user.type:cliente')->name('carrito.add');
 Route::get('/cliente/ubicacion', [PedidoController::class, 'clientLocationForm'])->middleware('user.type:cliente')->name('cliente.location.form');
 Route::patch('/cliente/ubicacion', [PedidoController::class, 'updateClientLocation'])->middleware('user.type:cliente')->name('cliente.location.update');
+Route::get('/carrito/repartidores-activos', [PedidoController::class, 'activeCouriers'])
+    ->middleware('user.type:cliente')
+    ->name('carrito.repartidores-activos');
 Route::get('/carrito', [PedidoController::class, 'cart'])->middleware('user.type:cliente')->name('carrito');
 Route::get('/mis-pedidos', [PedidoController::class, 'orderHistory'])->middleware('user.type:cliente')->name('cliente.pedidos');
 Route::post('/pedidos/{pedido}/resena-repartidor', [ReviewController::class, 'storeCourierReview'])

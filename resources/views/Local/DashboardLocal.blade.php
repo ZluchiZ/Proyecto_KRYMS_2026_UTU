@@ -23,7 +23,7 @@
                     <a class="dashboard-profile-link" href="{{ route('local.sales-history') }}">Historial de ventas</a>
                 </nav>
             </div>
-            <div class="status-toggle">
+            <div class="status-toggle" data-live-fragment="local-availability" aria-live="polite">
                 <span class="status-badge {{ $comercioAbierto ? 'open' : 'closed' }}">
                     {{ $comercioAbierto ? 'Abierto' : 'Cerrado' }}
                 </span>
@@ -60,19 +60,20 @@
             <div class="success">{{ session('success') }}</div>
         @endif
 
-        @foreach ([
-            ['titulo' => 'Pedidos pendientes', 'items' => $pedidos->where('Estado_Subpedido', 'pendiente')],
-            ['titulo' => 'Pedidos aceptados', 'items' => $pedidos->where('Estado_Subpedido', 'aceptado')],
-        ] as $seccion)
-            <section class="orders">
-                <h2>{{ $seccion['titulo'] }}</h2>
-                @if ($seccion['items']->isEmpty())
-                    <div class="empty">No hay pedidos en esta sección.</div>
-                @else
-                    <div class="order-list">
-                    @foreach ($seccion['items']->groupBy('N_Subpedido') as $lineasPedido)
-                        @php($pedido = $lineasPedido->first())
-                        <article class="order" id="pedido-{{ $pedido->N_Pedido }}">
+        <div data-live-fragment="local-orders" aria-live="polite">
+            @foreach ([
+                ['titulo' => 'Pedidos pendientes', 'items' => $pedidos->where('Estado_Subpedido', 'pendiente')],
+                ['titulo' => 'Pedidos aceptados', 'items' => $pedidos->where('Estado_Subpedido', 'aceptado')],
+            ] as $seccion)
+                <section class="orders">
+                    <h2>{{ $seccion['titulo'] }}</h2>
+                    @if ($seccion['items']->isEmpty())
+                        <div class="empty">No hay pedidos en esta sección.</div>
+                    @else
+                        <div class="order-list">
+                        @foreach ($seccion['items']->groupBy('N_Subpedido') as $lineasPedido)
+                            @php($pedido = $lineasPedido->first())
+                            <article class="order" id="pedido-{{ $pedido->N_Pedido }}">
                             <div class="order-title">
                                 <span>Pedido #{{ $pedido->ID_Pedido ?? $pedido->N_Pedido }}</span>
                                 <span class="order-status {{ ($pedido->Estado_Subpedido ?? '') === 'rechazado' ? 'rejected' : '' }}">{{ $pedido->Estado_Subpedido ?? 'pendiente' }}</span>
@@ -112,12 +113,13 @@
                                     </form>
                                 </div>
                             @endif
-                        </article>
-                    @endforeach
-                    </div>
-                @endif
-            </section>
-        @endforeach
+                            </article>
+                        @endforeach
+                        </div>
+                    @endif
+                </section>
+            @endforeach
+        </div>
 
         <section class="local-reviews">
             <header class="local-reviews-heading">

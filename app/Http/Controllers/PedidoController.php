@@ -60,6 +60,23 @@ class PedidoController extends Controller
             ->value('id');
     }
 
+    private function activeCourierCount(): int
+    {
+        if (! Schema::hasTable('repartidor') || ! Schema::hasColumn('repartidor', 'Estado_Repartidor')) {
+            return 0;
+        }
+
+        $query = DB::table('repartidor')->where('Estado_Repartidor', 'Conectado');
+        if (Schema::hasColumn('repartidor', 'Estado_Adhesion')) {
+            $query->where('Estado_Adhesion', 'Aceptada');
+        }
+        if (Schema::hasColumn('repartidor', 'Estado_Cuenta')) {
+            $query->where('Estado_Cuenta', 'Activa');
+        }
+
+        return $query->count();
+    }
+
     private function productUnitPriceWithDiscount(float|int $precio, float|int $descuentoPorcentaje): float
     {
         $precio = (float) $precio;
@@ -194,6 +211,7 @@ class PedidoController extends Controller
         return view('Cliente.CarritoNuevo', [
             'items' => $items,
             'metodosPagoGuardados' => $metodosPagoGuardados,
+            'repartidoresActivos' => $this->activeCourierCount(),
             'subtotalCarrito' => $subtotalCarrito,
             'comisionServicio' => $comisionServicio,
             'totalCarrito' => round($subtotalCarrito + $comisionServicio, 2),
@@ -202,6 +220,14 @@ class PedidoController extends Controller
             'latitudUsuario' => $cliente?->latitud,
             'longitudUsuario' => $cliente?->longitud,
         ]);
+    }
+
+    public function activeCouriers()
+    {
+        $this->requireClient();
+
+        return response()->json(['count' => $this->activeCourierCount()])
+            ->header('Cache-Control', 'no-store, private');
     }
 
     public function orderHistory()

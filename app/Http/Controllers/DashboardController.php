@@ -180,12 +180,15 @@ class DashboardController extends Controller
     public function courier()
     {
         $ciRepartidor = session('usuario_id');
-        $ubicacionRepartidor = Schema::hasColumn('repartidor', 'latitud')
-            && Schema::hasColumn('repartidor', 'longitud')
-            ? DB::table('repartidor')
-                ->where('CI', $ciRepartidor)
-                ->first(['latitud', 'longitud'])
-            : null;
+        $columnasRepartidor = ['CI'];
+        foreach (['Estado_Repartidor', 'latitud', 'longitud'] as $columna) {
+            if (Schema::hasColumn('repartidor', $columna)) {
+                $columnasRepartidor[] = $columna;
+            }
+        }
+        $repartidor = DB::table('repartidor')
+            ->where('CI', $ciRepartidor)
+            ->first($columnasRepartidor);
 
         $pedidosListosQuery = DB::table('subpedido')
             ->join('pedido', 'subpedido.N_Pedido', '=', 'pedido.N_Pedido')
@@ -266,8 +269,9 @@ class DashboardController extends Controller
             'miEntrega' => $miEntrega,
             'nombreUsuario' => session('email'),
             'tipoUsuario' => 'Repartidor',
-            'latitudRepartidor' => $ubicacionRepartidor?->latitud,
-            'longitudRepartidor' => $ubicacionRepartidor?->longitud,
+            'latitudRepartidor' => $repartidor->latitud ?? null,
+            'longitudRepartidor' => $repartidor->longitud ?? null,
+            'repartidorConectado' => strtolower((string) ($repartidor?->Estado_Repartidor ?? '')) === 'conectado',
         ]);
     }
 }

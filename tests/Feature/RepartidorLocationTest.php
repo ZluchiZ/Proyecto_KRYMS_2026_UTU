@@ -26,6 +26,7 @@ class RepartidorLocationTest extends TestCase
         Schema::connection('sqlite')->create('repartidor', function (Blueprint $table): void {
             $table->string('CI')->primary();
             $table->string('Email_Usuario')->unique();
+            $table->string('Estado_Repartidor')->nullable();
             $table->decimal('latitud', 10, 7)->nullable();
             $table->decimal('longitud', 10, 7)->nullable();
         });
@@ -75,6 +76,41 @@ class RepartidorLocationTest extends TestCase
             'latitud' => 91,
             'longitud' => -56.1645,
         ])->assertUnprocessable();
+    }
+
+    public function test_repartidor_can_connect_and_disconnect(): void
+    {
+        $session = [
+            'tipo_usuario' => 'repartidor',
+            'usuario_id' => '12345678',
+        ];
+
+        $this->withSession($session)
+            ->patch(route('repartidor.disponibilidad'), ['estado' => 'Conectado'])
+            ->assertRedirect(route('dashboard.repartidor'))
+            ->assertSessionHas('success', 'Ahora estás conectado y disponible para recibir pedidos.');
+        $this->assertDatabaseHas('repartidor', [
+            'CI' => '12345678',
+            'Estado_Repartidor' => 'Conectado',
+        ]);
+
+        $this->withSession($session)
+            ->patch(route('repartidor.disponibilidad'), ['estado' => 'Desconectado'])
+            ->assertRedirect(route('dashboard.repartidor'))
+            ->assertSessionHas('success', 'Te desconectaste y ya no aparecerás como disponible.');
+        $this->assertDatabaseHas('repartidor', [
+            'CI' => '12345678',
+            'Estado_Repartidor' => 'Desconectado',
+        ]);
+    }
+
+    public function test_repartidor_availability_rejects_unknown_statuses(): void
+    {
+        $this->withSession([
+            'tipo_usuario' => 'repartidor',
+            'usuario_id' => '12345678',
+        ])->patch(route('repartidor.disponibilidad'), ['estado' => 'Disponible'])
+            ->assertSessionHasErrors('estado');
     }
 
     public function test_html_pages_include_the_global_palette_and_fetch_navigation(): void
