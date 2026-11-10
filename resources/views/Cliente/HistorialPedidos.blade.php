@@ -48,6 +48,13 @@
                             'aceptado', 'en_reparto' => 'progress',
                             default => 'pending',
                         };
+                        $etapasEntrega = [
+                            'productos_recolectados' => 'El gaucho recogió todos sus productos',
+                            'en_camino' => 'El gaucho va en camino',
+                            'en_puerta' => 'El gaucho está en tu puerta',
+                        ];
+                        $etapaActual = $pedido->Estado_Entrega;
+                        $etapaActualIndice = array_search($etapaActual, array_keys($etapasEntrega), true);
                     @endphp
                     <article class="history-card" id="pedido-{{ $pedido->N_Pedido }}">
                         <header class="history-card-heading">
@@ -64,6 +71,17 @@
                             <div><span>Total</span><strong>$U {{ number_format((float) ($pedido->Monto_Total ?? 0), 2, ',', '.') }}</strong></div>
                         </div>
 
+                        @if ($pedido->CI_Repartidor)
+                            @php($nombreRepartidor = trim(($pedido->repartidor->Nombre ?? '').' '.($pedido->repartidor->Apellido ?? '')) ?: 'Repartidor')
+                            <section class="history-store courier-assignment" aria-label="Repartidor asignado">
+                                <div>
+                                    <span>Repartidor</span>
+                                    <strong>{{ $nombreRepartidor }}</strong>
+                                </div>
+                                <a class="courier-profile-link" href="{{ route('repartidor.profile', $pedido->CI_Repartidor) }}">Ver perfil</a>
+                            </section>
+                        @endif
+
                         @if ($estadoPedido === 'entregado' && $pedido->CI_Repartidor)
                             <section class="history-store courier-review" aria-label="Reseña del repartidor">
                                 @if ($pedido->resenaRepartidor)
@@ -76,22 +94,43 @@
                                     @endif
                                 @else
                                     <h2>¿Cómo fue la entrega?</h2>
-                                    <p>Dejá una reseña para el repartidor de este pedido.</p>
-                                    <form method="POST" action="{{ route('pedidos.reviews.courier.store', $pedido->N_Pedido) }}">
-                                        @csrf
-                                        <label for="puntuacion-repartidor-{{ $pedido->N_Pedido }}">Puntuación (1 a 5 estrellas)</label>
-                                        <select id="puntuacion-repartidor-{{ $pedido->N_Pedido }}" name="puntuacion" required>
-                                            <option value="">Seleccionar puntuación</option>
-                                            @for ($puntuacion = 5; $puntuacion >= 1; $puntuacion--)
-                                                <option value="{{ $puntuacion }}" @selected(old('puntuacion') == $puntuacion)>{{ $puntuacion }} {{ $puntuacion === 1 ? 'estrella' : 'estrellas' }}</option>
-                                            @endfor
-                                        </select>
-                                        <label for="comentario-repartidor-{{ $pedido->N_Pedido }}">Comentario (opcional, máximo 250 caracteres)</label>
-                                        <textarea id="comentario-repartidor-{{ $pedido->N_Pedido }}" name="comentario" maxlength="250">{{ old('comentario') }}</textarea>
-                                        @error('puntuacion')<small class="review-field-error">{{ $message }}</small>@enderror
-                                        @error('comentario')<small class="review-field-error">{{ $message }}</small>@enderror
-                                        <button type="submit">Enviar reseña</button>
-                                    </form>
+                                    <p>Contanos qué te pareció el servicio de {{ $nombreRepartidor ?? 'tu repartidor' }}.</p>
+                                    <button
+                                        class="courier-review-open"
+                                        type="button"
+                                        data-open-courier-review
+                                        aria-haspopup="dialog"
+                                        aria-controls="courier-review-{{ $pedido->N_Pedido }}"
+                                    >Calificar repartidor</button>
+                                    <dialog
+                                        class="courier-review-dialog"
+                                        id="courier-review-{{ $pedido->N_Pedido }}"
+                                        data-courier-review-dialog
+                                        data-order-id="{{ $pedido->N_Pedido }}"
+                                        data-auto-prompt
+                                        aria-labelledby="courier-review-title-{{ $pedido->N_Pedido }}"
+                                    >
+                                        <form method="POST" action="{{ route('pedidos.reviews.courier.store', $pedido->N_Pedido) }}">
+                                            @csrf
+                                            <h2 id="courier-review-title-{{ $pedido->N_Pedido }}">Calificá a {{ $nombreRepartidor ?? 'tu repartidor' }}</h2>
+                                            <p>Tu opinión ayuda a otros clientes y al repartidor.</p>
+                                            <label for="puntuacion-repartidor-{{ $pedido->N_Pedido }}">Puntuación (1 a 5 estrellas)</label>
+                                            <select id="puntuacion-repartidor-{{ $pedido->N_Pedido }}" name="puntuacion" required>
+                                                <option value="">Seleccionar puntuación</option>
+                                                @for ($puntuacion = 5; $puntuacion >= 1; $puntuacion--)
+                                                    <option value="{{ $puntuacion }}" @selected(old('puntuacion') == $puntuacion)>{{ $puntuacion }} {{ $puntuacion === 1 ? 'estrella' : 'estrellas' }}</option>
+                                                @endfor
+                                            </select>
+                                            <label for="comentario-repartidor-{{ $pedido->N_Pedido }}">Comentario (opcional, máximo 250 caracteres)</label>
+                                            <textarea id="comentario-repartidor-{{ $pedido->N_Pedido }}" name="comentario" maxlength="250">{{ old('comentario') }}</textarea>
+                                            @error('puntuacion')<small class="review-field-error">{{ $message }}</small>@enderror
+                                            @error('comentario')<small class="review-field-error">{{ $message }}</small>@enderror
+                                            <div class="courier-review-dialog-actions">
+                                                <button class="courier-review-later" type="button" data-close-courier-review>Ahora no</button>
+                                                <button type="submit">Enviar reseña</button>
+                                            </div>
+                                        </form>
+                                    </dialog>
                                 @endif
                             </section>
                         @endif
@@ -105,15 +144,6 @@
                         @endif
 
                         @if ($estadoPedido === 'en_reparto')
-                            @php
-                                $etapasEntrega = [
-                                    'productos_recolectados' => 'El gaucho recogió todos sus productos',
-                                    'en_camino' => 'El gaucho va en camino',
-                                    'en_puerta' => 'El gaucho está en tu puerta',
-                                ];
-                                $etapaActual = $pedido->Estado_Entrega;
-                                $etapaActualIndice = array_search($etapaActual, array_keys($etapasEntrega), true);
-                            @endphp
                             <section class="history-store" aria-label="Progreso de entrega">
                                 <h2>Seguimiento de entrega</h2>
                                 @if (! $etapaActual)
@@ -192,5 +222,6 @@
             @endif
         </div>
     </main>
+    <script src="{{ asset('js/courier-review-dialog.js') }}"></script>
 </body>
 </html>

@@ -91,13 +91,13 @@
                             <?php endif; ?>
                             <?php if(($pedido->Estado_Subpedido ?? 'pendiente') === 'pendiente'): ?>
                                 <div class="order-actions">
-                                    <form method="POST" action="<?php echo e(route('pedidos.status', $pedido->N_Subpedido)); ?>" onsubmit="return confirm('¿Rechazar y eliminar este pedido?');">
+                                    <form method="POST" action="<?php echo e(route('pedidos.status', $pedido->N_Subpedido)); ?>">
                                         <?php echo csrf_field(); ?>
                                         <?php echo method_field('PATCH'); ?>
                                         <input type="hidden" name="estado" value="aceptado">
                                         <button type="submit">Aceptar pedido</button>
                                     </form>
-                                    <form method="POST" action="<?php echo e(route('pedidos.status', $pedido->N_Subpedido)); ?>">
+                                    <form method="POST" action="<?php echo e(route('pedidos.status', $pedido->N_Subpedido)); ?>" onsubmit="return confirm('¿Rechazar y eliminar este pedido?');">
                                         <?php echo csrf_field(); ?>
                                         <?php echo method_field('PATCH'); ?>
                                         <input type="hidden" name="estado" value="rechazado">

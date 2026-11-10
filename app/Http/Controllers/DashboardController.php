@@ -148,8 +148,35 @@ class DashboardController extends Controller
                 ->get(['RUT', 'Nombre_Comercio', 'Email_Usuario', 'Suscripcion_Activa']);
         }
 
-        $reportes = Schema::hasTable('reporte') ? DB::table('reporte')->orderByDesc('ID_Reporte')->get() : collect();
-        $resenas = Schema::hasTable('reseña') ? DB::table('reseña')->orderByDesc('ID')->get() : collect();
+        $reportes = Schema::hasTable('reporte')
+            ? DB::table('reporte')
+                ->leftJoin('cliente', 'reporte.CI_Cliente', '=', 'cliente.CI')
+                ->leftJoin('comercio', 'reporte.RUT_Comercio', '=', 'comercio.RUT')
+                ->select(
+                    'reporte.*',
+                    'cliente.Nombre as Nombre_Cliente',
+                    'cliente.Apellido as Apellido_Cliente',
+                    'comercio.Nombre_Comercio as Nombre_Comercio'
+                )
+                ->orderByDesc('reporte.ID_Reporte')
+                ->get()
+            : collect();
+        $resenas = Schema::hasTable('reseña')
+            ? DB::table('reseña')
+                ->leftJoin('cliente', 'reseña.CI_Cliente', '=', 'cliente.CI')
+                ->leftJoin('comercio', 'reseña.RUT_Comercio', '=', 'comercio.RUT')
+                ->leftJoin('repartidor', 'reseña.CI_Repartidor', '=', 'repartidor.CI')
+                ->select(
+                    'reseña.*',
+                    'cliente.Nombre as Nombre_Cliente',
+                    'cliente.Apellido as Apellido_Cliente',
+                    'comercio.Nombre_Comercio as Nombre_Comercio',
+                    'repartidor.Nombre as Nombre_Repartidor',
+                    'repartidor.Apellido as Apellido_Repartidor'
+                )
+                ->orderByDesc('reseña.ID')
+                ->get()
+            : collect();
         $recuperaciones = Schema::hasTable('password_recovery_requests')
             ? DB::table('password_recovery_requests')->where('status', 'pending')->orderBy('created_at')->get()
             : collect();

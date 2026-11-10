@@ -46,6 +46,9 @@ Route::get('/local/historial-ventas', [LocalController::class, 'salesHistory'])
     ->name('local.sales-history');
 
 Route::get('/local/{rut}', [StorefrontController::class, 'localProfile'])->name('local.profile');
+Route::get('/repartidor/{ci}/perfil', [StorefrontController::class, 'courierProfile'])
+    ->middleware('user.type:cliente')
+    ->name('repartidor.profile');
 
 Route::post('/local/{rut}/resenas', [ReviewController::class, 'store'])
     ->middleware('user.type:cliente')

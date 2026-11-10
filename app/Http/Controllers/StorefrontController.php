@@ -353,6 +353,53 @@ class StorefrontController extends Controller
         ]);
     }
 
+    public function courierProfile(string $ci)
+    {
+        $repartidor = DB::table('repartidor')
+            ->where('CI', $ci)
+            ->first(['CI', 'Nombre', 'Apellido', 'Teléfono']);
+
+        abort_unless($repartidor, 404);
+        $pedidoConRepartidor = DB::table('pedido')
+            ->where('CI_Cliente', session('usuario_id'))
+            ->where(function ($query) use ($repartidor): void {
+                $query->where('CI_Repartidor', $repartidor->CI);
+                if (Schema::hasTable('pedido_repartidor_estado')) {
+                    $query->orWhereExists(function ($assignmentQuery) use ($repartidor): void {
+                        $assignmentQuery->selectRaw('1')
+                            ->from('pedido_repartidor_estado')
+                            ->whereColumn('pedido_repartidor_estado.N_Pedido', 'pedido.N_Pedido')
+                            ->where('pedido_repartidor_estado.CI_Repartidor', $repartidor->CI)
+                            ->where('pedido_repartidor_estado.Estado', 'aceptado');
+                    });
+                }
+            })
+            ->exists();
+        abort_unless($pedidoConRepartidor, 404);
+
+        $consultaResenas = DB::table('reseña')
+            ->join('cliente', 'reseña.CI_Cliente', '=', 'cliente.CI')
+            ->where('reseña.CI_Repartidor', $repartidor->CI)
+            ->whereNotNull('reseña.Puntuacion')
+            ->where(function ($query): void {
+                $query->whereNull('reseña.Estado_Moderacion')
+                    ->orWhere('reseña.Estado_Moderacion', '<>', 'Retirada');
+            });
+        $totalCalificaciones = (clone $consultaResenas)->count('reseña.ID');
+        $promedioCalificaciones = (clone $consultaResenas)->avg('reseña.Puntuacion');
+        $resenas = $consultaResenas
+            ->select('reseña.ID', 'reseña.Puntuacion', 'reseña.Comentario', 'cliente.Nombre as Nombre_Cliente')
+            ->orderByDesc('reseña.ID')
+            ->paginate(10);
+
+        return view('courier-profile', [
+            'repartidor' => $repartidor,
+            'resenas' => $resenas,
+            'totalCalificaciones' => $totalCalificaciones,
+            'promedioCalificaciones' => $promedioCalificaciones,
+        ]);
+    }
+
     public function registerForm()
     {
         return view('register');

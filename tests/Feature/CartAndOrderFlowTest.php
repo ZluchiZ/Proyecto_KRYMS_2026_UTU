@@ -506,14 +506,18 @@ class CartAndOrderFlowTest extends TestCase
             ->get(route('dashboard.repartidor'))
             ->assertOk()
             ->assertDontSee($codigoSecreto);
-        $this->withSession([
+        $respuestaHistorialCliente = $this->withSession([
             'tipo_usuario' => 'cliente',
             'usuario_id' => '12345678',
             'email' => 'cliente@example.com',
         ])
             ->get(route('cliente.pedidos'))
-            ->assertOk()
+            ->assertOk();
+        $respuestaHistorialCliente
             ->assertSee('Código secreto de entrega')
+            ->assertSee('Ana Ríos')
+            ->assertSee('Ver perfil')
+            ->assertSee(route('repartidor.profile', '12344321'))
             ->assertSee($codigoSecreto);
 
         foreach ([
@@ -840,6 +844,89 @@ class CartAndOrderFlowTest extends TestCase
             ->assertDontSee('Calle 2');
     }
 
+    public function test_client_can_see_assigned_courier_profile_and_ratings_from_order_history(): void
+    {
+        DB::table('cliente')->insert([
+            [
+                'CI' => '12345678',
+                'Email_Usuario' => 'ana@example.com',
+                'Nombre' => 'Ana',
+            ],
+            [
+                'CI' => '98765432',
+                'Email_Usuario' => 'otro@example.com',
+                'Nombre' => 'Otro',
+            ],
+        ]);
+        DB::table('repartidor')->insert([
+            'CI' => '87654321',
+            'Email_Usuario' => 'mario@example.com',
+            'Nombre' => 'Mario',
+            'Apellido' => 'Silva',
+            'Teléfono' => '099123456',
+        ]);
+        DB::table('pedido')->insert([
+            'N_Pedido' => 15,
+            'CI_Cliente' => '12345678',
+            'CI_Repartidor' => null,
+            'Estado' => 'entregado',
+            'Fecha' => '2026-10-14',
+            'Hora' => '12:30:00',
+            'Metodo_de_pago' => 'efectivo',
+            'Ubicacion' => 'Calle 1',
+            'Monto_Total' => 250,
+        ]);
+        DB::table('pedido_repartidor_estado')->insert([
+            'N_Pedido' => 15,
+            'CI_Repartidor' => '87654321',
+            'Estado' => 'aceptado',
+        ]);
+        DB::table('reseña')->insert([
+            [
+                'CI_Cliente' => '12345678',
+                'CI_Repartidor' => '87654321',
+                'Puntuacion' => 5,
+                'Comentario' => 'Entrega excelente.',
+                'Estado_Moderacion' => 'Visible',
+                'N_Pedido' => 15,
+            ],
+            [
+                'CI_Cliente' => '12345678',
+                'CI_Repartidor' => '87654321',
+                'Puntuacion' => 4,
+                'Comentario' => 'Muy amable.',
+                'Estado_Moderacion' => 'Visible',
+                'N_Pedido' => null,
+            ],
+        ]);
+
+        $session = ['tipo_usuario' => 'cliente', 'usuario_id' => '12345678'];
+        $this->withSession($session)
+            ->get(route('cliente.pedidos'))
+            ->assertOk()
+            ->assertSee('Mario Silva')
+            ->assertSee('Ver perfil')
+            ->assertSee(route('repartidor.profile', '87654321'));
+
+        $this->withSession($session)
+            ->get(route('repartidor.profile', '87654321'))
+            ->assertOk()
+            ->assertSee('Mario Silva')
+            ->assertSee('099123456')
+            ->assertSee('4,5 / 5')
+            ->assertSee('2 calificaciones')
+            ->assertSee('Entrega excelente.')
+            ->assertSee('Muy amable.');
+
+        $this->withSession(['tipo_usuario' => 'cliente', 'usuario_id' => '98765432'])
+            ->get(route('repartidor.profile', '87654321'))
+            ->assertNotFound();
+
+        $this->flushSession()
+            ->get(route('repartidor.profile', '87654321'))
+            ->assertForbidden();
+    }
+
     public function test_local_can_view_only_its_own_sales_history(): void
     {
         $this->get(route('local.sales-history'))->assertForbidden();
@@ -1037,6 +1124,14 @@ class CartAndOrderFlowTest extends TestCase
 
         $session = ['tipo_usuario' => 'cliente', 'usuario_id' => '12345678'];
         $this->withSession($session)
+            ->get(route('cliente.pedidos'))
+            ->assertOk()
+            ->assertSee('Calificar repartidor')
+            ->assertSee('data-courier-review-dialog', false)
+            ->assertSee('data-auto-prompt', false)
+            ->assertSee('¿Cómo fue la entrega?');
+
+        $this->withSession($session)
             ->post(route('pedidos.reviews.courier.store', 81), [
                 'puntuacion' => 5,
                 'comentario' => 'Entrega excelente',
@@ -1062,7 +1157,9 @@ class CartAndOrderFlowTest extends TestCase
             ->assertOk()
             ->assertSee('Tu reseña al repartidor')
             ->assertSee('Entrega excelente')
-            ->assertDontSee('¿Cómo fue la entrega?');
+            ->assertDontSee('¿Cómo fue la entrega?')
+            ->assertDontSee('Calificar repartidor')
+            ->assertDontSee('data-courier-review-dialog', false);
     }
 
     public function test_courier_review_requires_ownership_and_a_delivered_order(): void
@@ -1167,6 +1264,80 @@ class CartAndOrderFlowTest extends TestCase
         $this->get(route('local.profile', '111111111111'))
             ->assertOk()
             ->assertDontSee('Contenido que incumple las normas.');
+    }
+
+    public function test_admin_sees_customer_and_review_recipient_names_instead_of_identifiers(): void
+    {
+        DB::table('cliente')->insert([
+            'CI' => '12345678',
+            'Email_Usuario' => 'ana@example.com',
+            'Nombre' => 'Ana',
+            'Apellido' => 'Pérez',
+        ]);
+        DB::table('comercio')->insert([
+            'RUT' => '111111111111',
+            'Email_Usuario' => 'local@example.com',
+            'Nombre_Comercio' => 'La Picantería',
+        ]);
+        DB::table('repartidor')->insert([
+            'CI' => '87654321',
+            'Email_Usuario' => 'repartidor@example.com',
+            'Nombre' => 'Mario',
+            'Apellido' => 'Silva',
+        ]);
+        DB::table('reseña')->insert([
+            [
+                'CI_Cliente' => '12345678',
+                'RUT_Comercio' => '111111111111',
+                'CI_Repartidor' => null,
+                'Puntuacion' => 5,
+                'Comentario' => 'Buen local.',
+                'Estado_Moderacion' => 'Visible',
+            ],
+            [
+                'CI_Cliente' => '12345678',
+                'RUT_Comercio' => null,
+                'CI_Repartidor' => '87654321',
+                'Puntuacion' => 5,
+                'Comentario' => 'Buena entrega.',
+                'Estado_Moderacion' => 'Visible',
+            ],
+        ]);
+        Schema::create('reporte', function (Blueprint $table) {
+            $table->id('ID_Reporte');
+            $table->string('CI_Cliente');
+            $table->string('RUT_Comercio')->nullable();
+            $table->string('Categoria')->nullable();
+            $table->text('Comentario')->nullable();
+            $table->string('Estado_Gestion')->nullable();
+            $table->text('Resolucion')->nullable();
+        });
+        DB::table('reporte')->insert([
+            'CI_Cliente' => '12345678',
+            'RUT_Comercio' => '111111111111',
+            'Categoria' => 'local',
+            'Comentario' => 'Reporte de prueba.',
+            'Estado_Gestion' => 'Pendiente',
+        ]);
+
+        $session = ['tipo_usuario' => 'administrador', 'usuario_id' => 'admin@example.com'];
+        $this->withSession($session)
+            ->get(route('dashboard.admin', ['seccion' => 'resenas']))
+            ->assertOk()
+            ->assertSee('Ana Pérez')
+            ->assertSee('La Picantería')
+            ->assertSee('Mario Silva')
+            ->assertDontSee('12345678')
+            ->assertDontSee('87654321')
+            ->assertDontSee('111111111111');
+
+        $this->withSession($session)
+            ->get(route('dashboard.admin', ['seccion' => 'reportes']))
+            ->assertOk()
+            ->assertSee('Ana Pérez')
+            ->assertSee('La Picantería')
+            ->assertDontSee('12345678')
+            ->assertDontSee('111111111111');
     }
 
     public function test_local_can_accept_and_mark_orders_as_ready(): void

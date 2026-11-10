@@ -162,14 +162,77 @@
 .history-no-products { margin: .7rem 0 0; color: #718096; font-size: .75rem; }
 .history-store-total { display: flex; justify-content: space-between; gap: .8rem; margin: .7rem 0 0; padding-top: .65rem; border-top: 1px dashed #ead8c9; color: #718096; font-size: .72rem; }
 .history-store-total strong { color: #34251f; }
+.courier-assignment { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.courier-assignment > div > span,
+.courier-assignment > div > strong { display: block; }
+.courier-assignment > div > span { margin-bottom: .25rem; color: #718096; font-size: .68rem; }
+.courier-assignment > div > strong { color: #34251f; font-size: .85rem; }
+.courier-profile-link { display: inline-block; padding: .55rem .8rem; border-radius: 8px; background: #e28000; color: #fff; font-size: .75rem; font-weight: 700; text-decoration: none; }
+.courier-profile-link:hover { background: #bf6900; }
 .courier-review form { display: grid; gap: .55rem; margin-top: .75rem; }
 .courier-review form label { color: #52617c; font-size: .75rem; font-weight: 700; }
 .courier-review form select,
 .courier-review form textarea { width: 100%; padding: .65rem .75rem; border: 1px solid #e6c9bd; border-radius: 8px; background: #fff; color: #34251f; font: inherit; font-size: .8rem; }
 .courier-review form textarea { min-height: 76px; resize: vertical; }
 .courier-review form button { justify-self: start; padding: .65rem .9rem; border: 0; border-radius: 8px; background: #e28000; color: #fff; font: inherit; font-size: .78rem; font-weight: 700; cursor: pointer; }
+.courier-review-open { margin-top: .5rem; padding: .65rem .9rem; border: 0; border-radius: 8px; background: #e28000; color: #fff; font: inherit; font-size: .78rem; font-weight: 700; cursor: pointer; }
+.courier-review-open:hover,
+.courier-review-dialog form button[type="submit"]:hover { background: #bf6900; }
+.courier-review-dialog {
+    width: min(440px, calc(100% - 2rem));
+    max-height: min(90vh, 680px);
+    padding: 0;
+    overflow: auto;
+    border: 1px solid #f0d2cb;
+    border-radius: 16px;
+    background: #fffaf6;
+    color: #34251f;
+    box-shadow: 0 24px 70px rgba(52, 37, 31, .28);
+}
+.courier-review-dialog::backdrop { background: rgba(37, 27, 24, .58); backdrop-filter: blur(3px); }
+.courier-review-dialog form { display: grid; gap: .65rem; padding: 1.4rem; }
+.courier-review-dialog h2 { margin: 0; color: #34251f; font-size: 1.15rem; }
+.courier-review-dialog p { margin: 0 0 .35rem; color: #718096; font-size: .82rem; }
+.courier-review-dialog label { color: #52617c; font-size: .75rem; font-weight: 700; }
+.courier-review-dialog select,
+.courier-review-dialog textarea { width: 100%; padding: .65rem .75rem; border: 1px solid #e6c9bd; border-radius: 8px; background: #fff; color: #34251f; font: inherit; font-size: .8rem; }
+.courier-review-dialog textarea { min-height: 76px; resize: vertical; }
+.courier-review-dialog-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .6rem; margin-top: .35rem; }
+.courier-review-dialog-actions button { padding: .65rem .9rem; border: 0; border-radius: 8px; font: inherit; font-size: .78rem; font-weight: 700; cursor: pointer; }
+.courier-review-dialog-actions button[type="submit"] { background: #e28000; color: #fff; }
+.courier-review-dialog-actions .courier-review-later { background: #f2e7df; color: #52617c; }
 .courier-review-rating { color: #e28000; letter-spacing: .12em; }
 .review-field-error { color: #b84d4b; }
+.courier-profile-info {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+.courier-profile-info > div,
+.courier-profile-reviews {
+    padding: 1rem 1.25rem;
+    border: 1px solid #f0d2cb;
+    border-radius: 14px;
+    background: rgba(255, 251, 248, .96);
+}
+.courier-profile-info > div > span,
+.courier-profile-info > div > strong,
+.courier-profile-info > div > a,
+.courier-profile-info small { display: block; }
+.courier-profile-info > div > span:first-child { margin-bottom: .3rem; color: #718096; font-size: .72rem; }
+.courier-profile-info > div > strong,
+.courier-profile-info > div > a { color: #34251f; font-size: .9rem; font-weight: 800; }
+.courier-profile-info > div > a { text-decoration-color: #e28000; text-underline-offset: .15em; }
+.courier-profile-info small { margin-top: .25rem; color: #718096; font-size: .72rem; }
+.courier-profile-stars { color: #e28000 !important; letter-spacing: .1em; }
+.courier-profile-reviews h2 { margin: 0 0 .75rem; color: #34251f; font-size: 1rem; }
+.courier-profile-review { padding: .8rem 0; border-top: 1px solid #f0d2cb; }
+.courier-profile-review header { display: flex; justify-content: space-between; gap: .75rem; }
+.courier-profile-review header strong { color: #34251f; font-size: .8rem; }
+.courier-profile-review header span { color: #e28000; white-space: nowrap; }
+.courier-profile-review p,
+.courier-profile-empty { margin: .4rem 0 0; color: #52617c; font-size: .8rem; }
 .history-feedback { margin: 1rem 0; padding: .8rem 1rem; border-radius: 9px; font-size: .85rem; }
 .history-feedback-success { background: #e8f5e9; color: #256b36; }
 .history-feedback-error { background: #fff0ed; color: #a63d30; }
@@ -243,6 +306,7 @@
     }
 
     .history-summary { grid-template-columns: 1fr 1fr; }
+    .courier-profile-info { grid-template-columns: 1fr; }
     .local-sales-history-page .history-summary { grid-template-columns: 1fr 1fr; }
     .history-summary div:first-child { grid-column: 1 / -1; }
     .history-card-heading,

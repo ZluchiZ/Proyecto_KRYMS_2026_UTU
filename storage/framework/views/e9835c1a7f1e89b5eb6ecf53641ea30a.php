@@ -30,7 +30,7 @@
     <link rel="stylesheet" href="<?php echo e(asset('css/home.css')); ?>?v=<?php echo e(filemtime(public_path('css/home.css'))); ?>">
     <link rel="stylesheet" href="<?php echo e(asset('css/notifications.css')); ?>">
     <?php if($esClienteRegistrado): ?><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><?php endif; ?>
-    <title>KRYMS | Pedí cerca, recibí fácil</title>
+    <title>ElGauchoVa | pedí cerca, recibí fácil</title>
     <link rel="stylesheet" href="<?php echo e(asset('css/visual-refresh.css')); ?>">
 </head>
 <body class="home-page">

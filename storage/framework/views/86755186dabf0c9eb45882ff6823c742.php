@@ -18,7 +18,7 @@
                 <h1>Historial de pedidos</h1>
                 <p>Consultá el estado y los detalles de tus compras.</p>
             </div>
-            <span class="order-history-count"><?php echo e($pedidos->total()); ?> <?php echo e($pedidos->total() === 1 ? 'pedido' : 'pedidos'); ?></span>
+            <span class="order-history-count" data-live-fragment="customer-order-count"><?php echo e($pedidos->total()); ?> <?php echo e($pedidos->total() === 1 ? 'pedido' : 'pedidos'); ?></span>
         </header>
 
         <?php if(session('success')): ?>
@@ -28,15 +28,16 @@
             <p class="history-feedback history-feedback-error" role="alert">Revisá los datos de la reseña e intentá nuevamente.</p>
         <?php endif; ?>
 
-        <?php if($pedidos->isEmpty()): ?>
-            <section class="history-empty">
-                <span class="history-empty-mark" aria-hidden="true">↗</span>
-                <h2>Todavía no tenés pedidos</h2>
-                <p>Cuando hagas una compra, vas a poder seguirla desde acá.</p>
-                <a class="history-primary-link" href="<?php echo e(route('home')); ?>">Explorar productos</a>
-            </section>
-        <?php else: ?>
-            <section class="history-list" aria-label="Pedidos anteriores">
+        <div data-live-fragment="customer-orders" aria-live="polite">
+            <?php if($pedidos->isEmpty()): ?>
+                <section class="history-empty">
+                    <span class="history-empty-mark" aria-hidden="true">↗</span>
+                    <h2>Todavía no tenés pedidos</h2>
+                    <p>Cuando hagas una compra, vas a poder seguirla desde acá.</p>
+                    <a class="history-primary-link" href="<?php echo e(route('home')); ?>">Explorar productos</a>
+                </section>
+            <?php else: ?>
+                <section class="history-list" aria-label="Pedidos anteriores">
                 <?php $__currentLoopData = $pedidos; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $pedido): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                     <?php
                         $estadoPedido = strtolower($pedido->Estado ?? 'pendiente');
@@ -47,6 +48,13 @@
                             'aceptado', 'en_reparto' => 'progress',
                             default => 'pending',
                         };
+                        $etapasEntrega = [
+                            'productos_recolectados' => 'El gaucho recogió todos sus productos',
+                            'en_camino' => 'El gaucho va en camino',
+                            'en_puerta' => 'El gaucho está en tu puerta',
+                        ];
+                        $etapaActual = $pedido->Estado_Entrega;
+                        $etapaActualIndice = array_search($etapaActual, array_keys($etapasEntrega), true);
                     ?>
                     <article class="history-card" id="pedido-<?php echo e($pedido->N_Pedido); ?>">
                         <header class="history-card-heading">
@@ -63,6 +71,17 @@
                             <div><span>Total</span><strong>$U <?php echo e(number_format((float) ($pedido->Monto_Total ?? 0), 2, ',', '.')); ?></strong></div>
                         </div>
 
+                        <?php if($pedido->CI_Repartidor): ?>
+                            <?php ($nombreRepartidor = trim(($pedido->repartidor->Nombre ?? '').' '.($pedido->repartidor->Apellido ?? '')) ?: 'Repartidor'); ?>
+                            <section class="history-store courier-assignment" aria-label="Repartidor asignado">
+                                <div>
+                                    <span>Repartidor</span>
+                                    <strong><?php echo e($nombreRepartidor); ?></strong>
+                                </div>
+                                <a class="courier-profile-link" href="<?php echo e(route('repartidor.profile', $pedido->CI_Repartidor)); ?>">Ver perfil</a>
+                            </section>
+                        <?php endif; ?>
+
                         <?php if($estadoPedido === 'entregado' && $pedido->CI_Repartidor): ?>
                             <section class="history-store courier-review" aria-label="Reseña del repartidor">
                                 <?php if($pedido->resenaRepartidor): ?>
@@ -76,19 +95,36 @@
                                     <?php endif; ?>
                                 <?php else: ?>
                                     <h2>¿Cómo fue la entrega?</h2>
-                                    <p>Dejá una reseña para el repartidor de este pedido.</p>
-                                    <form method="POST" action="<?php echo e(route('pedidos.reviews.courier.store', $pedido->N_Pedido)); ?>">
-                                        <?php echo csrf_field(); ?>
-                                        <label for="puntuacion-repartidor-<?php echo e($pedido->N_Pedido); ?>">Puntuación (1 a 5 estrellas)</label>
-                                        <select id="puntuacion-repartidor-<?php echo e($pedido->N_Pedido); ?>" name="puntuacion" required>
-                                            <option value="">Seleccionar puntuación</option>
-                                            <?php for($puntuacion = 5; $puntuacion >= 1; $puntuacion--): ?>
-                                                <option value="<?php echo e($puntuacion); ?>" <?php if(old('puntuacion') == $puntuacion): echo 'selected'; endif; ?>><?php echo e($puntuacion); ?> <?php echo e($puntuacion === 1 ? 'estrella' : 'estrellas'); ?></option>
-                                            <?php endfor; ?>
-                                        </select>
-                                        <label for="comentario-repartidor-<?php echo e($pedido->N_Pedido); ?>">Comentario (opcional, máximo 250 caracteres)</label>
-                                        <textarea id="comentario-repartidor-<?php echo e($pedido->N_Pedido); ?>" name="comentario" maxlength="250"><?php echo e(old('comentario')); ?></textarea>
-                                        <?php $__errorArgs = ['puntuacion'];
+                                    <p>Contanos qué te pareció el servicio de <?php echo e($nombreRepartidor ?? 'tu repartidor'); ?>.</p>
+                                    <button
+                                        class="courier-review-open"
+                                        type="button"
+                                        data-open-courier-review
+                                        aria-haspopup="dialog"
+                                        aria-controls="courier-review-<?php echo e($pedido->N_Pedido); ?>"
+                                    >Calificar repartidor</button>
+                                    <dialog
+                                        class="courier-review-dialog"
+                                        id="courier-review-<?php echo e($pedido->N_Pedido); ?>"
+                                        data-courier-review-dialog
+                                        data-order-id="<?php echo e($pedido->N_Pedido); ?>"
+                                        data-auto-prompt
+                                        aria-labelledby="courier-review-title-<?php echo e($pedido->N_Pedido); ?>"
+                                    >
+                                        <form method="POST" action="<?php echo e(route('pedidos.reviews.courier.store', $pedido->N_Pedido)); ?>">
+                                            <?php echo csrf_field(); ?>
+                                            <h2 id="courier-review-title-<?php echo e($pedido->N_Pedido); ?>">Calificá a <?php echo e($nombreRepartidor ?? 'tu repartidor'); ?></h2>
+                                            <p>Tu opinión ayuda a otros clientes y al repartidor.</p>
+                                            <label for="puntuacion-repartidor-<?php echo e($pedido->N_Pedido); ?>">Puntuación (1 a 5 estrellas)</label>
+                                            <select id="puntuacion-repartidor-<?php echo e($pedido->N_Pedido); ?>" name="puntuacion" required>
+                                                <option value="">Seleccionar puntuación</option>
+                                                <?php for($puntuacion = 5; $puntuacion >= 1; $puntuacion--): ?>
+                                                    <option value="<?php echo e($puntuacion); ?>" <?php if(old('puntuacion') == $puntuacion): echo 'selected'; endif; ?>><?php echo e($puntuacion); ?> <?php echo e($puntuacion === 1 ? 'estrella' : 'estrellas'); ?></option>
+                                                <?php endfor; ?>
+                                            </select>
+                                            <label for="comentario-repartidor-<?php echo e($pedido->N_Pedido); ?>">Comentario (opcional, máximo 250 caracteres)</label>
+                                            <textarea id="comentario-repartidor-<?php echo e($pedido->N_Pedido); ?>" name="comentario" maxlength="250"><?php echo e(old('comentario')); ?></textarea>
+                                            <?php $__errorArgs = ['puntuacion'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
@@ -96,7 +132,7 @@ $message = $__bag->first($__errorArgs[0]); ?><small class="review-field-error"><
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?>
-                                        <?php $__errorArgs = ['comentario'];
+                                            <?php $__errorArgs = ['comentario'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
@@ -104,8 +140,12 @@ $message = $__bag->first($__errorArgs[0]); ?><small class="review-field-error"><
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?>
-                                        <button type="submit">Enviar reseña</button>
-                                    </form>
+                                            <div class="courier-review-dialog-actions">
+                                                <button class="courier-review-later" type="button" data-close-courier-review>Ahora no</button>
+                                                <button type="submit">Enviar reseña</button>
+                                            </div>
+                                        </form>
+                                    </dialog>
                                 <?php endif; ?>
                             </section>
                         <?php endif; ?>
@@ -119,15 +159,6 @@ unset($__errorArgs, $__bag); ?>
                         <?php endif; ?>
 
                         <?php if($estadoPedido === 'en_reparto'): ?>
-                            <?php
-                                $etapasEntrega = [
-                                    'productos_recolectados' => 'El gaucho recogió todos sus productos',
-                                    'en_camino' => 'El gaucho va en camino',
-                                    'en_puerta' => 'El gaucho está en tu puerta',
-                                ];
-                                $etapaActual = $pedido->Estado_Entrega;
-                                $etapaActualIndice = array_search($etapaActual, array_keys($etapasEntrega), true);
-                            ?>
                             <section class="history-store" aria-label="Progreso de entrega">
                                 <h2>Seguimiento de entrega</h2>
                                 <?php if(! $etapaActual): ?>
@@ -187,24 +218,26 @@ unset($__errorArgs, $__bag); ?>
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </article>
                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-            </section>
+                </section>
 
-            <?php if($pedidos->hasPages()): ?>
-                <nav class="history-pagination" aria-label="Paginación de pedidos">
-                    <?php if($pedidos->previousPageUrl()): ?>
-                        <a href="<?php echo e($pedidos->previousPageUrl()); ?>" rel="prev">&larr; Más recientes</a>
-                    <?php else: ?>
-                        <span></span>
-                    <?php endif; ?>
-                    <span>Página <?php echo e($pedidos->currentPage()); ?> de <?php echo e($pedidos->lastPage()); ?></span>
-                    <?php if($pedidos->nextPageUrl()): ?>
-                        <a href="<?php echo e($pedidos->nextPageUrl()); ?>" rel="next">Anteriores &rarr;</a>
-                    <?php else: ?>
-                        <span></span>
-                    <?php endif; ?>
-                </nav>
+                <?php if($pedidos->hasPages()): ?>
+                    <nav class="history-pagination" aria-label="Paginación de pedidos">
+                        <?php if($pedidos->previousPageUrl()): ?>
+                            <a href="<?php echo e($pedidos->previousPageUrl()); ?>" rel="prev">&larr; Más recientes</a>
+                        <?php else: ?>
+                            <span></span>
+                        <?php endif; ?>
+                        <span>Página <?php echo e($pedidos->currentPage()); ?> de <?php echo e($pedidos->lastPage()); ?></span>
+                        <?php if($pedidos->nextPageUrl()): ?>
+                            <a href="<?php echo e($pedidos->nextPageUrl()); ?>" rel="next">Anteriores &rarr;</a>
+                        <?php else: ?>
+                            <span></span>
+                        <?php endif; ?>
+                    </nav>
+                <?php endif; ?>
             <?php endif; ?>
-        <?php endif; ?>
+        </div>
     </main>
+    <script src="<?php echo e(asset('js/courier-review-dialog.js')); ?>"></script>
 </body>
 </html><?php /**PATH /var/home/gsivoplas/htdocs/Proyecto_KRYMS_2026_UTU-main/resources/views/Cliente/HistorialPedidos.blade.php ENDPATH**/ ?>

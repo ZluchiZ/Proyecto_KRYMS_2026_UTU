@@ -90,13 +90,13 @@
                             @endif
                             @if (($pedido->Estado_Subpedido ?? 'pendiente') === 'pendiente')
                                 <div class="order-actions">
-                                    <form method="POST" action="{{ route('pedidos.status', $pedido->N_Subpedido) }}" onsubmit="return confirm('¿Rechazar y eliminar este pedido?');">
+                                    <form method="POST" action="{{ route('pedidos.status', $pedido->N_Subpedido) }}">
                                         @csrf
                                         @method('PATCH')
                                         <input type="hidden" name="estado" value="aceptado">
                                         <button type="submit">Aceptar pedido</button>
                                     </form>
-                                    <form method="POST" action="{{ route('pedidos.status', $pedido->N_Subpedido) }}">
+                                    <form method="POST" action="{{ route('pedidos.status', $pedido->N_Subpedido) }}" onsubmit="return confirm('¿Rechazar y eliminar este pedido?');">
                                         @csrf
                                         @method('PATCH')
                                         <input type="hidden" name="estado" value="rechazado">

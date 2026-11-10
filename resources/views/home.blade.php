@@ -30,7 +30,7 @@
     <link rel="stylesheet" href="{{ asset('css/home.css') }}?v={{ filemtime(public_path('css/home.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/notifications.css') }}">
     @if ($esClienteRegistrado)<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">@endif
-    <title>KRYMS | Pedí cerca, recibí fácil</title>
+    <title>ElGauchoVa | pedí cerca, recibí fácil</title>
     <link rel="stylesheet" href="{{ asset('css/visual-refresh.css') }}">
 </head>
 <body class="home-page">

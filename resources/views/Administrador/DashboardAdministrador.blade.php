@@ -177,9 +177,9 @@
                                     @php($categoriasReporte = ['local' => 'Local', 'repartidor' => 'Repartidor', 'aplicacion' => 'Aplicación', 'administracion' => 'Administración', 'otro' => 'Otro'])
                                     <tr>
                                         <td>#{{ $reporte->ID_Reporte }}</td>
-                                        <td>{{ $reporte->CI_Cliente }}</td>
+                                        <td>{{ trim(($reporte->Nombre_Cliente ?? '').' '.($reporte->Apellido_Cliente ?? '')) ?: 'Cliente no encontrado' }}</td>
                                         <td>{{ $categoriasReporte[$reporte->Categoria ?? 'local'] ?? 'Otro' }}</td>
-                                        <td>{{ $reporte->RUT_Comercio ?: 'No especificado' }}</td>
+                                        <td>{{ $reporte->Nombre_Comercio ?: 'No especificado' }}</td>
                                         <td class="detail-cell">{{ $reporte->Comentario ?: 'Sin comentario' }}</td>
                                         <td><span class="status {{ $reporte->Estado_Gestion === 'Resuelto' ? 'active' : 'pending' }}">{{ $reporte->Estado_Gestion ?? 'Pendiente' }}</span>@if ($reporte->Resolucion)<small class="resolution-note">{{ $reporte->Resolucion }}</small>@endif</td>
                                         <td class="management-cell">
@@ -210,8 +210,8 @@
                                 @foreach ($resenas as $resena)
                                     <tr>
                                         <td>#{{ $resena->ID }}</td>
-                                        <td>{{ $resena->CI_Cliente }}</td>
-                                        <td>{{ $resena->RUT_Comercio ?: ($resena->CI_Repartidor ? 'Repartidor '.$resena->CI_Repartidor : 'Sin destinatario') }}</td>
+                                        <td>{{ trim(($resena->Nombre_Cliente ?? '').' '.($resena->Apellido_Cliente ?? '')) ?: 'Cliente no encontrado' }}</td>
+                                        <td>{{ $resena->Nombre_Comercio ?: (trim(($resena->Nombre_Repartidor ?? '').' '.($resena->Apellido_Repartidor ?? '')) ?: 'Sin destinatario') }}</td>
                                         <td><span class="rating">{{ $resena->Puntuacion ?? '—' }} <span aria-hidden="true">★</span></span></td>
                                         <td class="detail-cell">{{ $resena->Comentario ?: 'Sin comentario' }}@if ($resena->Motivo_Retiro)<small class="resolution-note">{{ $resena->Motivo_Retiro }}</small>@endif</td>
                                         <td><span class="status {{ $resena->Estado_Moderacion === 'Retirada' ? 'suspended' : 'active' }}">{{ $resena->Estado_Moderacion ?? 'Visible' }}</span></td>

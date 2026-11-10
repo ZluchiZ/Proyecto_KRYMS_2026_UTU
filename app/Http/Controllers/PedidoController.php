@@ -234,15 +234,55 @@ class PedidoController extends Controller
     {
         $this->requireClient();
 
-        $pedidos = DB::table('pedido')
-            ->where('CI_Cliente', session('usuario_id'))
-            ->select('N_Pedido', 'Fecha', 'Hora', 'Estado', 'Estado_Entrega', 'Codigo_Secreto', 'CI_Repartidor', 'Ubicacion', 'Monto_Total', 'Costo_de_envio', 'Metodo_de_pago')
-            ->orderByDesc('N_Pedido')
+        $consultaPedidos = DB::table('pedido')
+            ->where('pedido.CI_Cliente', session('usuario_id'))
+            ->select(
+                'pedido.N_Pedido',
+                'pedido.Fecha',
+                'pedido.Hora',
+                'pedido.Estado',
+                'pedido.Estado_Entrega',
+                'pedido.Codigo_Secreto',
+                'pedido.CI_Repartidor',
+                'pedido.Ubicacion',
+                'pedido.Monto_Total',
+                'pedido.Costo_de_envio',
+                'pedido.Metodo_de_pago'
+            );
+
+        if (Schema::hasTable('pedido_repartidor_estado')) {
+            $consultaPedidos->leftJoinSub(
+                DB::table('pedido_repartidor_estado')
+                    ->where('Estado', 'aceptado')
+                    ->select('N_Pedido', DB::raw('MAX(CI_Repartidor) as CI_Repartidor_Aceptado'))
+                    ->groupBy('N_Pedido'),
+                'asignacion_aceptada',
+                function ($join): void {
+                    $join->on('pedido.N_Pedido', '=', 'asignacion_aceptada.N_Pedido');
+                })
+                ->addSelect('asignacion_aceptada.CI_Repartidor_Aceptado');
+        }
+
+        $pedidos = $consultaPedidos
+            ->orderByDesc('pedido.N_Pedido')
             ->paginate(10);
 
+        $pedidos->getCollection()->each(function ($pedido): void {
+            if (($pedido->CI_Repartidor === null || $pedido->CI_Repartidor === '')
+                && ($pedido->CI_Repartidor_Aceptado ?? null) !== null) {
+                $pedido->CI_Repartidor = $pedido->CI_Repartidor_Aceptado;
+            }
+        });
+
         $idsPedido = $pedidos->getCollection()->pluck('N_Pedido');
+        $idsRepartidor = $pedidos->getCollection()
+            ->pluck('CI_Repartidor')
+            ->filter(fn ($ci): bool => $ci !== null && $ci !== '')
+            ->unique()
+            ->values();
         $localesPorPedido = collect();
         $resenasRepartidor = collect();
+        $repartidores = collect();
 
         if ($idsPedido->isNotEmpty()) {
             $localesPorPedido = DB::table('subpedido')
@@ -269,8 +309,40 @@ class PedidoController extends Controller
                 ->keyBy('N_Pedido');
         }
 
-        $pedidos->getCollection()->transform(function ($pedido) use ($localesPorPedido, $resenasRepartidor) {
+        if ($idsRepartidor->isNotEmpty()) {
+            $calificaciones = DB::table('reseña')
+                ->whereIn('CI_Repartidor', $idsRepartidor)
+                ->whereNotNull('Puntuacion')
+                ->where(function ($query): void {
+                    $query->whereNull('Estado_Moderacion')
+                        ->orWhere('Estado_Moderacion', '<>', 'Retirada');
+                })
+                ->select(
+                    'CI_Repartidor',
+                    DB::raw('COUNT(*) as Cantidad_Calificaciones'),
+                    DB::raw('AVG(Puntuacion) as Promedio_Calificaciones')
+                )
+                ->groupBy('CI_Repartidor');
+
+            $repartidores = DB::table('repartidor')
+                ->leftJoinSub($calificaciones, 'calificaciones', function ($join): void {
+                    $join->on('repartidor.CI', '=', 'calificaciones.CI_Repartidor');
+                })
+                ->whereIn('repartidor.CI', $idsRepartidor)
+                ->get([
+                    'repartidor.CI',
+                    'repartidor.Nombre',
+                    'repartidor.Apellido',
+                    'repartidor.Teléfono',
+                    'calificaciones.Cantidad_Calificaciones',
+                    'calificaciones.Promedio_Calificaciones',
+                ])
+                ->keyBy('CI');
+        }
+
+        $pedidos->getCollection()->transform(function ($pedido) use ($localesPorPedido, $resenasRepartidor, $repartidores) {
             $pedido->resenaRepartidor = $resenasRepartidor->get($pedido->N_Pedido);
+            $pedido->repartidor = $repartidores->get($pedido->CI_Repartidor);
             $pedido->locales = $localesPorPedido->get($pedido->N_Pedido, collect())
                 ->groupBy('N_Subpedido')
                 ->map(function ($lineas) {
