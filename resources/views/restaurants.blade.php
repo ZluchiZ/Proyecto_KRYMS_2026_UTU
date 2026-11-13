@@ -61,7 +61,7 @@
         </section>
     </main>
 
-    <footer class="site-footer"><div class="footer-inner"><div class="footer-brand"><strong>KRYMS</strong><p>Lo que necesitás,<br>más cerca.</p></div><div><h3>Descubrí</h3><a href="{{ route('home') }}#cerca">Locales</a><a href="{{ route('restaurants') }}">Restaurantes</a><a href="{{ route('home') }}#cerca">Ofertas</a></div><div><h3>Ayuda</h3><a href="#">Preguntas frecuentes</a><a href="#">Contacto</a><a href="#">Términos y privacidad</a></div><div class="footer-social"><h3>Seguinos</h3><a href="#" aria-label="Instagram">◎</a><a href="#" aria-label="Facebook">f</a><a href="#" aria-label="TikTok">♪</a></div></div><div class="footer-bottom"><span>© {{ date('Y') }} KRYMS. Todos los derechos reservados.</span><span>Hecho para moverte mejor.</span></div></footer>
+    <footer class="site-footer"><div class="footer-inner"><div class="footer-brand"><strong>ElGauchoVa</strong><p>Lo que necesitás,<br>más cerca.</p><a href="https://zluchiz.github.io/sitio-web-kryms/" target="_blank" rel="noopener noreferrer">Conocé nuestra web oficial</a></div><div><h3>Descubrí</h3><a href="{{ route('home') }}#cerca">Locales</a><a href="{{ route('restaurants') }}">Restaurantes</a><a href="{{ route('home') }}#cerca">Ofertas</a></div><div><h3>Ayuda</h3><a href="#">Preguntas frecuentes</a><a href="#">Contacto</a><a href="#">Términos y privacidad</a></div><div class="footer-social"><h3>Seguinos</h3><a href="#" aria-label="Instagram">◎</a><a href="#" aria-label="Facebook">f</a><a href="#" aria-label="TikTok">♪</a></div></div><div class="footer-bottom"><span>© {{ date('Y') }} ElGauchoVa. Todos los derechos reservados.</span><span>Hecho para moverte mejor.</span></div></footer>
 
 </body>
 </html>

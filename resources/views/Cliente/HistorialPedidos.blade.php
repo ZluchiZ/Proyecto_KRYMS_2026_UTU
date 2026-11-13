@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="{{ asset('css/internal.css') }}">
     <link rel="stylesheet" href="{{ asset('css/order-history.css') }}">
     <link rel="stylesheet" href="{{ asset('css/visual-refresh.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
 <body class="internal-page internal-cart order-history-page">
     @include('partials.internal-header')
@@ -78,7 +79,7 @@
                                     <span>Repartidor</span>
                                     <strong>{{ $nombreRepartidor }}</strong>
                                 </div>
-                                <a class="courier-profile-link" href="{{ route('repartidor.profile', $pedido->CI_Repartidor) }}">Ver perfil</a>
+                                <button type="button" class="courier-profile-link" onclick="window.location.href='{{ route('repartidor.profile', $pedido->CI_Repartidor) }}'">Ver perfil</button>
                             </section>
                         @endif
 
@@ -140,6 +141,24 @@
                                 <h2>Código secreto de entrega</h2>
                                 <p>Compartí este código con el repartidor cuando recibas tu pedido. Solo vos podés verlo.</p>
                                 <strong>{{ $pedido->Codigo_Secreto }}</strong>
+                            </section>
+                        @endif
+
+                        @if ($pedido->CI_Repartidor && ($estadoPedido === 'en_reparto' || in_array((string) ($pedido->Estado_Entrega ?? ''), ['productos_recolectados', 'en_camino', 'en_puerta'], true)))
+                            <section class="history-store delivery-live-section" aria-label="Seguimiento en tiempo real del repartidor">
+                                <div class="history-live-header">
+                                    <h2>Seguimiento en tiempo real</h2>
+                                    <span>Actualiza automáticamente</span>
+                                </div>
+                                <div
+                                    class="delivery-live-map"
+                                    id="delivery-map-{{ $pedido->N_Pedido }}"
+                                    data-order-id="{{ $pedido->N_Pedido }}"
+                                    data-tracking-url="{{ route('cliente.pedidos.tracking', $pedido->N_Pedido) }}"
+                                    data-client-lat="{{ $pedido->latitud ?? '' }}"
+                                    data-client-lng="{{ $pedido->longitud ?? '' }}"
+                                ></div>
+                                <p class="delivery-distance-status" data-distance-status="{{ $pedido->N_Pedido }}">Calculando distancia estimada…</p>
                             </section>
                         @endif
 
@@ -222,6 +241,159 @@
             @endif
         </div>
     </main>
+    <style>
+        .delivery-live-section {
+            margin-top: 1rem;
+        }
+        .history-live-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+        }
+        .history-live-header h2 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+        .history-live-header span {
+            color: #0d9488;
+            font-size: 0.76rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .delivery-live-map {
+            width: 100%;
+            height: 320px;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            background: #e2e8f0;
+        }
+        .leaflet-container {
+            width: 100%;
+            height: 100%;
+            font: inherit;
+        }
+    </style>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="{{ asset('js/courier-review-dialog.js') }}"></script>
+    <script>
+        const initializeDeliveryMaps = function () {
+            const maps = document.querySelectorAll('.delivery-live-map');
+
+            maps.forEach(function (mapElement) {
+                if (mapElement.dataset.mapInitialized === 'true') {
+                    return;
+                }
+
+                const orderId = mapElement.dataset.orderId;
+                const trackingUrl = mapElement.dataset.trackingUrl;
+                const clientLatValue = mapElement.dataset.clientLat;
+                const clientLngValue = mapElement.dataset.clientLng;
+                const clientLat = clientLatValue !== undefined && clientLatValue !== '' ? Number(clientLatValue) : NaN;
+                const clientLng = clientLngValue !== undefined && clientLngValue !== '' ? Number(clientLngValue) : NaN;
+                const hasClientLocation = Number.isFinite(clientLat) && Number.isFinite(clientLng);
+
+                const map = L.map(`delivery-map-${orderId}`, {
+                    zoomControl: true,
+                    scrollWheelZoom: true,
+                }).setView(
+                    hasClientLocation ? [clientLat, clientLng] : [-34.90, -56.16],
+                    hasClientLocation ? 14 : 11
+                );
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap contributors',
+                }).addTo(map);
+
+                let courierMarker = null;
+                const clientMarker = hasClientLocation
+                    ? L.marker([clientLat, clientLng]).addTo(map).bindPopup('Tu ubicación')
+                    : null;
+
+                const distanceNode = document.querySelector('[data-distance-status="' + orderId + '"]');
+                const toRadians = function (value) {
+                    return value * (Math.PI / 180);
+                };
+                const calculateDistanceKm = function (lat1, lon1, lat2, lon2) {
+                    const earthRadiusKm = 6371;
+                    const dLat = toRadians(lat2 - lat1);
+                    const dLon = toRadians(lon2 - lon1);
+                    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                        + Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2))
+                        * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                    return earthRadiusKm * c;
+                };
+                const updateDistanceLabel = function (latitud, longitud) {
+                    if (!distanceNode) {
+                        return;
+                    }
+
+                    if (!hasClientLocation || !Number.isFinite(latitud) || !Number.isFinite(longitud)) {
+                        distanceNode.textContent = 'Distancia estimada no disponible.';
+                        return;
+                    }
+
+                    const distanceKm = calculateDistanceKm(clientLat, clientLng, latitud, longitud);
+                    distanceNode.textContent = distanceKm < 1
+                        ? `Distancia estimada: ${distanceKm.toFixed(2)} km`
+                        : `Distancia estimada: ${distanceKm.toFixed(1)} km`;
+                };
+
+                const renderCourier = function (latitud, longitud) {
+                    if (!courierMarker) {
+                        courierMarker = L.marker([latitud, longitud]).addTo(map).bindPopup('Repartidor asignado');
+                    } else {
+                        courierMarker.setLatLng([latitud, longitud]);
+                    }
+
+                    updateDistanceLabel(latitud, longitud);
+
+                    if (clientMarker && hasClientLocation) {
+                        const bounds = L.latLngBounds([[latitud, longitud], [clientLat, clientLng]]);
+                        map.fitBounds(bounds.pad(0.35));
+                    } else {
+                        map.setView([latitud, longitud], 14);
+                    }
+                };
+
+                const refreshLocation = function () {
+                    fetch(trackingUrl, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                    })
+                        .then(function (response) {
+                            if (!response.ok) {
+                                return;
+                            }
+
+                            return response.json();
+                        })
+                        .then(function (payload) {
+                            if (!payload || payload.latitud === null || payload.longitud === null) {
+                                return;
+                            }
+
+                            renderCourier(payload.latitud, payload.longitud);
+                        })
+                        .catch(function () {
+                            // Ignoramos errores de actualización y el mapa sigue mostrando la última posición conocida.
+                        });
+                };
+
+                mapElement.dataset.mapInitialized = 'true';
+                refreshLocation();
+                mapElement._deliveryMapRefresh = setInterval(refreshLocation, 10000);
+            });
+        };
+
+        document.addEventListener('DOMContentLoaded', initializeDeliveryMaps);
+        document.addEventListener('app:page-loaded', initializeDeliveryMaps);
+    </script>
 </body>
 </html>

@@ -22,7 +22,7 @@ class Repartidor extends Model
 
     protected $fillable = [
         'CI', 'Email_Usuario', 'Contraseña', 'Nombre', 'Apellido', 'Teléfono',
-        'Estado_Repartidor', 'Foto_Libreta', 'latitud', 'longitud',
+        'Estado_Repartidor', 'Foto_Libreta', 'Cedula_Archivo', 'latitud', 'longitud',
     ];
 
     public function usuario(): BelongsTo

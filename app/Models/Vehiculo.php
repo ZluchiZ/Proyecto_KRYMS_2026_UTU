@@ -18,8 +18,9 @@ class Vehiculo extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'Matricula', 'CI_Repartidor', 'Modelo', 'Color',
-        'Libreta_de_propiedad', 'Seguro', 'Foto',
+        'Matricula', 'CI_Repartidor', 'Tipo_Vehiculo', 'Modelo', 'Color',
+        'Libreta_de_propiedad', 'Seguro', 'Foto', 'Estado_Aprobacion',
+        'Motivo_Rechazo', 'Fecha_Revision',
     ];
 
     public function repartidor(): BelongsTo

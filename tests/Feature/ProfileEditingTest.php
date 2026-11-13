@@ -3,8 +3,10 @@
 namespace Tests\Feature;
 
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class ProfileEditingTest extends TestCase
@@ -138,6 +140,53 @@ class ProfileEditingTest extends TestCase
             'Teléfono' => '099123456',
             'Direccion_Entrega' => 'Calle 1',
         ]);
+    }
+
+    public function test_local_can_change_its_logo_from_the_profile_page(): void
+    {
+        Storage::fake('public');
+
+        $this->withSession([
+            'tipo_usuario' => 'comercio',
+            'usuario_id' => '123456789012',
+            'email' => 'local@example.com',
+        ])->get(route('profile.edit'))->assertOk()->assertSee('URL del logo')->assertSee('Archivo del logo');
+
+        $this->withSession([
+            'tipo_usuario' => 'comercio',
+            'usuario_id' => '123456789012',
+            'email' => 'local@example.com',
+        ])->patch(route('profile.update'), [
+            'nombre' => 'Local actualizado',
+            'nombre_dueno' => 'Dueño nuevo',
+            'telefono' => '099888777',
+            'direccion' => 'Calle Falsa 123',
+            'horario' => '09:00 hrs - 18:00 hrs',
+            'logo_url' => 'https://example.com/logo-nuevo.png',
+        ])->assertRedirect(route('profile.edit'));
+
+        $this->assertDatabaseHas('comercio', [
+            'Email_Usuario' => 'local@example.com',
+            'Nombre_Comercio' => 'Local actualizado',
+            'Logo' => 'https://example.com/logo-nuevo.png',
+        ]);
+
+        $this->withSession([
+            'tipo_usuario' => 'comercio',
+            'usuario_id' => '123456789012',
+            'email' => 'local@example.com',
+        ])->patch(route('profile.update'), [
+            'nombre' => 'Local con archivo',
+            'nombre_dueno' => 'Dueño nuevo',
+            'telefono' => '099888777',
+            'direccion' => 'Calle Falsa 123',
+            'horario' => '09:00 hrs - 18:00 hrs',
+            'logo' => UploadedFile::fake()->image('logo-local.png', 200, 200),
+        ])->assertRedirect(route('profile.edit'));
+
+        $logoValue = DB::table('comercio')->where('Email_Usuario', 'local@example.com')->value('Logo');
+        $this->assertNotNull($logoValue);
+        $this->assertStringContainsString('/storage/comercios/logos/', $logoValue);
     }
 
     public function test_client_can_edit_profile_from_the_view_profile_page(): void
@@ -378,6 +427,53 @@ class ProfileEditingTest extends TestCase
             'Apellido' => 'Silva',
             'Teléfono' => '098765432',
         ]);
+    }
+
+    public function test_courier_can_delete_saved_vehicle(): void
+    {
+        Schema::connection('sqlite')->create('vehículo', function (Blueprint $table): void {
+            $table->string('CI_Repartidor')->primary();
+            $table->string('Matricula')->nullable();
+            $table->string('Tipo_Vehiculo')->nullable();
+            $table->string('Modelo')->nullable();
+            $table->string('Color')->nullable();
+            $table->string('Libreta_de_propiedad')->nullable();
+            $table->string('Seguro')->nullable();
+            $table->string('Foto')->nullable();
+        });
+
+        DB::table('vehículo')->insert([
+            'CI_Repartidor' => '87654321',
+            'Matricula' => 'ABC123',
+            'Tipo_Vehiculo' => 'moto',
+            'Modelo' => '2024',
+            'Color' => 'Negro',
+            'Libreta_de_propiedad' => 'repartidor/vehiculos/libretas/test.jpg',
+            'Seguro' => 'repartidor/vehiculos/seguros/test.pdf',
+            'Foto' => 'repartidor/vehiculos/fotos/test.jpg',
+        ]);
+
+        $this->withSession([
+            'tipo_usuario' => 'repartidor',
+            'usuario_id' => '87654321',
+            'email' => 'repartidor@example.com',
+        ])->delete(route('repartidor.vehiculo.delete'))
+            ->assertRedirect(route('profile.edit'));
+
+        $this->assertDatabaseMissing('vehículo', ['CI_Repartidor' => '87654321']);
+    }
+
+    public function test_admin_can_view_any_user_profile_in_read_only_mode(): void
+    {
+        $this->withSession([
+            'tipo_usuario' => 'administrador',
+            'usuario_id' => 'admin@example.com',
+            'email' => 'admin@example.com',
+        ])->get(route('admin.usuarios.perfil', ['tipo' => 'cliente', 'identificador' => '12345678']))
+            ->assertOk()
+            ->assertSee('Vista de consulta del administrador.')
+            ->assertSee('Ana')
+            ->assertDontSee('Guardar cambios');
     }
 
     public function test_profile_edit_is_not_available_without_a_supported_account_session(): void

@@ -33,7 +33,9 @@ class InjectFetchNavigation
             $paletteVersion = filemtime(public_path('css/palette.css'));
             $paletteUrl = htmlspecialchars(asset('css/palette.css').'?v='.$paletteVersion, ENT_QUOTES, 'UTF-8');
             $stylesheet = '<link rel="stylesheet" href="'.$paletteUrl.'">';
-            $content = substr_replace($content, $stylesheet.'</head>', $closingHeadPosition, strlen('</head>'));
+            $faviconUrl = htmlspecialchars(asset('img/LogoGaucho_png.png'), ENT_QUOTES, 'UTF-8');
+            $favicon = '<link rel="icon" type="image/png" href="'.$faviconUrl.'">';
+            $content = substr_replace($content, $stylesheet.$favicon.'</head>', $closingHeadPosition, strlen('</head>'));
             $closingBodyPosition = strripos($content, '</body>');
         }
 

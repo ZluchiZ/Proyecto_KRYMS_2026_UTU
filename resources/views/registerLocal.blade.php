@@ -26,7 +26,7 @@
         <p>Completá tus datos para empezar a recibir pedidos.</p>
       </div>
 
-<form method="POST" action="{{ route('local.store') }}">
+<form method="POST" action="{{ route('local.store') }}" enctype="multipart/form-data" data-native-submit="true">
     @csrf
   @if ($errors->any())
     <div class="form-errors">
@@ -46,9 +46,17 @@
     <input type="text" id="nombre" name="nombre" placeholder="Nombre del local" value="{{ old('nombre') }}" required>
     <input type="text" id="nombre_dueno" name="nombre_dueno" placeholder="Nombre del dueño" value="{{ old('nombre_dueno') }}" required>
     <input type="text" id="cedula_dueno" name="cedula_dueno" inputmode="numeric" maxlength="20" placeholder="Cédula de Identidad" value="{{ old('cedula_dueno') }}" required>
-    <input type="text" id="horario" name="horario" placeholder="08:00 hrs - 18:00 hrs" pattern="([01][0-9]|2[0-3]):[0-5][0-9] hrs - ([01][0-9]|2[0-3]):[0-5][0-9] hrs" value="{{ old('horario') }}" required>
+    <div class="field-group horario-fields">
+      <label for="horario_inicio">Horario de atención</label>
+      <div class="dual-time-inputs">
+        <input type="time" id="horario_inicio" name="horario_inicio" value="{{ old('horario_inicio') }}" required>
+        <span class="time-separator">-</span>
+        <input type="time" id="horario_fin" name="horario_fin" value="{{ old('horario_fin') }}" required>
+      </div>
+    </div>
     <input type="text" id="direccion" name="direccion" placeholder="Dirección" value="{{ old('direccion') }}" required>
-    <input type="text" id="logo" name="logo" placeholder="URL del Logo" value="{{ old('logo') }}" required>
+    <input type="url" id="logo_url" name="logo_url" placeholder="URL del logo (opcional)" value="{{ old('logo_url') }}">
+    <input type="file" id="logo" name="logo" accept="image/png,image/jpeg,image/webp" aria-label="Logo del local como archivo">
     <input type="text" id="numero_cuenta" name="numero_cuenta" placeholder="Número de cuenta" value="{{ old('numero_cuenta') }}" required>
     <input type="email" id="correo" name="correo" pattern="[^@\s]+@[^@\s]+\.[^@\s]+" title="Ingresá un correo válido, por ejemplo nombre@gmail.com." placeholder="Correo Electrónico" value="{{ old('correo') }}" required>
     <input type="password" id="contrasena" name="contrasena" pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9\s]).{8,}" title="Usá al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo." placeholder="Contraseña" required minlength="8">

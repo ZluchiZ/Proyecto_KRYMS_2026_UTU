@@ -142,7 +142,17 @@
     };
 
     const isEligibleForm = (form) => {
-        if (form.matches('[data-native-submit], [data-ajax="false"]') || form.target && form.target !== '_self') {
+        const hasNativeSubmit = form.matches('[data-native-submit], [data-ajax="false"]');
+        if (hasNativeSubmit || form.target && form.target !== '_self') {
+            return false;
+        }
+
+        if (form.enctype && form.enctype.toLowerCase().includes('multipart/form-data')) {
+            return false;
+        }
+
+        const hasFileInput = form.querySelector('input[type="file"], input[name="imagen"], input[name="logo"]');
+        if (hasFileInput) {
             return false;
         }
 
@@ -249,7 +259,14 @@
 
     document.addEventListener('submit', (event) => {
         const form = event.target;
-        if (!(form instanceof HTMLFormElement) || !isEligibleForm(form)) return;
+        if (!(form instanceof HTMLFormElement)) return;
+
+        const hasFileInput = Array.from(form.elements).some((element) => element instanceof HTMLInputElement && element.type === 'file');
+        if (hasFileInput || form.enctype?.toLowerCase().includes('multipart/form-data') || form.matches('[data-native-submit], [data-ajax="false"]')) {
+            return;
+        }
+
+        if (!isEligibleForm(form)) return;
         if (event.defaultPrevented) return;
         if (form.matches('[data-live-search]')) {
             event.preventDefault();

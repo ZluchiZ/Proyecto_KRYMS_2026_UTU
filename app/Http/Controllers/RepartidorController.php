@@ -6,8 +6,10 @@ use App\Exceptions\RegistrationMailDeliveryException;
 use App\Services\InAppNotificationService;
 use App\Services\RegistrationVerificationService;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -151,6 +153,212 @@ class RepartidorController extends Controller
                 ? 'Ahora estás conectado y disponible para recibir pedidos.'
                 : 'Te desconectaste y ya no aparecerás como disponible.'
         );
+    }
+
+    public function deleteVehicle()
+    {
+        abort_unless(session('tipo_usuario') === 'repartidor', 403, 'Solo un repartidor puede borrar su vehículo.');
+
+        $email = session('email');
+        abort_unless($email, 403, 'No hay una sesión activa para borrar el vehículo.');
+
+        $repartidor = DB::table('repartidor')
+            ->where('Email_Usuario', $email)
+            ->first(['CI']);
+
+        abort_unless($repartidor, 404, 'El repartidor no está registrado.');
+
+        $vehiculoTable = $this->vehicleTableName();
+        abort_unless($vehiculoTable !== null, 409, 'La tabla de vehículos aún no está disponible en la base de datos.');
+
+        $vehiculo = DB::table($vehiculoTable)
+            ->where('CI_Repartidor', (string) $repartidor->CI)
+            ->first();
+
+        abort_unless($vehiculo, 404, 'No tienes un vehículo guardado para eliminar.');
+
+        foreach (['Foto', 'Libreta_de_propiedad', 'Seguro'] as $campo) {
+            $path = $vehiculo->{$campo} ?? null;
+
+            if ($path && Storage::disk('public')->exists($path)) {
+                Storage::disk('public')->delete($path);
+            }
+        }
+
+        DB::table($vehiculoTable)
+            ->where('CI_Repartidor', (string) $repartidor->CI)
+            ->delete();
+
+        return redirect()->route('profile.edit')->with(
+            'success',
+            'Tu vehículo fue eliminado correctamente.'
+        );
+    }
+
+    public function storeVehicle(Request $request, InAppNotificationService $notifications)
+    {
+        abort_unless(session('tipo_usuario') === 'repartidor', 403, 'Solo un repartidor puede registrar un vehículo.');
+
+        $email = session('email');
+        abort_unless($email, 403, 'No hay una sesión activa para registrar el vehículo.');
+
+        $repartidor = DB::table('repartidor')
+            ->where('Email_Usuario', $email)
+            ->first(['CI']);
+
+        abort_unless($repartidor, 404, 'El repartidor no está registrado.');
+
+        $vehiculoTable = $this->vehicleTableName();
+
+        abort_unless(
+            $vehiculoTable !== null,
+            409,
+            'La tabla de vehículos aún no está disponible en la base de datos.'
+        );
+
+        $validated = $request->validate([
+            'tipo_vehiculo' => ['required', Rule::in(['bicicleta', 'moto', 'auto_camioneta'])],
+            'matricula' => ['nullable', 'string', 'max:20', Rule::requiredIf(in_array($request->tipo_vehiculo, ['moto', 'auto_camioneta']))],
+            'modelo' => ['nullable', 'string', 'max:100', Rule::requiredIf(in_array($request->tipo_vehiculo, ['moto', 'auto_camioneta']))],
+            'color' => ['nullable', 'string', 'max:50', Rule::requiredIf(in_array($request->tipo_vehiculo, ['moto', 'auto_camioneta']))],
+            'foto' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+            'libreta_de_propiedad' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+            'seguro' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+            'libreta_de_conducir' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+            'cedula_identidad' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+        ]);
+
+        $existingVehicle = DB::table($vehiculoTable)
+            ->where('CI_Repartidor', (string) $repartidor->CI)
+            ->first();
+
+        $repartidorRecord = DB::table('repartidor')
+            ->where('CI', (string) $repartidor->CI)
+            ->first(['Foto_Libreta', 'Cedula_Archivo']);
+
+        $matriculaBase = $validated['tipo_vehiculo'] === 'bicicleta'
+            ? 'BIC-'.trim((string) $repartidor->CI)
+            : strtoupper(trim((string) ($validated['matricula'] ?? '')));
+
+        $vehicleData = [
+            'Matricula' => $matriculaBase,
+            'CI_Repartidor' => (string) $repartidor->CI,
+            'Tipo_Vehiculo' => $validated['tipo_vehiculo'],
+            'Modelo' => $validated['tipo_vehiculo'] === 'bicicleta' ? null : trim((string) ($validated['modelo'] ?? '')),
+            'Color' => $validated['tipo_vehiculo'] === 'bicicleta' ? null : trim((string) ($validated['color'] ?? '')),
+            'Libreta_de_propiedad' => $validated['tipo_vehiculo'] === 'bicicleta'
+                ? null
+                : $this->storeDocumentIfNeeded($request->file('libreta_de_propiedad'), 'repartidor/vehiculos/libretas', $existingVehicle->Libreta_de_propiedad ?? null),
+            'Seguro' => $validated['tipo_vehiculo'] === 'bicicleta'
+                ? null
+                : $this->storeDocumentIfNeeded($request->file('seguro'), 'repartidor/vehiculos/seguros', $existingVehicle->Seguro ?? null),
+            'Foto' => $validated['tipo_vehiculo'] === 'bicicleta'
+                ? null
+                : $this->storeDocumentIfNeeded($request->file('foto'), 'repartidor/vehiculos/fotos', $existingVehicle->Foto ?? null),
+        ];
+
+        $vehicleUpdate = $vehicleData;
+        if (Schema::hasColumn($vehiculoTable, 'Estado_Aprobacion')) {
+            $vehicleUpdate = array_merge($vehicleUpdate, [
+                'Estado_Aprobacion' => 'Pendiente',
+                'Motivo_Rechazo' => null,
+                'Fecha_Revision' => null,
+            ]);
+        }
+
+        DB::table($vehiculoTable)
+            ->updateOrInsert(
+                ['CI_Repartidor' => (string) $repartidor->CI],
+                $vehicleUpdate,
+            );
+
+        foreach ($this->adminEmails() as $adminEmail) {
+            $notifications->sendTo(
+                'administrador',
+                (string) $adminEmail,
+                'vehiculo_pendiente',
+                'Hay una solicitud de revisión de vehículo pendiente para el repartidor '.$repartidor->CI.'.',
+                null,
+                [
+                    'ci_repartidor' => (string) $repartidor->CI,
+                    'tipo_vehiculo' => $validated['tipo_vehiculo'],
+                ],
+            );
+        }
+
+        $repartidorUpdates = [];
+
+        if ($request->hasFile('libreta_de_conducir')) {
+            $repartidorUpdates['Foto_Libreta'] = $this->storeDocumentIfNeeded(
+                $request->file('libreta_de_conducir'),
+                'repartidor/documentos/libretas',
+                $repartidorRecord->Foto_Libreta ?? null,
+            );
+        }
+
+        if ($request->hasFile('cedula_identidad')) {
+            $repartidorUpdates['Cedula_Archivo'] = $this->storeDocumentIfNeeded(
+                $request->file('cedula_identidad'),
+                'repartidor/documentos/cedulas',
+                $repartidorRecord->Cedula_Archivo ?? null,
+            );
+        }
+
+        if ($repartidorUpdates !== []) {
+            DB::table('repartidor')
+                ->where('CI', (string) $repartidor->CI)
+                ->update($repartidorUpdates);
+        }
+
+        return redirect()->route('profile.edit')->with(
+            'success',
+            'Tu vehículo y documentos fueron registrados correctamente.'
+        );
+    }
+
+    private function vehicleTableName(): ?string
+    {
+        foreach (['vehículo', 'Vehículo'] as $table) {
+            if (Schema::hasTable($table)) {
+                return $table;
+            }
+        }
+
+        return null;
+    }
+
+    private function storeDocumentIfNeeded(?UploadedFile $file, string $directory, ?string $existingPath = null): ?string
+    {
+        if (! $file) {
+            return $existingPath;
+        }
+
+        if ($existingPath && Storage::disk('public')->exists($existingPath)) {
+            Storage::disk('public')->delete($existingPath);
+        }
+
+        return $file->store($directory, 'public');
+    }
+
+    private function adminEmails(): array
+    {
+        $emails = [];
+
+        if (Schema::hasTable('administrador')) {
+            $emails = array_merge($emails, DB::table('administrador')->pluck('Email_Usuario')->all());
+        }
+
+        if (Schema::hasTable('usuario')) {
+            $emails = array_merge(
+                $emails,
+                DB::table('usuario')
+                    ->whereRaw('LOWER(Tipo_Usuario) IN (?, ?)', ['admin', 'administrador'])
+                    ->pluck('Email')
+                    ->all()
+            );
+        }
+
+        return array_values(array_unique(array_filter(array_map('trim', $emails))));
     }
 
     public function updatePedidoStatus(Request $request, int $pedido, InAppNotificationService $notifications)

@@ -84,7 +84,7 @@ class DashboardController extends Controller
         abort_unless(session('tipo_usuario') === 'administrador' && session('usuario_id'), 403);
 
         $seccion = $request->query('seccion', 'adhesiones');
-        abort_unless(in_array($seccion, ['adhesiones', 'usuarios', 'suscripciones', 'reportes', 'resenas', 'recuperaciones'], true), 404);
+        abort_unless(in_array($seccion, ['adhesiones', 'usuarios', 'suscripciones', 'reportes', 'resenas', 'recuperaciones', 'vehiculos'], true), 404);
 
         $usuarios = collect();
         foreach ([
@@ -180,6 +180,35 @@ class DashboardController extends Controller
         $recuperaciones = Schema::hasTable('password_recovery_requests')
             ? DB::table('password_recovery_requests')->where('status', 'pending')->orderBy('created_at')->get()
             : collect();
+        $vehiculosPendientes = collect();
+        $vehiculoTable = null;
+        foreach (['vehículo', 'Vehículo'] as $table) {
+            if (Schema::hasTable($table)) {
+                $vehiculoTable = $table;
+                break;
+            }
+        }
+
+        if ($vehiculoTable && Schema::hasColumn($vehiculoTable, 'Estado_Aprobacion')) {
+            $vehiculosPendientes = DB::table($vehiculoTable)
+                ->leftJoin('repartidor', $vehiculoTable.'.CI_Repartidor', '=', 'repartidor.CI')
+                ->where($vehiculoTable.'.Estado_Aprobacion', 'Pendiente')
+                ->select(
+                    $vehiculoTable.'.CI_Repartidor',
+                    $vehiculoTable.'.Tipo_Vehiculo',
+                    $vehiculoTable.'.Matricula',
+                    $vehiculoTable.'.Modelo',
+                    $vehiculoTable.'.Color',
+                    $vehiculoTable.'.Foto',
+                    $vehiculoTable.'.Libreta_de_propiedad',
+                    $vehiculoTable.'.Seguro',
+                    'repartidor.Nombre as Nombre_Repartidor',
+                    'repartidor.Apellido as Apellido_Repartidor',
+                    'repartidor.Email_Usuario as Email_Repartidor'
+                )
+                ->orderByDesc($vehiculoTable.'.CI_Repartidor')
+                ->get();
+        }
         $resenasPublicadas = $resenas->filter(fn ($resena) => strtoupper((string) ($resena->Estado_Moderacion ?? 'Visible')) !== 'RETIRADA')->count();
         $notificaciones = [
             'adhesiones' => $solicitudes->count(),
@@ -188,6 +217,7 @@ class DashboardController extends Controller
             'reportes' => $reportes->count(),
             'resenas' => $resenasPublicadas,
             'recuperaciones' => $recuperaciones->count(),
+            'vehiculos' => $vehiculosPendientes->count(),
         ];
 
         return view('Administrador.DashboardAdministrador', [
@@ -199,6 +229,7 @@ class DashboardController extends Controller
             'reportes' => $reportes,
             'resenas' => $resenas,
             'recuperaciones' => $recuperaciones,
+            'vehiculos' => $vehiculosPendientes,
             'totalUsuarios' => $totalUsuarios,
             'notificaciones' => $notificaciones,
         ]);

@@ -1,98 +1,668 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Proyecto KRYMS 2026 - UTU
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## Introducción
 
-## About Laravel
+El presente documento describe la arquitectura, la estructura funcional y la configuración del proyecto de software desarrollado para la Universidad del Trabajo del Uruguay (UTU). El sistema corresponde a una aplicación web orientada a la gestión de pedidos online, con foco en la relación entre clientes, comercios, repartidores y administradores.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+El proyecto se implementa en Laravel 13 y permite la gestión integral de un marketplace de delivery, incluyendo registro de usuarios, autenticación, catálogos de productos, carrito de compras, pedidos, entrega, reseñas y administración.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Descripción general del sistema
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+KRYMS es una plataforma web de delivery orientada a conectar clientes con comercios locales y repartidores en un mismo ecosistema digital. La aplicación permite explorar restaurantes o comercios, seleccionar productos, confirmar compras, hacer seguimiento del pedido y gestionar la operación desde distintos perfiles.
 
-## Learning Laravel
+La solución está diseñada para funcionar con distintos roles dentro del mismo sistema:
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- Cliente: busca productos, arma su carrito, confirma pedidos y recibe actualizaciones del estado.
+- Comercio: administra su catálogo, atiende pedidos y actualiza el estado del local y de las ventas.
+- Repartidor: recibe entregas, actualiza ubicación y confirma la finalización del servicio.
+- Administrador: supervisa usuarios, solicitudes, reportes, reseñas y validaciones del sistema.
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Esta plataforma es útil tanto para una operación local como para un prototipo de marketplace digital con lógica realista de ventas y logística.
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+Para acceder a la guía completa de uso, consultar el archivo [MANUAL_DE_USUARIO.md](MANUAL_DE_USUARIO.md).
 
-## Agentic Development
+## 1. Objetivo general
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+Desarrollar una plataforma web que permita:
 
-```bash
-composer require laravel/boost --dev
+- registrar y autenticar distintos perfiles de usuario;
+- gestionar locales comerciales y sus productos;
+- facilitar la compra por parte de clientes;
+- coordinar la preparación y entrega de pedidos;
+- monitorear el funcionamiento del sistema mediante roles y permisos diferenciados;
+- ofrecer una base extensible para futuras mejoras funcionales y operativas.
 
-php artisan boost:install
+## 2. Alcance del sistema
+
+El sistema contempla cuatro roles principales:
+
+- Cliente: realiza búsquedas, agrega productos al carrito, confirma pedidos y gestiona su historial.
+- Comercio: administra sus productos, estado del local y atención de pedidos.
+- Repartidor: gestiona disponibilidad, ubicación y entrega del pedido.
+- Administrador: supervisa usuarios, reportes, reseñas y solicitudes administrativas.
+
+## 3. Stack tecnológico
+
+- PHP 8.3
+- Laravel Framework 13.x
+- MySQL
+- Blade Templates
+- Vite + Tailwind CSS
+- Sanctum para autenticación API
+- Socialite para autenticación con Google
+- SMTP para envío de correos
+- PHPUnit para pruebas automatizadas
+
+## 4. Arquitectura del proyecto
+
+La aplicación sigue el patrón MVC de Laravel, con integración de vistas, controladores, modelos, migraciones y rutas. La organización principal del repositorio es la siguiente:
+
+```text
+app/
+  Exceptions/
+  Http/
+    Controllers/
+    Middleware/
+  Mail/
+  Models/
+  Providers/
+  Services/
+bootstrap/
+config/
+  auth.php
+  services.php
+  ...
+database/
+  migrations/
+  seeders/
+public/
+resources/
+  css/
+  js/
+  views/
+routes/
+  api.php
+  web.php
+storage/
+  app/
+  framework/
+  logs/
+tests/
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### 4.1 Componentes principales
 
-## Contributing
+- `app/Models/Usuario`: entidad central de autenticación y acceso al sistema.
+- `app/Models/Cliente`, `Comercio`, `Repartidor`, `Administrador`: perfiles específicos por tipo de usuario.
+- `app/Models/Producto`, `Pedido`, `Subpedido`, `Tarjeta`, `Resena`, `Reporte`: entidades del dominio del negocio.
+- `app/Http/Controllers`: lógica de presentación y flujo de negocio para cada módulo.
+- `app/Services`: servicios de correo, verificación y notificaciones.
+- `routes/web.php`: rutas de la aplicación web.
+- `routes/api.php`: puntos de acceso de la API.
+- `database/migrations`: definición y evolución del esquema de base de datos.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## 5. Modelo de autenticación y autorización
 
-## Code of Conduct
+La identidad del sistema está representada por el modelo `Usuario`, configurado como proveedor de autenticación en `config/auth.php`. Este modelo se utiliza como base para todos los perfiles del sistema, en lugar de depender de la tabla estándar `users` generada por Laravel.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### 5.1 Rol y perfiles
 
-## Security Vulnerabilities
+El modelo `Usuario` contiene la columna `Tipo_Usuario`, la cual permite distinguir los perfiles dentro de la plataforma. Los perfiles asociados se gestionan mediante tablas específicas:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+| Rol | Descripción |
+| --- | --- |
+| Cliente | Compra, consulta historial y realiza pedidos |
+| Comercio | Gestiona catálogo y pedidos |
+| Repartidor | Atiende entregas y actualiza estado |
+| Administrador | Administra operación general y validaciones |
 
-## License
+El sistema usa middleware con reglas de acceso por tipo de usuario para restringir el acceso a rutas y paneles según el perfil.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## 6. Flujo funcional principal
 
-## Verificación por correo
+### 6.1 Registro y validación
 
-Los registros de Cliente, Local y Repartidor se completan luego de introducir el código de seis dígitos enviado por correo. El código vence a los 15 minutos; se puede solicitar otro desde el formulario de verificación. Los Locales y Repartidores mantienen además la aprobación administrativa antes de poder iniciar sesión.
+El proceso de registro contempla la creación del usuario y la generación de una validación por correo electrónico o código de verificación. Los comercios y repartidores además requieren aprobación administrativa para acceder plenamente al sistema.
 
-Configurá un proveedor SMTP en el archivo `.env` (`MAIL_MAILER`, `MAIL_SCHEME`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD` y `MAIL_FROM_ADDRESS`) antes de registrar usuarios. Los valores de `.env.example` son marcadores de posición y deben reemplazarse por los datos del proveedor.
+El proyecto incluye mecanismos para:
 
-Después de copiar `.env.example` a `.env`, ejecutá `php artisan migrate` para crear la tabla que conserva temporalmente los registros pendientes.
+- registro de clientes, comercios y repartidores;
+- verificación por correo;
+- recuperación de contraseña;
+- validación de datos sensibles;
+- control de solicitudes repetidas mediante throttling.
 
-## Seguridad de credenciales
+### 6.2 Gestión de productos y locales
 
-Las contraseñas se almacenan mediante hash seguro con los mecanismos de Laravel (`Hash::make`) y se verifican con `Hash::check`. Un hash no es cifrado: no se revierte para recuperar la contraseña original. Los datos personales como cédula, teléfono y dirección no son contraseñas y no se protegen convirtiéndolos en hashes; su tratamiento depende de controles de acceso, minimización y protección de la base de datos.
+Los comercios pueden registrar información del negocio, cargar productos, actualizar inventario y operar su disponibilidad. La aplicación también permite mostrar los locales en una vista comercial y gestionar las reseñas asociadas.
 
-## Identidad y autenticación
+### 6.3 Compras y pedidos
 
-La identidad única de la aplicación es el modelo `App\Models\Usuario`, respaldado por la tabla `usuario`. Su clave es `Email` y su contraseña se almacena en `Contraseña`. Las tablas `cliente`, `comercio`, `repartidor` y `administrador` contienen perfiles asociados a esa identidad; no son sistemas de autenticación independientes. El proveedor `usuarios` de Laravel también apunta a `Usuario`. El inicio de sesión web conserva el correo, el tipo de usuario y el identificador del perfil en la sesión; la API emite tokens de Sanctum para el mismo modelo.
+El cliente puede navegar por locales y productos, agregar artículos al carrito, definir la dirección de entrega, seleccionar un método de pago simulado y confirmar la compra. El pedido queda asociado a un estado dentro del flujo de preparación y entrega.
 
-La tabla estándar `users` pertenece al scaffolding inicial de Laravel y no representa identidades de esta aplicación. La migración base todavía la crea y puede contener registros de instalaciones anteriores, pero no está asociada a un modelo ni a un proveedor de autenticación y la aplicación no la consulta. Se conserva sin una migración destructiva para no borrar datos existentes. Los nuevos usuarios deben registrarse en `usuario`.
+### 6.4 Entrega y seguimiento
 
-La ruta de prueba `/test-cliente` no está registrada y debe responder 404. La prueba `IdentityConfigurationTest` protege este comportamiento para evitar exponer registros de clientes por una ruta de depuración.
+Los repartidores actualizan disponibilidad, ubican el pedido y reportan avances hasta la confirmación de entrega. El sistema permite registrar datos de geolocalización y progreso del transporte.
 
-<<<<<<< HEAD
-Los errores inesperados se reportan en los registros de Laravel y se muestran al usuario con mensajes controlados, sin detalles de consultas o excepciones. En cualquier despliegue accesible desde fuera del equipo local, configurá `APP_ENV=production` y `APP_DEBUG=false` para evitar que Laravel renderice trazas de errores no capturados.
+### 6.5 Administración
 
-## Métodos de pago del prototipo
+El administrador tiene acceso a herramientas para:
 
-En el carrito, el cliente puede seleccionar **efectivo contra entrega** o **tarjeta**. El pago con tarjeta se simula sin cargo y solo acepta los datos `0000 0000 0000 0000`, vencimiento `12/30` y código `000`. La casilla **Guardar método de pago** crea una referencia de tarjeta para el cliente y la asocia al pedido; en carritos futuros esa referencia puede seleccionarse y se muestra enmascarada con sus últimos cuatro dígitos. Si se elige efectivo o no se marca la casilla, no se crea ni asocia una referencia nueva. Solo se guardan los últimos cuatro dígitos, no el número completo, vencimiento ni código; los datos ingresados tampoco se recuperan como datos anteriores si falla la validación. Solo se guarda `tarjeta_simulada` en `Pedido.Metodo_de_pago`. No ingreses datos de tarjetas reales.
+- aprobar o rechazar adhesiones;
+- gestionar usuarios;
+- moderar reseñas y reportes;
+- revisar solicitudes de recuperación de contraseña;
+- resaltar comercios mediante suscripción o relevancia.
 
-Esto no es una pasarela de pago: no hay conexión con un banco o proveedor, ni autorización, cargo, captura o liquidación de dinero. La tabla `Tarjeta` conserva únicamente una referencia al cliente; no almacena número, vencimiento, titular ni código de seguridad. Para procesar pagos electrónicos en una versión futura habrá que integrar un proveedor de pagos y usar su tokenización, sin almacenar credenciales de tarjeta en la aplicación.
-=======
-## Métodos de pago del prototipo
+## 7. Rutas principales
 
-En el carrito, el cliente puede seleccionar **efectivo contra entrega** o **tarjeta contra entrega**. La selección se guarda en `Pedido.Metodo_de_pago`; es una simulación del método elegido y no procesa un pago. El proyecto no integra una pasarela, autorización, captura ni liquidación de transacciones.
+### 7.1 Rutas web
 
-La tabla `Tarjeta` se conserva como referencia técnica del prototipo y no almacena número, vencimiento, titular ni código de seguridad. El checkout crea únicamente una referencia asociada al cliente, sin datos bancarios. No ingreses tarjetas reales. Para procesar pagos electrónicos en una versión futura habrá que integrar un proveedor de pagos y usar su tokenización, sin almacenar credenciales de tarjeta en la aplicación.
->>>>>>> fb7fec2dc5bd3e54183f89cede23e4c7f423b0a3
+El sistema define rutas para:
 
-## Pruebas automatizadas
+- autenticación: `/login`, `/register`, `/logout`
+- perfil: `/mi-cuenta`, `/mi-perfil/editar`
+- storefront: `/`, `/restaurantes`, `/productos`, `/local/{rut}`
+- carrito y pedidos: `/carrito`, `/mis-pedidos`, `/pedidos/{pedido}/estado`
+- dashboards: `/dashboard-local`, `/dashboard-repartidor`, `/dashboard-admin`
+- notificaciones: `/notificaciones`, `/notificaciones/{notification}/abrir`
+- recuperación de contraseña: `/recuperar-contrasena`, `/restablecer-contrasena/{recovery}/{token}`
 
-Ejecutá la suite con `php artisan test`. Las pruebas feature cubren registro y verificación, login, permisos por rol e identidad, carrito y creación de pedidos, decisiones de comercios y clientes, estados de preparación y entrega, asignación de repartidores y selección simulada del método de pago.
+### 7.2 Rutas API
+
+La API implementada en `routes/api.php` incluye endpoints de registro y login, además de rutas protegidas por `auth:sanctum`.
+
+Endpoints básicos:
+
+- `POST /api/registro`
+- `POST /api/login`
+- `POST /api/logout`
+- `GET /api/usuario`
+- `GET /api/user`
+
+## 8. Base de datos y modelo de dominio
+
+El proyecto utiliza un esquema de datos orientado a un marketplace de delivery. Las migraciones incluyen tablas como:
+
+- `Usuario`
+- `Cliente`
+- `Comercio`
+- `Repartidor`
+- `Producto`
+- `Pedido`
+- `Subpedido`
+- `Tarjeta`
+- `Detalle_de_pedido`
+- `Reporte`
+- `Reseña`
+- `Vehículo`
+- `pedido_repartidor_estado`
+- `registration_verifications`
+- `email_verifications`
+- `password_recovery_requests`
+- `app_notifications`
+
+Estas tablas reflejan la lógica de negocio del sistema y contienen campos relacionados con identidad, tipo de usuario, estado del pedido, ubicación, pagos simulados, calificaciones y reportes.
+
+## 9. Configuración del entorno
+
+Antes de ejecutar la aplicación, debe configurarse el archivo `.env` a partir del ejemplo provisto:
+
+```bash
+cp .env.example .env
+```
+
+Variables principales:
+
+```env
+APP_NAME=KRYMS
+APP_ENV=local
+APP_DEBUG=true
+APP_URL=http://localhost
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=el_gaucho_va
+DB_USERNAME=root
+DB_PASSWORD=
+
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.example.com
+MAIL_PORT=587
+MAIL_USERNAME=your-smtp-username
+MAIL_PASSWORD=your-smtp-password
+MAIL_FROM_ADDRESS="no-reply@example.com"
+MAIL_FROM_NAME="KRYMS"
+
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=
+```
+
+Es importante configurar correctamente SMTP para que los procesos de verificación y recuperación de contraseña funcionen de forma completa.
+
+## 10. Instalación y ejecución
+
+### 10.1 Dependencias
+
+```bash
+composer install
+npm install
+```
+
+### 10.2 Generación de clave y migración
+
+```bash
+php artisan key:generate
+php artisan migrate
+```
+
+### 10.3 Ejecutar la aplicación
+
+Modo de desarrollo:
+
+```bash
+composer run dev
+```
+
+También puede ejecutarse por separado:
+
+```bash
+php artisan serve
+npm run dev
+```
+
+### 10.4 Build de producción
+
+```bash
+npm run build
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
+
+## 11. Comandos útiles
+
+```bash
+php artisan test
+php artisan migrate
+php artisan migrate:fresh
+php artisan queue:listen
+php artisan cache:clear
+php artisan config:clear
+```
+
+## 12. Pruebas automatizadas
+
+El proyecto cuenta con pruebas automatizadas ejecutadas con PHPUnit mediante el siguiente comando:
+
+```bash
+php artisan test
+```
+
+Las pruebas abarcan funcionalidades clave como:
+
+- registro y validación de usuarios;
+- login y permisos por rol;
+- autenticación y configuración de identidad;
+- carrito y creación de pedidos;
+- decisiones del comercio y del cliente;
+- estados de preparación y entrega;
+- asignación de repartidores;
+- simulación del método de pago.
+
+## 13. Seguridad y buenas prácticas
+
+- Las contraseñas se manejan mediante hash de Laravel.
+- La autenticación web usa sesión y la API usa tokens de Sanctum.
+- La identidad central del sistema es `Usuario`, no la tabla `users` del scaffold base.
+- En entornos productivos, se recomienda mantener `APP_DEBUG=false` y `APP_ENV=production`.
+- El flujo de pagos es una simulación; no debe utilizarse información bancaria real.
+
+## 14. Nota sobre el prototipo de pagos
+
+El sistema no integra una pasarela real de pagos ni un procesamiento bancario. El campo `Metodo_de_pago` del pedido registra la opción elegida por el cliente, como efectivo o tarjeta simulada, pero no ejecuta una transacción real. La tabla `Tarjeta` se usa únicamente como referencia del prototipo y no debe almacenar datos reales de tarjetas.
+
+## 15. Manual de instalación y mantenimiento
+
+### 15.1 Requisitos del sistema
+
+Para instalar y operar la aplicación correctamente se requiere:
+
+- PHP 8.3 o superior
+- Composer
+- Node.js y npm
+- MySQL 8.0 o compatible
+- Apache o Nginx
+- Git
+- Acceso a un proveedor SMTP para envío de correos de verificación y recuperación
+
+### 15.2 Preparación del entorno local
+
+1. Clonar el repositorio:
+
+```bash
+git clone https://github.com/ZluchiZ/Proyecto_KRYMS_2026_UTU.git
+cd Proyecto_KRYMS_2026_UTU-main
+```
+
+2. Instalar dependencias de PHP y Node:
+
+```bash
+composer install
+npm install
+```
+
+3. Crear el archivo de entorno:
+
+```bash
+cp .env.example .env
+```
+
+4. Generar la clave de la aplicación:
+
+```bash
+php artisan key:generate
+```
+
+5. Configurar la base de datos en `.env`:
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=el_gaucho_va
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+6. Ejecutar migraciones y preparar la base de datos:
+
+```bash
+php artisan migrate
+```
+
+7. Ejecutar la aplicación en modo de desarrollo:
+
+```bash
+composer run dev
+```
+
+### 15.3 Ejecución en producción
+
+Para un entorno productivo se recomienda:
+
+```bash
+npm run build
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan optimize
+```
+
+Luego se debe servir la aplicación mediante un servidor web (Apache o Nginx) apuntando al directorio `public/` del proyecto.
+
+### 15.4 Configuración de correo y notificaciones
+
+El sistema depende de un proveedor SMTP para:
+
+- verificación de correo,
+- recuperación de contraseña,
+- notificaciones internas.
+
+Debe configurarse en `.env`:
+
+```env
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.example.com
+MAIL_PORT=587
+MAIL_USERNAME=your-smtp-username
+MAIL_PASSWORD=your-smtp-password
+MAIL_FROM_ADDRESS="no-reply@example.com"
+MAIL_FROM_NAME="KRYMS"
+```
+
+Si no se configura correctamente, algunas funcionalidades del flujo de usuario quedarán inhabilitadas.
+
+### 15.5 Mantenimiento de la base de datos
+
+Se recomienda realizar mantenimiento periódico con los siguientes pasos:
+
+```bash
+php artisan migrate
+php artisan db:seed
+php artisan optimize
+```
+
+Para recrear la base de datos en un entorno de pruebas o desarrollo:
+
+```bash
+php artisan migrate:fresh
+```
+
+> Esta acción elimina los datos actuales. Debe utilizarse con precaución.
+
+### 15.6 Copias de seguridad
+
+Se recomienda hacer respaldo de la base de datos y del proyecto antes de cada despliegue o actualización importante:
+
+```bash
+mysqldump -u root -p el_gaucho_va > backup_el_gaucho_va.sql
+```
+
+También es conveniente conservar una copia del contenido del directorio del proyecto y de los archivos de configuración `.env`.
+
+### 15.7 Actualización del sistema
+
+Para actualizar la aplicación suavemente:
+
+1. Descargar o integrar los cambios del repositorio.
+2. Ejecutar la instalación de dependencias:
+
+```bash
+composer install
+npm install
+```
+
+3. Aplicar migraciones pendientes:
+
+```bash
+php artisan migrate
+```
+
+4. Ejecutar limpieza y optimización:
+
+```bash
+php artisan cache:clear
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
+php artisan optimize
+```
+
+5. Reiniciar el servicio web y el proceso de colas si corresponde.
+
+### 15.8 Monitoreo y resolución de incidencias
+
+Para operar la aplicación en forma estable se recomienda:
+
+- revisar los logs de Laravel en `storage/logs/`;
+- verificar la salud de la base de datos y la conexión SMTP;
+- confirmar el estado de los workers de cola cuando existan tareas en segundo plano;
+- revisar errores de validación de usuarios, pedidos o autenticación tras cada cambio funcional.
+
+Comandos útiles:
+
+```bash
+php artisan test
+php artisan queue:listen
+php artisan cache:clear
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
+```
+
+### 15.9 Buenas prácticas operativas
+
+- Mantener `APP_ENV=production` y `APP_DEBUG=false` en entornos productivos.
+- No guardar información bancaria real ni datos sensibles no requeridos.
+- Mantener un control de versiones del proyecto y una estrategia de despliegue documentada.
+- Realizar pruebas de regresión antes de publicar cambios funcionales.
+- Documentar cada ajuste importante de base de datos y configuración.
+
+### 15.10 Instalación en Windows (XAMPP + Composer + Node)
+
+Esta guía está pensada para entornos Windows con XAMPP, y es útil cuando se quiere levantar la aplicación de forma local sin usar Linux o un servidor web externo.
+
+#### 1. Instalar requisitos
+
+Descargar e instalar:
+
+- XAMPP desde https://www.apachefriends.org/
+- Git desde https://git-scm.com/
+- Composer desde https://getcomposer.org/download/
+- Node.js desde https://nodejs.org/
+
+Luego verificar que queden disponibles en el PATH:
+
+```powershell
+php -v
+composer -V
+node -v
+npm -v
+```
+
+#### 2. Activar MySQL y Apache en XAMPP
+
+1. Abrir XAMPP Control Panel.
+2. Iniciar `Apache` y `MySQL`.
+3. Verificar que MySQL esté corriendo en el puerto 3306.
+4. Crear la base de datos desde phpMyAdmin o desde consola:
+
+```sql
+CREATE DATABASE el_gaucho_va;
+```
+
+#### 3. Clonar el proyecto
+
+```powershell
+git clone https://github.com/ZluchiZ/Proyecto_KRYMS_2026_UTU.git
+cd Proyecto_KRYMS_2026_UTU-main
+```
+
+#### 4. Instalar dependencias
+
+```powershell
+composer install
+npm install
+```
+
+#### 5. Configurar `.env`
+
+Crear la copia del archivo de entorno:
+
+```powershell
+copy .env.example .env
+```
+
+Editar el archivo `.env` con el siguiente contenido base:
+
+```env
+APP_NAME=KRYMS
+APP_ENV=local
+APP_DEBUG=true
+APP_URL=http://localhost
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=el_gaucho_va
+DB_USERNAME=root
+DB_PASSWORD=
+
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.example.com
+MAIL_PORT=587
+MAIL_USERNAME=your-smtp-username
+MAIL_PASSWORD=your-smtp-password
+MAIL_FROM_ADDRESS="no-reply@example.com"
+MAIL_FROM_NAME="KRYMS"
+```
+
+#### 6. Generar la clave de Laravel
+
+```powershell
+php artisan key:generate
+```
+
+#### 7. Ejecutar migraciones
+
+```powershell
+php artisan migrate
+```
+
+Si se quiere dejar la base de datos en estado vacío y recrearla desde cero:
+
+```powershell
+php artisan migrate:fresh
+```
+
+#### 8. Levantar la aplicación
+
+Opción 1: ejecutar todo en modo desarrollo:
+
+```powershell
+composer run dev
+```
+
+Opción 2: correr por separado:
+
+```powershell
+php artisan serve
+npm run dev
+```
+
+La aplicación quedará normalmente disponible en:
+
+```text
+http://localhost:8000
+```
+
+#### 9. Si se usa XAMPP como servidor web
+
+También puede servirse desde la carpeta del proyecto dentro de `htdocs` de XAMPP y acceder con:
+
+```text
+http://localhost/Proyecto_KRYMS_2026_UTU-main/public
+```
+
+En ese caso, la estructura debe quedar dentro de la carpeta `htdocs` del XAMPP, por ejemplo:
+
+```text
+C:\xampp\htdocs\Proyecto_KRYMS_2026_UTU-main
+```
+
+#### 10. Problemas comunes en Windows
+
+- `php` no es reconocido: reiniciar la terminal o agregar la ruta de PHP al PATH.
+- `composer` no es reconocido: reiniciar la terminal o instalar Composer con la opción de PATH habilitada.
+- Error de conexión con MySQL: verificar que XAMPP esté ejecutando MySQL y que la base exista.
+- Error de permisos: revisar los permisos del proyecto y que la carpeta no esté bloqueada por antivirus.
+- La aplicación no carga assets: ejecutar `npm install` y luego `npm run dev`.
+
+### 15.11 Recomendaciones para entorno Windows
+
+- Mantener XAMPP y Node actualizados.
+- No usar rutas con espacios en la carpeta del proyecto.
+- Usar `cmd` o PowerShell con permisos normales.
+- Ejecutar la aplicación desde la raíz del proyecto para evitar errores de rutas.
+- Guardar siempre una copia de `.env` y del respaldo de la base de datos antes de cambios importantes.
+
+## 16. Estado del proyecto
+
+El presente repositorio corresponde a un prototipo funcional de aplicación de delivery con énfasis en la lógica de negocio, la gestión de usuarios y la coordinación operativa del pedido. Su objetivo es demostrar una solución completa y coherente para la gestión del servicio, utilizando Laravel como framework base.
+
+## 17. Licencia
+
+El proyecto se distribuye bajo la licencia MIT de Laravel, salvo que el repositorio o la institución responsable defina una normativa específica adicional.

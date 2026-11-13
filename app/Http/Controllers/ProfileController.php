@@ -5,28 +5,93 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
     public function edit()
     {
         [$type, $email, $profile] = $this->currentProfile();
+        $vehicle = null;
+        $driverLicenseFile = null;
+        $identityFile = null;
+
+        if ($type === 'repartidor') {
+            $vehicleTable = null;
+            foreach (['vehículo', 'Vehículo'] as $table) {
+                if (Schema::hasTable($table)) {
+                    $vehicleTable = $table;
+                    break;
+                }
+            }
+
+            if ($vehicleTable) {
+                $vehicle = DB::table($vehicleTable)
+                    ->where('CI_Repartidor', (string) $profile->CI)
+                    ->first();
+            }
+
+            if (Schema::hasColumn('repartidor', 'Foto_Libreta')) {
+                $driverLicenseFile = DB::table('repartidor')
+                    ->where('CI', (string) $profile->CI)
+                    ->value('Foto_Libreta');
+            }
+
+            if (Schema::hasColumn('repartidor', 'Cedula_Archivo')) {
+                $identityFile = DB::table('repartidor')
+                    ->where('CI', (string) $profile->CI)
+                    ->value('Cedula_Archivo');
+            }
+        }
 
         return view('profile-edit', [
             'type' => $type,
             'email' => $email,
+            'profile' => $profile,
             'fields' => $this->fields($type, $profile),
+            'vehicle' => $vehicle,
+            'driverLicenseFile' => $driverLicenseFile,
+            'identityFile' => $identityFile,
         ]);
     }
 
     public function update(Request $request)
     {
-        [$type, $email] = $this->currentProfile();
+        [$type, $email, $profile] = $this->currentProfile();
         $fieldDefinitions = $this->fieldDefinitions($type);
         $rules = [];
 
         foreach ($fieldDefinitions as $name => $definition) {
             $rules[$name] = $definition['rules'];
+        }
+
+        if ($type === 'comercio') {
+            $rules['logo_url'] = ['nullable', 'url:http,https', 'max:255'];
+            $rules['logo'] = ['nullable', function (string $attribute, mixed $value, \Closure $fail): void {
+                if (! request()->hasFile('logo')) {
+                    if ($value === null || trim((string) $value) === '') {
+                        return;
+                    }
+
+                    if (! filter_var(trim((string) $value), FILTER_VALIDATE_URL)
+                        || ! in_array(parse_url(trim((string) $value), PHP_URL_SCHEME), ['http', 'https'], true)) {
+                        $fail('El logo debe ser una URL válida o una imagen JPG, JPEG, PNG o WEBP.');
+                    }
+
+                    return;
+                }
+
+                $file = request()->file('logo');
+                if (! $file || ! $file->isValid()) {
+                    $fail('El archivo del logo no es válido.');
+                    return;
+                }
+
+                $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+                if (! in_array($file->getMimeType(), $allowedMimeTypes, true)) {
+                    $fail('El logo debe ser una imagen JPG, JPEG, PNG o WEBP.');
+                }
+            }];
         }
 
         $validated = $request->validate($rules);
@@ -43,6 +108,14 @@ class ProfileController extends Controller
                     $updates[$column] = $validated[$name] ?? null;
                     $updatedColumns[$normalizedColumn] = true;
                 }
+            }
+        }
+
+        if ($type === 'comercio') {
+            $logoValue = $this->resolveCommerceLogoValue($request, $profile);
+            if ($request->has('logo_url') || $request->hasFile('logo') || $request->has('logo')) {
+                $updates['Logo'] = $logoValue;
+                $updatedColumns['logo'] = true;
             }
         }
 
@@ -183,5 +256,32 @@ class ProfileController extends Controller
         }
 
         return $fields;
+    }
+
+    private function resolveCommerceLogoValue(Request $request, object $profile): ?string
+    {
+        if ($request->hasFile('logo')) {
+            $file = $request->file('logo');
+
+            if ($file && $file->isValid()) {
+                $storedPath = $file->store('comercios/logos', 'public');
+
+                return $storedPath ? Storage::disk('public')->url($storedPath) : null;
+            }
+        }
+
+        if ($request->has('logo_url')) {
+            $value = trim((string) ($request->input('logo_url') ?? ''));
+
+            return $value !== '' ? $value : null;
+        }
+
+        if ($request->has('logo')) {
+            $value = trim((string) $request->input('logo'));
+
+            return $value !== '' ? $value : null;
+        }
+
+        return $profile->Logo ?? null;
     }
 }

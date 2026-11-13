@@ -96,7 +96,7 @@
                                         <input type="hidden" name="estado" value="aceptado">
                                         <button type="submit">Aceptar pedido</button>
                                     </form>
-                                    <form method="POST" action="{{ route('pedidos.status', $pedido->N_Subpedido) }}" onsubmit="return confirm('¿Rechazar y eliminar este pedido?');">
+                                    <form method="POST" action="{{ route('pedidos.status', $pedido->N_Subpedido) }}" onsubmit="return confirm('¿Estás seguro de rechazar este pedido?');">
                                         @csrf
                                         @method('PATCH')
                                         <input type="hidden" name="estado" value="rechazado">
@@ -210,7 +210,7 @@
                 <h2>Añadir producto</h2>
                 <button type="button" class="close" id="close-product-modal" aria-label="Cerrar">&times;</button>
             </div>
-            <form method="POST" action="{{ route('productos.store') }}" enctype="multipart/form-data">
+            <form method="POST" action="{{ route('productos.store') }}" enctype="multipart/form-data" data-native-submit="true" data-ajax="false">
                 @csrf
                 <label for="nombre">Nombre</label>
                 <input id="nombre" name="nombre" type="text" value="{{ old('nombre') }}" required maxlength="255">

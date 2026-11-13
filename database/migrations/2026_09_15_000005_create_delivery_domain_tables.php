@@ -63,8 +63,8 @@ return new class extends Migration
             });
         }
 
-        if (! Schema::hasTable('Vehículo')) {
-            Schema::create('Vehículo', function (Blueprint $table) {
+        if (! Schema::hasTable('vehículo') && ! Schema::hasTable('Vehículo')) {
+            Schema::create('vehículo', function (Blueprint $table) {
                 $table->string('Matricula', 20)->primary();
                 $table->string('CI_Repartidor', 20)->unique();
                 $table->string('Modelo', 100)->nullable();
@@ -78,6 +78,7 @@ return new class extends Migration
 
     public function down(): void
     {
+        Schema::dropIfExists('vehículo');
         Schema::dropIfExists('Vehículo');
         Schema::dropIfExists('Reseña');
         Schema::dropIfExists('Reporte');

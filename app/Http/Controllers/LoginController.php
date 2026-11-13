@@ -101,13 +101,13 @@ class LoginController extends Controller
                 $identificador = $usuario->{$cuenta['id']} ?? null;
 
                 if ($cuenta['tipo'] === 'comercio' && ! $identificador) {
-                    $identificador = $usuario->id ?? null;
+                    $identificador = $usuario->Email_Usuario ?? $usuario->id ?? null;
                 }
 
-                if ($cuenta['tipo'] === 'comercio' && ! $identificador) {
+                if (! $identificador) {
                     return back()
                         ->withInput($request->only('email'))
-                        ->with('error', 'Este comercio no tiene un RUT o identificador asociado.');
+                        ->with('error', 'No se pudo identificar esta cuenta para iniciar sesión.');
                 }
 
                 $request->session()->regenerate();

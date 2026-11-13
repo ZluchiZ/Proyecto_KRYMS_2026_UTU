@@ -21,6 +21,7 @@
                     'reportes' => 'Reportes',
                     'resenas' => 'Reseñas',
                     'recuperaciones' => 'Recuperaciones',
+                    'vehiculos' => 'Vehículos',
                 ] as $clave => $titulo)
                     <a class="nav-link {{ $seccion === $clave ? 'active' : '' }}" href="{{ route('dashboard.admin', ['seccion' => $clave]) }}" @if ($seccion === $clave) aria-current="page" @endif>
                         <span>{{ $titulo }}</span>
@@ -37,13 +38,13 @@
             </div>
         </aside>
 
-        <main class="main-content">
+        <main class="main-content" id="admin-dashboard-root">
             <header class="topbar"><span>Panel de control <span class="crumb">/ {{ ucfirst($seccion) }}</span></span><span class="live-indicator">Sistema operativo</span>@include('partials.notifications-menu')</header>
             <div class="page-wrap">
                 <section class="page-heading">
                     <div>
                         <p class="eyebrow">KRYMS / ADMINISTRACIÓN</p>
-                        <h1>{{ ['adhesiones' => 'Adhesiones', 'usuarios' => 'Usuarios', 'suscripciones' => 'Locales destacados', 'reportes' => 'Reportes', 'resenas' => 'Reseñas', 'recuperaciones' => 'Recuperaciones'][$seccion] }}</h1>
+                        <h1>{{ ['adhesiones' => 'Adhesiones', 'usuarios' => 'Usuarios', 'suscripciones' => 'Locales destacados', 'reportes' => 'Reportes', 'resenas' => 'Reseñas', 'recuperaciones' => 'Recuperaciones', 'vehiculos' => 'Vehículos'][ $seccion ] }}</h1>
                         <p class="heading-copy">Supervisa las cuentas y el contenido de la plataforma.</p>
                     </div>
                     <span class="date-stamp">{{ now()->locale('es')->translatedFormat('d M Y') }}</span>
@@ -59,8 +60,8 @@
                 <section class="data-panel">
                     <div class="panel-heading">
                         <div>
-                            <p class="eyebrow">{{ ['adhesiones' => 'REVISIÓN DE CUENTAS', 'usuarios' => 'DIRECTORIO', 'suscripciones' => 'PROMOCIÓN DE LOCALES', 'reportes' => 'CENTRO DE INCIDENCIAS', 'resenas' => 'CONTENIDO DE LA COMUNIDAD', 'recuperaciones' => 'SEGURIDAD DE CUENTAS'][$seccion] }}</p>
-                            <h2>{{ ['adhesiones' => 'Solicitudes de adhesión', 'usuarios' => 'Cuentas registradas', 'suscripciones' => 'Suscripciones de locales', 'reportes' => 'Reportes recibidos', 'resenas' => 'Reseñas registradas', 'recuperaciones' => 'Solicitudes de recuperación'][$seccion] }}</h2>
+                            <p class="eyebrow">{{ ['adhesiones' => 'REVISIÓN DE CUENTAS', 'usuarios' => 'DIRECTORIO', 'suscripciones' => 'PROMOCIÓN DE LOCALES', 'reportes' => 'CENTRO DE INCIDENCIAS', 'resenas' => 'CONTENIDO DE LA COMUNIDAD', 'recuperaciones' => 'SEGURIDAD DE CUENTAS', 'vehiculos' => 'VEHÍCULOS'][ $seccion ] }}</p>
+                            <h2>{{ ['adhesiones' => 'Solicitudes de adhesión', 'usuarios' => 'Cuentas registradas', 'suscripciones' => 'Suscripciones de locales', 'reportes' => 'Reportes recibidos', 'resenas' => 'Reseñas registradas', 'recuperaciones' => 'Solicitudes de recuperación', 'vehiculos' => 'Vehículos pendientes de aprobación'][ $seccion ] }}</h2>
                         </div>
                         @if ($seccion === 'usuarios')
                             <form class="search-form" method="GET" action="{{ route('dashboard.admin') }}">
@@ -70,7 +71,7 @@
                                 <button type="submit" aria-label="Buscar">Buscar</button>
                             </form>
                         @else
-                            <span class="record-count">{{ ['adhesiones' => $solicitudes->count(), 'suscripciones' => $localesSuscripcion->count(), 'reportes' => $reportes->count(), 'resenas' => $resenas->count(), 'recuperaciones' => $recuperaciones->count()][$seccion] }} registros</span>
+                            <span class="record-count">{{ ['adhesiones' => $solicitudes->count(), 'suscripciones' => $localesSuscripcion->count(), 'reportes' => $reportes->count(), 'resenas' => $resenas->count(), 'recuperaciones' => $recuperaciones->count(), 'vehiculos' => $vehiculos->count()][$seccion] }} registros</span>
                         @endif
                     </div>
 
@@ -131,12 +132,15 @@
                                         <td>{{ $usuario->email }}</td>
                                         <td><span class="status {{ strtolower($usuario->estado) === 'activa' ? 'active' : 'suspended' }}">{{ $usuario->estado }}</span></td>
                                         <td>
-                                            <form method="POST" action="{{ route('admin.usuarios.estado', [$usuario->tipo_ruta, $usuario->email]) }}" onsubmit="return confirm('¿Confirmas el cambio de estado de esta cuenta?')">
-                                                @csrf
-                                                @method('PATCH')
-                                                <input type="hidden" name="accion" value="{{ strtolower($usuario->estado) === 'activa' ? 'suspender' : 'activar' }}">
-                                                <button class="account-action {{ strtolower($usuario->estado) === 'activa' ? 'suspend' : 'reactivate' }}" type="submit">{{ strtolower($usuario->estado) === 'activa' ? 'Suspender' : 'Reactivar' }}</button>
-                                            </form>
+                                            <div class="user-table-actions">
+                                                <a class="account-action secondary" href="{{ route('admin.usuarios.perfil', [$usuario->tipo_ruta, $usuario->identificador]) }}">Ver perfil</a>
+                                                <form method="POST" action="{{ route('admin.usuarios.estado', [$usuario->tipo_ruta, $usuario->email]) }}" onsubmit="return confirm('¿Confirmas el cambio de estado de esta cuenta?')">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <input type="hidden" name="accion" value="{{ strtolower($usuario->estado) === 'activa' ? 'suspender' : 'activar' }}">
+                                                    <button class="account-action {{ strtolower($usuario->estado) === 'activa' ? 'suspend' : 'reactivate' }}" type="submit">{{ strtolower($usuario->estado) === 'activa' ? 'Suspender' : 'Reactivar' }}</button>
+                                                </form>
+                                            </div>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -234,6 +238,43 @@
                             </tbody></table></div>
                             <p class="table-note">Las reseñas se publican automáticamente. Retira una solo si incumple las normas, por ejemplo por acoso, discriminación, datos personales o spam; el motivo es obligatorio. Las retiradas pueden restaurarse.</p>
                         @endif
+                    @elseif ($seccion === 'vehiculos')
+                        @if ($vehiculos->isEmpty())
+                            <div class="empty-state"><strong>No hay vehículos pendientes</strong><p>Las solicitudes de aprobación de vehículos aparecerán aquí.</p></div>
+                        @else
+                            <div class="table-scroll"><table><thead><tr><th>Repartidor</th><th>Documento</th><th>Tipo</th><th>Datos</th><th>Archivos</th><th>Decisión</th></tr></thead><tbody>
+                                @foreach ($vehiculos as $vehiculo)
+                                    <tr>
+                                        <td>{{ trim(($vehiculo->Nombre_Repartidor ?? '').' '.($vehiculo->Apellido_Repartidor ?? '')) ?: 'Repartidor sin nombre' }}<br><small>{{ $vehiculo->CI_Repartidor }}</small></td>
+                                        <td>{{ $vehiculo->Matricula ?: 'Sin matrícula' }}</td>
+                                        <td><span class="type-label">{{ ucfirst(str_replace('_', ' / ', (string) ($vehiculo->Tipo_Vehiculo ?? 'sin-tipo'))) }}</span></td>
+                                        <td><small>Modelo: {{ $vehiculo->Modelo ?: '—' }}<br>Color: {{ $vehiculo->Color ?: '—' }}</small></td>
+                                        <td>
+                                            @if ($vehiculo->Foto)<a href="{{ Storage::url($vehiculo->Foto) }}" target="_blank" rel="noopener">Foto</a><br>@endif
+                                            @if ($vehiculo->Libreta_de_propiedad)<a href="{{ Storage::url($vehiculo->Libreta_de_propiedad) }}" target="_blank" rel="noopener">Libreta</a><br>@endif
+                                            @if ($vehiculo->Seguro)<a href="{{ Storage::url($vehiculo->Seguro) }}" target="_blank" rel="noopener">Seguro</a>@endif
+                                        </td>
+                                        <td class="decision-cell">
+                                            <form method="POST" action="{{ route('admin.vehiculos.approve', $vehiculo->CI_Repartidor) }}">
+                                                @csrf
+                                                <input type="hidden" name="decision" value="aprobar">
+                                                <button class="decision-accept" type="submit">Aprobar</button>
+                                            </form>
+                                            <details class="reject-details">
+                                                <summary>Rechazar</summary>
+                                                <form method="POST" action="{{ route('admin.vehiculos.reject', $vehiculo->CI_Repartidor) }}">
+                                                    @csrf
+                                                    <input type="hidden" name="decision" value="rechazar">
+                                                    <label class="sr-only" for="motivo-vehiculo-{{ $vehiculo->CI_Repartidor }}">Motivo del rechazo</label>
+                                                    <textarea id="motivo-vehiculo-{{ $vehiculo->CI_Repartidor }}" name="motivo" placeholder="Motivo del rechazo" required maxlength="1000"></textarea>
+                                                    <button class="decision-reject" type="submit">Confirmar</button>
+                                                </form>
+                                            </details>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody></table></div>
+                        @endif
                     @else
                         @if ($recuperaciones->isEmpty())
                             <div class="empty-state"><strong>No hay solicitudes pendientes</strong><p>Las solicitudes de recuperación aparecerán aquí para su aprobación.</p></div>
@@ -265,5 +306,44 @@
             </div>
         </main>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const root = document.getElementById('admin-dashboard-root');
+            if (!root || window.adminDashboardRefreshInstalled) {
+                return;
+            }
+
+            window.adminDashboardRefreshInstalled = true;
+            const section = '{{ $seccion }}';
+
+            const refreshDashboard = function () {
+                const url = new URL(window.location.href);
+                url.searchParams.set('seccion', section);
+                url.searchParams.set('ajax', '1');
+
+                fetch(url.toString(), {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'text/html',
+                    },
+                })
+                    .then((response) => response.text())
+                    .then((html) => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        const freshRoot = doc.querySelector('#admin-dashboard-root');
+
+                        if (!freshRoot) {
+                            return;
+                        }
+
+                        root.innerHTML = freshRoot.innerHTML;
+                    })
+                    .catch(() => {});
+            };
+
+            setInterval(refreshDashboard, 15000);
+        });
+    </script>
 </body>
 </html>

@@ -245,6 +245,8 @@ class PedidoController extends Controller
                 'pedido.Codigo_Secreto',
                 'pedido.CI_Repartidor',
                 'pedido.Ubicacion',
+                'pedido.latitud',
+                'pedido.longitud',
                 'pedido.Monto_Total',
                 'pedido.Costo_de_envio',
                 'pedido.Metodo_de_pago'
@@ -363,6 +365,40 @@ class PedidoController extends Controller
         });
 
         return view('Cliente.HistorialPedidos', ['pedidos' => $pedidos]);
+    }
+
+    public function courierLocationForOrder(int $pedido)
+    {
+        $this->requireClient();
+
+        $pedidoActual = DB::table('pedido')
+            ->where('N_Pedido', $pedido)
+            ->where('CI_Cliente', session('usuario_id'))
+            ->first([
+                'N_Pedido',
+                'CI_Repartidor',
+                'Estado',
+                'Estado_Entrega',
+            ]);
+
+        abort_unless($pedidoActual, 404, 'No se encontró el pedido.');
+        abort_unless($pedidoActual->CI_Repartidor, 409, 'Todavía no hay un repartidor asignado para este pedido.');
+
+        $estadoActivo = strtolower((string) ($pedidoActual->Estado ?? '')) === 'en_reparto'
+            || in_array((string) ($pedidoActual->Estado_Entrega ?? ''), ['productos_recolectados', 'en_camino', 'en_puerta'], true);
+        abort_unless($estadoActivo, 409, 'El seguimiento del repartidor solo está disponible durante la entrega en curso.');
+
+        $repartidor = DB::table('repartidor')
+            ->where('CI', (string) $pedidoActual->CI_Repartidor)
+            ->first(['CI', 'Nombre', 'Apellido', 'latitud', 'longitud']);
+
+        return response()->json([
+            'ok' => true,
+            'latitud' => $repartidor?->latitud !== null ? (float) $repartidor->latitud : null,
+            'longitud' => $repartidor?->longitud !== null ? (float) $repartidor->longitud : null,
+            'estado_entrega' => $pedidoActual->Estado_Entrega ?? $pedidoActual->Estado,
+            'nombre' => trim(($repartidor->Nombre ?? '').' '.($repartidor->Apellido ?? '')) ?: 'Repartidor',
+        ]);
     }
 
     public function removeFromCart(int $item)

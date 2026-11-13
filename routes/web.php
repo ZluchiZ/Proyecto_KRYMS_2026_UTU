@@ -68,6 +68,10 @@ Route::patch('/admin/adhesiones/{tipo}/{email}', [AdminController::class, 'updat
 Route::patch('/admin/usuarios/{tipo}/{email}', [AdminController::class, 'updateUserStatus'])
     ->middleware('user.type:administrador')
     ->name('admin.usuarios.estado');
+Route::get('/admin/usuarios/{tipo}/{identificador}/perfil', [AdminController::class, 'viewUserProfile'])
+    ->whereAlpha('tipo')
+    ->middleware('user.type:administrador')
+    ->name('admin.usuarios.perfil');
 Route::patch('/admin/suscripciones/{email}', [AdminController::class, 'updateSubscriptionSpotlight'])
     ->middleware('user.type:administrador')
     ->name('admin.suscripciones.update');
@@ -85,6 +89,14 @@ Route::post('/admin/recuperaciones/{recovery}/rechazar', [AdminController::class
     ->whereNumber('recovery')
     ->middleware('user.type:administrador')
     ->name('admin.recuperaciones.reject');
+Route::post('/admin/vehiculos/{ci}/aprobar', [AdminController::class, 'reviewVehicle'])
+    ->whereAlphaNumeric('ci')
+    ->middleware('user.type:administrador')
+    ->name('admin.vehiculos.approve');
+Route::post('/admin/vehiculos/{ci}/rechazar', [AdminController::class, 'reviewVehicle'])
+    ->whereAlphaNumeric('ci')
+    ->middleware('user.type:administrador')
+    ->name('admin.vehiculos.reject');
 
 Route::get('/dashboard-repartidor', [DashboardController::class, 'courier'])
     ->middleware('user.type:repartidor')
@@ -96,6 +108,12 @@ Route::patch('/repartidor/disponibilidad', [RepartidorController::class, 'update
 Route::patch('/repartidor/ubicacion', [RepartidorController::class, 'updateLocation'])
     ->middleware('user.type:repartidor')
     ->name('repartidor.ubicacion');
+Route::post('/repartidor/vehiculo', [RepartidorController::class, 'storeVehicle'])
+    ->middleware('user.type:repartidor')
+    ->name('repartidor.vehiculo.store');
+Route::delete('/repartidor/vehiculo', [RepartidorController::class, 'deleteVehicle'])
+    ->middleware('user.type:repartidor')
+    ->name('repartidor.vehiculo.delete');
 Route::patch('/repartidor/pedidos/{pedido}/estado', [RepartidorController::class, 'updatePedidoStatus'])
     ->middleware('user.type:repartidor')
     ->name('repartidor.pedidos.estado');
@@ -138,6 +156,10 @@ Route::get('/carrito/repartidores-activos', [PedidoController::class, 'activeCou
     ->name('carrito.repartidores-activos');
 Route::get('/carrito', [PedidoController::class, 'cart'])->middleware('user.type:cliente')->name('carrito');
 Route::get('/mis-pedidos', [PedidoController::class, 'orderHistory'])->middleware('user.type:cliente')->name('cliente.pedidos');
+Route::get('/pedidos/{pedido}/seguimiento-repartidor', [PedidoController::class, 'courierLocationForOrder'])
+    ->whereNumber('pedido')
+    ->middleware('user.type:cliente')
+    ->name('cliente.pedidos.tracking');
 Route::post('/pedidos/{pedido}/resena-repartidor', [ReviewController::class, 'storeCourierReview'])
     ->whereNumber('pedido')
     ->middleware('user.type:cliente')
